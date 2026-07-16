@@ -1,0 +1,1654 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>英単語暗記トレーナー</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@500;700&family=Noto+Sans+JP:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+  :root{
+    --paper:#F4F6FB;
+    --paper-line:#CBD5E3;
+    --margin-red:#B23A2E;
+    --margin-red-soft:#e7c9c6;
+    --ink:#1E2A44;
+    --ink-soft:#5B6B85;
+    --gold:#a97c1f;
+    --gold-bg:#f6ecd4;
+    --success:#3a6b4c;
+    --success-bg:#e3ede6;
+    --white:#FFFFFF;
+    --danger:#B23A2E;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Noto Sans JP', sans-serif;
+    line-height:1.6;
+  }
+  .app{
+    max-width:900px;
+    margin:0 auto;
+    padding:0 20px 60px 34px;
+    position:relative;
+  }
+  .app::before{
+    content:"";
+    position:absolute;
+    top:0; bottom:0; left:20px;
+    width:2px;
+    background:var(--margin-red-soft);
+  }
+
+  /* ---------- HERO / LP INTRO ---------- */
+  .hero{
+    padding:34px 4px 22px 4px;
+    border-bottom:1px solid var(--paper-line);
+    margin-bottom:22px;
+  }
+  .hero-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; }
+  h1{
+    font-family:'Noto Serif JP', serif;
+    font-weight:700;
+    font-size:1.6rem;
+    margin:0 0 6px 0;
+    letter-spacing:.02em;
+  }
+  .tagline{
+    color:var(--ink-soft);
+    font-size:.92rem;
+    margin:0 0 20px 0;
+    max-width:520px;
+  }
+  .feature-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:12px;
+    margin-bottom:18px;
+  }
+  .feature-card{
+    background:var(--white);
+    border:1px solid var(--paper-line);
+    border-radius:var(--radius);
+    padding:14px 16px;
+  }
+  .feature-card .icon{ font-size:1.15rem; margin-bottom:6px; display:block; }
+  .feature-card .ft{ font-weight:700; font-size:.85rem; margin-bottom:3px; }
+  .feature-card .fd{ font-size:.78rem; color:var(--ink-soft); }
+  .quick-nav{ display:flex; gap:10px; flex-wrap:wrap; }
+  .quick-nav a{
+    font-size:.82rem; font-weight:600; color:var(--ink);
+    text-decoration:none; border:1px solid var(--paper-line);
+    border-radius:20px; padding:6px 14px; background:var(--white);
+  }
+  .quick-nav a:hover{ border-color:var(--ink); }
+  .print-btn{
+    background:transparent; border:1px solid var(--ink-soft); color:var(--ink-soft);
+    border-radius:7px; padding:7px 14px; font-size:.8rem; font-weight:600; cursor:pointer;
+  }
+  .print-btn:hover{ border-color:var(--ink); color:var(--ink); }
+
+  section.card{
+    background:var(--white);
+    border:1px solid var(--paper-line);
+    border-radius:var(--radius);
+    padding:18px 20px;
+    margin-bottom:18px;
+  }
+  .today-card{ border:1.5px solid var(--ink); }
+  h2{
+    font-family:'Noto Serif JP', serif;
+    font-size:1.05rem;
+    margin:0 0 14px 0;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  h2 .num{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.8rem;
+    color:var(--white);
+    background:var(--ink);
+    border-radius:5px;
+    padding:2px 7px;
+  }
+  h3.sub-head{
+    font-size:.9rem; margin:20px 0 8px 0; color:var(--ink-soft);
+    border-top:1px dashed var(--paper-line); padding-top:16px;
+  }
+  h3.sub-head:first-of-type{ border-top:none; padding-top:0; margin-top:4px; }
+
+  .today-new-box{
+    display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;
+  }
+  .today-new-tag{
+    font-family:'IBM Plex Mono', monospace; font-weight:600; font-size:.9rem;
+    background:var(--gold-bg); color:var(--gold); border:1px solid #e4cd94;
+    border-radius:7px; padding:6px 12px;
+  }
+  .empty-mini{ color:var(--ink-soft); font-size:.85rem; padding:6px 2px; }
+
+  .form-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px 16px;
+  }
+  .field{ display:flex; flex-direction:column; gap:5px; }
+  .field.full{ grid-column:1 / -1; }
+  label{ font-size:.82rem; color:var(--ink-soft); font-weight:500; }
+  input[type=number], input[type=date]{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.95rem;
+    padding:8px 10px;
+    border:1px solid var(--paper-line);
+    border-radius:6px;
+    background:var(--paper);
+    color:var(--ink);
+  }
+  input:focus{ outline:2px solid var(--ink); outline-offset:1px; }
+  .checkbox-row{ display:flex; flex-wrap:wrap; gap:8px; }
+  .chip{
+    display:inline-flex; align-items:center; gap:6px;
+    border:1px solid var(--paper-line);
+    border-radius:20px;
+    padding:6px 12px;
+    font-size:.85rem;
+    cursor:pointer;
+    user-select:none;
+    background:var(--paper);
+  }
+  .chip input{ accent-color:var(--ink); margin:0; }
+  .chip.checked{ background:var(--ink); color:var(--white); border-color:var(--ink); }
+  .chip.checked input{ accent-color:var(--white); }
+  .hint{ font-size:.78rem; color:var(--ink-soft); margin-top:2px; }
+  button{
+    font-family:'Noto Sans JP', sans-serif;
+    font-weight:700;
+    font-size:.9rem;
+    border:none;
+    border-radius:7px;
+    padding:10px 18px;
+    cursor:pointer;
+  }
+  .btn-primary{ background:var(--ink); color:var(--white); }
+  .btn-primary:hover{ background:#141c30; }
+  .btn-ghost{ background:transparent; color:var(--ink-soft); border:1px solid var(--paper-line); }
+  .btn-ghost:hover{ border-color:var(--ink-soft); color:var(--ink); }
+  .error-msg{ color:var(--danger); font-size:.85rem; margin-top:6px; min-height:1.2em; }
+  .entry-list{ display:flex; flex-direction:column; gap:8px; margin-top:14px; }
+  .entry-item{
+    display:flex; justify-content:space-between; align-items:center;
+    background:var(--paper); border:1px solid var(--paper-line);
+    border-radius:8px; padding:8px 12px; font-size:.85rem;
+  }
+  .entry-item .rng{ font-family:'IBM Plex Mono', monospace; font-weight:600; }
+  .entry-item .meta{ color:var(--ink-soft); font-size:.78rem; margin-top:2px; }
+  .del-btn{
+    background:none; border:none; color:var(--margin-red); font-size:.78rem; cursor:pointer; padding:4px 6px;
+    text-decoration:underline;
+  }
+  .schedule-wrap{ overflow-x:auto; }
+  table{
+    border-collapse:collapse;
+    width:100%;
+    min-width:560px;
+    background:repeating-linear-gradient(
+      to bottom,
+      var(--white) 0px, var(--white) 47px, var(--paper-line) 47px, var(--paper-line) 48px
+    );
+  }
+  thead th{
+    text-align:left; font-size:.78rem; color:var(--ink-soft); font-weight:600;
+    padding:8px 10px; border-bottom:2px solid var(--ink); background:var(--white);
+  }
+  tbody td{ padding:9px 10px; font-size:.85rem; vertical-align:middle; }
+  tr.today{ background:#fbf6e8; }
+  .date-cell{ font-family:'IBM Plex Mono', monospace; white-space:nowrap; }
+  .date-cell .wd{ color:var(--ink-soft); font-size:.75rem; margin-left:2px;}
+  .today-badge{
+    display:inline-block; font-size:.68rem; background:var(--ink); color:var(--white);
+    border-radius:4px; padding:1px 5px; margin-left:6px;
+  }
+  .tag{
+    display:inline-flex; align-items:center; gap:4px;
+    font-family:'IBM Plex Mono', monospace; font-size:.78rem;
+    border-radius:5px; padding:3px 8px; margin:2px 4px 2px 0; white-space:nowrap;
+  }
+  .tag-new{ background:var(--gold-bg); color:var(--gold); border:1px solid #e4cd94; font-weight:600;}
+  .tag-review{ background:#f7e9e7; color:var(--margin-red); border:1px solid var(--margin-red-soft); font-weight:600; }
+  .tag-review .stamp{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:15px; height:15px; border-radius:50%; border:1.5px solid var(--margin-red); font-size:.6rem;
+  }
+  .empty-state{ text-align:center; color:var(--ink-soft); padding:30px 10px; font-size:.9rem; }
+  .footer-actions{ display:flex; justify-content:flex-end; margin-top:10px; }
+
+  .leech-form-row{ display:flex; gap:10px; flex-wrap:wrap; }
+  .leech-form-row input[type=text]{
+    font-family:'Noto Sans JP', sans-serif; font-size:.9rem; padding:8px 10px;
+    border:1px solid var(--paper-line); border-radius:6px; background:var(--paper);
+    color:var(--ink); flex:1; min-width:140px;
+  }
+  .leech-form-row input[type=text]:focus{ outline:2px solid var(--ink); outline-offset:1px; }
+  .due-list{ display:flex; flex-direction:column; gap:10px; }
+  .due-item{ border:1px solid var(--paper-line); border-radius:8px; padding:12px 14px; background:var(--paper); }
+  .due-item .word-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+  .due-item .word{ font-family:'IBM Plex Mono', monospace; font-weight:700; font-size:1.05rem; }
+  .due-item .overdue{ color:var(--margin-red); font-size:.72rem; margin-left:8px; }
+  .reveal-btn{
+    background:none; border:1px solid var(--ink-soft); color:var(--ink-soft);
+    border-radius:6px; padding:6px 14px; font-size:.82rem; font-weight:600; cursor:pointer;
+  }
+  .meaning-text{
+    margin-top:8px; font-size:.88rem; color:var(--ink); background:var(--white);
+    border:1px dashed var(--paper-line); border-radius:6px; padding:9px 11px; display:none;
+  }
+  .meaning-text.shown{ display:block; }
+  .word-actions{ display:none; gap:8px; margin-top:8px; }
+  .word-actions.shown{ display:flex; }
+  .word-actions button{ flex:1; padding:11px 10px; font-size:.88rem; }
+  .btn-correct{ background:var(--success); color:var(--white); }
+  .btn-correct:hover{ background:#2c5239; }
+  .btn-wrong{ background:var(--margin-red); color:var(--white); }
+  .btn-wrong:hover{ background:#8f2e24; }
+  .badge-warn{
+    display:inline-block; font-size:.7rem; background:#f7e9e7; color:var(--margin-red);
+    border:1px solid var(--margin-red-soft); border-radius:4px; padding:1px 6px; margin-left:8px;
+  }
+  details.leech-details{ margin-top:14px; }
+  details.leech-details summary{
+    cursor:pointer; font-size:.85rem; color:var(--ink-soft); font-weight:600; padding:4px 0;
+  }
+  .leech-mini-table{ width:100%; border-collapse:collapse; margin-top:8px; font-size:.8rem; }
+  .leech-mini-table th{ text-align:left; color:var(--ink-soft); font-weight:600; padding:5px 6px; border-bottom:1px solid var(--paper-line); }
+  .leech-mini-table td{ padding:5px 6px; border-bottom:1px solid var(--paper-line); font-family:'IBM Plex Mono', monospace; }
+  .mini-del{ background:none; border:none; color:var(--margin-red); font-size:.75rem; cursor:pointer; text-decoration:underline; font-family:'Noto Sans JP', sans-serif; }
+
+  /* ---------- progress charts ---------- */
+  .chart-grid{ display:grid; grid-template-columns:1.4fr 1fr; gap:20px; }
+  .chart-box{ position:relative; height:220px; }
+  .chart-label{ font-size:.8rem; color:var(--ink-soft); font-weight:600; margin-bottom:8px; }
+  .streak-note{ font-size:.78rem; color:var(--ink-soft); margin-top:10px; }
+
+  /* ---------- setup (teacher) area ---------- */
+  details.setup-details{
+    background:var(--white); border:1px solid var(--paper-line); border-radius:var(--radius);
+    padding:18px 20px; margin-bottom:18px;
+  }
+  details.setup-details > summary{
+    cursor:pointer; font-family:'Noto Serif JP', serif; font-size:1.05rem; font-weight:700;
+    list-style:none;
+  }
+  details.setup-details > summary::-webkit-details-marker{ display:none; }
+  details.setup-details > summary::before{ content:"▸ "; }
+  details.setup-details[open] > summary::before{ content:"▾ "; }
+
+  @media (max-width:640px){
+    .form-grid{ grid-template-columns:1fr; }
+    .feature-grid{ grid-template-columns:1fr; }
+    .chart-grid{ grid-template-columns:1fr; }
+    .app{ padding-left:26px; }
+    h1{ font-size:1.3rem; }
+  }
+  @media print{
+    .no-print{ display:none !important; }
+    .app::before{ display:none; }
+    body{ background:#fff; }
+    section.card, details.setup-details{ border:1px solid #999; break-inside:avoid; }
+  }
+  .modal-overlay {
+    display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: var(--paper); /* 背景を完全に塗りつぶして別画面感を出す */
+    z-index: 9999; /* ページの一番手前に強制表示 */
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal-content {
+    background: var(--white); padding: 32px 24px; border-radius: 12px;
+    width: 90%; max-width: 500px; max-height: 95vh; overflow-y: auto; position: relative;
+    box-shadow: 0 20px 40px rgba(30,42,68,0.15);
+    border: 2px solid var(--ink);
+  }
+  .modal-close {
+    position: absolute; top: 12px; right: 16px; background: none; border: none;
+    font-size: 1.5rem; cursor: pointer; color: var(--ink-soft);
+  }
+  .test-progress { font-family: 'IBM Plex Mono', monospace; font-size: .95rem; color: var(--ink-soft); text-align: center; margin-bottom: 16px; }
+  .test-word { font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: 2.2rem; text-align: center; margin-bottom: 24px; }
+  .test-meaning {
+    font-size: 1.1rem; text-align: center; margin-bottom: 24px; padding: 20px;
+    background: var(--paper); border: 1px dashed var(--ink-soft); border-radius: 8px; display: none;
+  }
+  .test-meaning.shown { display: block; }
+  .test-actions { display: none; gap: 12px; justify-content: center; }
+  .test-actions.shown { display: flex; }
+  .test-actions button { font-size: 1.1rem; padding: 14px; }
+  .result-list { margin-top: 20px; display: flex; flex-direction: column; gap: 8px; }
+  .result-item { display: flex; justify-content: space-between; padding: 10px 12px; border-bottom: 1px solid var(--paper-line); font-size: .95rem; }
+  .tab-content { transition: opacity 0.3s ease; }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  /* ---------- AIチャット用 ---------- */
+  .chat-msg {
+    padding: 10px 14px; border-radius: 14px; max-width: 85%; font-size: 0.9rem; line-height: 1.5;
+  }
+  .model-msg {
+    background: var(--white); border: 1px solid var(--paper-line);
+    align-self: flex-start; border-bottom-left-radius: 4px;
+  }
+  .user-msg {
+    background: var(--ink); color: var(--white);
+    align-self: flex-end; border-bottom-right-radius: 4px;
+  }
+  /* ---------- チャット入力中アニメーション（追加分） ---------- */
+  .typing-indicator {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    width: fit-content;
+    background: var(--white);
+    border: 1px solid var(--paper-line);
+    border-bottom-left-radius: 4px;
+    padding: 12px 18px;
+  }
+  .typing-indicator span {
+    width: 6px;
+    height: 6px;
+    background-color: var(--ink-soft);
+    border-radius: 50%;
+    display: inline-block;
+    animation: bounce 1.4s infinite ease-in-out both;
+  }
+  .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+  .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+
+  @keyframes bounce {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1.0); }
+  }
+  /* 1. ボタンに立体感とインタラクション（押しやすさ）を与える */
+  button, .btn-primary, .btn-ghost {
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(30, 42, 68, 0.1);
+  }
+  button:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(30, 42, 68, 0.05);
+  }
+
+  /* 2. 「今日やること」を最重要カードとして際立たせる */
+  .today-card {
+    border: 2px solid var(--ink);
+    box-shadow: 0 8px 24px rgba(30, 42, 68, 0.12); /* 浮き出させて視線を誘導 */
+    background: linear-gradient(135deg, var(--white) 0%, #fbfbfc 100%);
+  }
+
+  /* 3. モーダル（テスト画面）のUX：より集中できるダークスクリーン風に */
+  .modal-overlay {
+    background: rgba(30, 42, 68, 0.85); /* 完全に消さず、薄暗くして没入感を出す */
+    backdrop-filter: blur(4px); /* 背景をぼかしてテストに超集中させる */
+  }
+  .modal-content {
+    border: none;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.3);
+  }
+
+  /* 4. スマホでの押しやすさ（タスク・ターゲット） */
+  @media (max-width: 640px) {
+    .chip {
+      padding: 10px 16px; /* 親指でタップしやすいサイズ（44px以上を意識） */
+      font-size: 0.9rem;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="hero">
+    <div class="hero-top">
+      <div>
+        <h1>英単語暗記トレーナー</h1>
+        <p class="tagline">範囲を決めるだけで週間スケジュールを自動生成。苦手単語は間隔反復でしつこく復習。進捗はグラフで見える化。</p>
+      </div>
+      <button class="print-btn no-print" id="printBtn">🖨️ 印刷用に表示</button>
+    </div>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <span class="icon">🗓️</span>
+        <div class="ft">週間スケジュール自動生成</div>
+        <div class="fd">開始番号・終了番号を入れるだけで、1日あたりの新規量を自動で割り振り</div>
+      </div>
+      <div class="feature-card">
+        <span class="icon">🔁</span>
+        <div class="ft">苦手単語の自動復習</div>
+        <div class="fd">間違えた単語は1→3→7→14日後と間隔を空けて自動的に再登場</div>
+      </div>
+      <div class="feature-card">
+        <span class="icon">📊</span>
+        <div class="ft">進捗を見える化</div>
+        <div class="fd">正答率の推移や苦手単語の状況をグラフで確認できる</div>
+      </div>
+    </div>
+    <nav class="quick-nav no-print">
+      <a href="#today">今日やること</a>
+      <a href="#progress">進捗</a>
+      <a href="#setup">スケジュール設定</a>
+    </nav>
+  </header>
+  <div class="no-print" style="display:flex; gap:10px; margin-bottom:20px;">
+    <button id="tab-btn-study" class="btn-primary" onclick="showTab('study')">単語管理</button>
+    <button id="tab-btn-coach" class="btn-ghost" onclick="showTab('coach')">AI学習計画</button>
+  </div>
+  <div id="tab-study" class="tab-content">
+  <section class="card today-card" id="today">
+    <h2>📌 今日やること</h2>
+    <h3 class="sub-head">今日の範囲</h3>
+    <div class="today-new-box" id="todayNewBox"></div>
+    <h3 class="sub-head">レビューする単語</h3>
+    <div class="due-list" id="dueList"></div>
+  </section>
+
+  <section class="card" id="progress">
+    <h2>📊 進捗</h2>
+    <div class="chart-grid">
+      <div>
+        <div class="chart-label">日別正答率（直近14日）</div>
+        <div class="chart-box"><canvas id="rateChart"></canvas></div>
+      </div>
+      <div>
+        <div class="chart-label">苦手単語の内訳</div>
+        <div class="chart-box"><canvas id="statusChart"></canvas></div>
+      </div>
+    </div>
+    <div class="streak-note">データがない日はグラフ上で途切れます（その日はレビューをしていない、という意味です）。</div>
+  </section>
+
+  <details class="setup-details" id="setup" open>
+    <summary>⚙️ スケジュール設定</summary>
+
+    <h3 class="sub-head">① 今週の範囲を登録</h3>
+    <div class="field full" style="margin-bottom:14px;">
+      <label>割り振り方法</label>
+      <div style="display:flex; gap:16px; margin-top:6px; flex-wrap:wrap;">
+        <label style="cursor:pointer; display:flex; align-items:center; gap:4px; font-size:.85rem;">
+          <input type="radio" name="planMode" value="byWeek" checked>
+          選択した曜日に均等に分ける（1週間で完了）
+        </label>
+        <label style="cursor:pointer; display:flex; align-items:center; gap:4px; font-size:.85rem;">
+          <input type="radio" name="planMode" value="byAmount">
+          1日の単語数を指定する（終了番号まで数週間続く）
+        </label>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <label for="startNum">開始番号</label>
+        <input type="number" id="startNum" min="1" placeholder="例: 1500">
+      </div>
+      <div class="field">
+        <label for="endNum">終了番号</label>
+        <input type="number" id="endNum" min="1" placeholder="例: 1600">
+      </div>
+      <div class="field">
+        <label for="startDate">この範囲を始める日</label>
+        <input type="date" id="startDate">
+      </div>
+      <div class="field" id="amountFieldWrap" style="display:none;">
+        <label for="amountPerDay">1日の単語数</label>
+        <input type="number" id="amountPerDay" min="1" placeholder="例: 30">
+      </div>
+      <div class="field">
+        <label>学習する曜日（新規を覚える日）</label>
+        <div class="checkbox-row" id="weekdayRow"></div>
+      </div>
+      <div class="field full">
+        <label>復習を入れるタイミング</label>
+        <div class="checkbox-row" id="intervalRow"></div>
+        <div class="hint">推奨：1日後・3日後・7日後・14日後。他教科との兼ね合いで負担が大きければ間引いてOKです。</div>
+      </div>
+    </div>
+    <div class="error-msg" id="errorMsg"></div>
+    <button class="btn-primary" id="addBtn" style="margin-top:10px;">この範囲をスケジュールに追加</button>
+    <div class="entry-list" id="entryList"></div>
+
+    <h3 class="sub-head">② スケジュール表</h3>
+    <div class="schedule-wrap">
+      <div id="scheduleArea"></div>
+    </div>
+    <div class="footer-actions">
+      <button class="btn-ghost" id="resetBtn">範囲をすべてリセット</button>
+    </div>
+
+    <h3 class="sub-head">③ 苦手単語を登録・管理</h3>
+    <div class="leech-form-row">
+      <input type="text" id="leechWord" placeholder="単語（例: arbitrary）">
+      <input type="text" id="leechMeaning" placeholder="意味・メモ（任意）">
+      <button class="btn-primary" id="leechAddBtn">苦手リストに追加</button>
+    </div>
+    <div class="error-msg" id="leechErrorMsg"></div>
+
+    <details class="leech-details" open>
+      <summary id="activeSummary">登録中の苦手単語</summary>
+      <div style="margin: 12px 0; padding: 14px; background: var(--paper); border-radius: 8px; border: 1px solid var(--paper-line);">
+        <div style="font-size: .85rem; font-weight: 700; margin-bottom: 8px;">📝 リストの単語で確認テストを実施</div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <select id="testMode" style="padding: 8px 10px; border: 1px solid var(--paper-line); border-radius: 6px; font-family: inherit; font-size: .9rem;">
+            <option value="all">登録中の全単語</option>
+            <option value="random10">ランダムに10問</option>
+            <option value="miss1">ミス1回の単語のみ</option>
+            <option value="warn">要注意単語のみ（ミス2回以上）</option>
+          </select>
+          <button class="btn-primary" id="startTestBtn">テスト開始</button>
+        </div>
+      </div>
+      <table class="leech-mini-table" id="activeTable"></table>
+    </details>
+    <details class="leech-details">
+      <summary id="graduatedSummary">卒業した単語</summary>
+      <table class="leech-mini-table" id="graduatedTable"></table>
+    </details>
+  </details>
+  </div>
+  <div id="tab-coach" class="tab-content" style="display:none;">
+    <!-- APIキー設定 -->
+    <section class="card no-print" style="background:#f0f4f8; border:1px solid var(--paper-line);">
+      <h2 style="font-size:0.9rem; margin-bottom:8px;">⚙️ AI連携設定</h2>
+      <div class="field">
+        <input type="password" id="geminiApiKey" placeholder="APIキーを入力" style="width:100%; max-width:400px;">
+      </div>
+      <div class="error-msg" id="coachErrorMsg" style="margin-top: 8px;"></div>
+    </section>
+
+    <!-- チャット画面 -->
+    <section class="card no-print" id="coachChatSection">
+      <h2>💬 AIコーチとの作戦会議（ヒアリング）</h2>
+      <div class="hint" style="margin-bottom:12px;">AIが質問をするので、生徒の状況を答えてあげてください。情報が集まったら下のボタンで計画を生成します。</div>
+      
+      <!-- チャットのログが表示される場所 -->
+      <div id="chatBox" style="height: 300px; overflow-y: auto; padding: 16px; background: var(--paper); border: 1px solid var(--paper-line); border-radius: 8px; display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px;">
+        <div class="chat-msg model-msg">こんにちは！専属のAI学習コーチです。まずは、今回の「達成したい目標（例：〇〇試験合格）」を教えてください！</div>
+      </div>
+
+      <!-- メッセージ入力欄（ここを丸ごと差し替えてください） -->
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; gap: 8px; align-items: center;">
+    
+          <!-- ひと目で画像ボタンとわかるデザインにしました -->
+          <button type="button" class="btn-ghost" onclick="document.getElementById('chatFileInput').click()" style="padding: 10px 14px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; white-space: nowrap;">
+            📷 画像を追加
+          </button>
+          <input type="file" id="chatFileInput" accept="image/*" style="display: none;">
+    
+          <input type="text" id="chatInput" placeholder="メッセージを入力..." style="flex: 1; padding: 10px; border: 1px solid var(--paper-line); border-radius: 6px; font-family: inherit;">
+          <button class="btn-primary" id="chatSendBtn">送信</button>
+        </div>
+  
+        <!-- 選択した画像のプレビューエリア -->
+        <div id="imagePreviewContainer" style="display: none; position: relative; width: fit-content; background: var(--white); padding: 6px; border: 1px solid var(--paper-line); border-radius: 8px; margin-top: 4px;">
+          <img id="imagePreview" src="" style="max-height: 100px; display: block; border-radius: 4px;">
+          <button id="clearImageBtn" style="position: absolute; top: -8px; right: -8px; background: var(--danger); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">×</button>
+        </div>
+      </div>
+
+      <!-- 計画作成ボタン -->
+      <div style="margin-top: 24px; text-align: center; border-top: 1px dashed var(--paper-line); padding-top: 16px;">
+        <button class="btn-primary" id="generatePlanBtn" style="background: var(--gold); color: #fff;">✨ ヒアリングを終了してロードマップを作成</button>
+      </div>
+    </section>
+
+    <!-- 解析結果の表示エリア（前回と同じ） -->
+    <section class="card" id="coachResultSection" style="display:none;">
+      <h2>📊 あなた専用ロードマップ</h2>
+      <div id="coachLoading" style="display:none; text-align:center; padding:40px 0; color:var(--ink-soft);">
+        <div style="font-size:2rem; margin-bottom:10px; animation: spin 2s linear infinite;">🔄</div>
+        <div>AIが対話履歴からオリジナル計画を生成中...</div>
+      </div>
+      <div id="coachOutput" style="font-size:0.95rem;"></div>
+      <div style="text-align: center; margin-top: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+        <!-- ① 履歴を残して微調整するボタン -->
+        <button class="btn-ghost" onclick="continueChat()">チャットに戻って計画を調整する</button>
+  
+        <!-- ② 履歴を消して最初からやり直すボタン -->
+        <button class="btn-ghost" onclick="resetChat()">もう一度別の計画を立てる</button> 
+      </div>
+      <!-- 「現在の計画」表示エリア -->
+      <div id="currentPlanSection" class="card" style="display: none; margin-top: 20px;">
+        <div class="card-header" style="background-color: #f5f5f7; padding: 12px; border-bottom: 1px solid #e5e5e5; border-top-left-radius: 8px; border-top-right-radius: 8px;">
+          <h3 style="margin: 0; display: flex; align-items: center; gap: 8px; font-size: 1.1rem; color: #333;">
+            📅 現在の学習計画 (Current Plan)
+          </h3>
+        </div>
+      <div class="card-body" style="padding: 16px; background-color: #ffffff; border: 1px solid #e5e5e5; border-top: none; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
+        <!-- ここにAIが生成した「表形式のロードマップ」が自動で抽出されて表示されます -->
+        <div id="currentPlanTableContainer" class="table-responsive" style="overflow-x: auto;">
+          <p style="color: #666; font-style: italic; margin: 0;">計画がここに表示されます...</p>
+        </div>
+        <div style="text-align: center; margin-top: 24px; padding-top: 16px; border-top: 1px dashed var(--paper-line);">
+          <button id="applyPlanBtn" class="btn-primary" style="display: none; font-size: 1.05rem; padding: 12px 24px; background: var(--success); color: white;">
+            🗓️ この計画をスケジュール表に反映する
+          </button>
+        </div>
+      </div>
+    </div>
+    </section>
+  </div>
+
+  <section class="card tip-box" style="background:var(--gold-bg); border:1px solid #e4cd94;">
+    <h2 style="font-family:'Noto Sans JP',sans-serif; font-size:.95rem;">📌 各回の学習フロー（既にやっている進め方）</h2>
+    <ol style="margin:8px 0 0 0; padding-left:1.2em; font-size:.85rem;">
+      <li style="margin-bottom:4px;">英語を見て日本語の意味を思い出す（想起）</li>
+      <li style="margin-bottom:4px;">出てこなければ意味を確認 → 右ページの例文で該当箇所を訳す</li>
+      <li style="margin-bottom:4px;"><b>例文を見終えたら、単語だけをもう一度見せて自力で意味を言わせる</b>（ここが抜けやすい）</li>
+      <li style="margin-bottom:4px;">それでも詰まる単語は上の「苦手リスト」に単語だけ登録しておく → 表示された日に自動でレビュー対象に上がってくる</li>
+    </ol>
+  </section>
+</div>
+
+<div class="modal-overlay" id="testModal">
+    <div class="modal-content">
+      <button class="modal-close" id="closeTestBtn">✖</button>
+      <div id="testArea">
+        <div class="test-progress" id="testProgress"></div>
+        <div style="text-align: center; margin-bottom: 10px;">
+         <button onclick="speakWord(document.getElementById('testWordDisplay').textContent)" 
+                 style="background:var(--ink); color:white; border:none; border-radius:50%; width:40px; height:40px; cursor:pointer;">🔊</button>
+       </div>
+        <div class="test-word" id="testWordDisplay"></div>
+        <button class="btn-ghost" id="testRevealBtn" style="width: 100%; margin-bottom: 12px; padding: 12px;">意味を確認</button>
+        <div class="test-meaning" id="testMeaningDisplay"></div>
+        <div class="test-actions" id="testActions">
+          <button class="btn-correct" id="testCorrectBtn" style="flex: 1; padding: 12px;">できた</button>
+          <button class="btn-wrong" id="testWrongBtn" style="flex: 1; padding: 12px;">もう一度</button>
+        </div>
+      </div>
+      <div id="resultArea" style="display: none;">
+        <h2 style="text-align: center; margin-top: 0; font-size: 1.4rem;">🎉 テスト終了！</h2>
+        <div style="text-align: center; font-size: 1.1rem; font-weight: 700; margin-bottom: 16px;" id="resultScore"></div>
+        <div style="font-size: .85rem; color: var(--ink-soft); text-align: center;">※スケジュールと日別正答率グラフに結果が反映されました。</div>
+        <div class="result-list" id="resultList"></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+const STORAGE_KEY = 'vocab-plan-entries';
+const LEECH_KEY = 'vocab-leech-words';
+const HISTORY_KEY = 'vocab-review-history';
+const WEEKDAYS = ['日','月','火','水','木','金','土'];
+const DEFAULT_WEEKDAYS = [1,2,3,4,5,6];
+const DEFAULT_INTERVALS = [1,3,7,14];
+const LEECH_INTERVALS = [1,3,7,14];
+const LEECH_WARN_THRESHOLD = 2;
+const COLORS = { ink:'#1E2A44', gold:'#a97c1f', red:'#B23A2E', success:'#3a6b4c', grid:'#CBD5E3' };
+
+let entries = [];
+let leechWords = [];
+let history = [];
+let rateChartInstance = null;
+let statusChartInstance = null;
+
+function pad(n){ return String(n).padStart(2,'0'); }
+function formatISO(d){ return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+function parseISO(s){ const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); }
+function addDays(d, n){ const nd = new Date(d); nd.setDate(nd.getDate()+n); return nd; }
+function todayISO(){ return formatISO(new Date()); }
+
+/* ---------- weekly range entries (shared) ---------- */
+
+function buildWeekdayChips(){
+  const row = document.getElementById('weekdayRow');
+  row.innerHTML = '';
+  WEEKDAYS.forEach((label, idx) => {
+    const chip = document.createElement('label');
+    chip.className = 'chip' + (DEFAULT_WEEKDAYS.includes(idx) ? ' checked' : '');
+    chip.innerHTML = `<input type="checkbox" value="${idx}" ${DEFAULT_WEEKDAYS.includes(idx)?'checked':''}> ${label}`;
+    const cb = chip.querySelector('input');
+    cb.addEventListener('change', () => chip.classList.toggle('checked', cb.checked));
+    row.appendChild(chip);
+  });
+}
+
+function buildIntervalChips(){
+  const row = document.getElementById('intervalRow');
+  row.innerHTML = '';
+  [1,2,3,5,7,10,14,21].forEach(n => {
+    const chip = document.createElement('label');
+    const checked = DEFAULT_INTERVALS.includes(n);
+    chip.className = 'chip' + (checked ? ' checked' : '');
+    chip.innerHTML = `<input type="checkbox" value="${n}" ${checked?'checked':''}> ${n}日後`;
+    const cb = chip.querySelector('input');
+    cb.addEventListener('change', () => chip.classList.toggle('checked', cb.checked));
+    row.appendChild(chip);
+  });
+}
+
+function getCheckedValues(rowId){
+  return Array.from(document.querySelectorAll(`#${rowId} input:checked`)).map(el => Number(el.value));
+}
+
+async function loadEntries(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    entries = raw ? JSON.parse(raw) : [];
+  }catch(e){ entries = []; }
+}
+async function saveEntries(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+  }catch(e){ console.error('Storage error:', e); }
+}
+
+function computeChunksForEntry(entry){
+  const start = parseISO(entry.startDate);
+  const total = entry.endNum - entry.startNum + 1;
+  const chunks = [];
+  
+  // 【新機能】1日あたりの量でスケジュールを組むモード
+  if (entry.planMode === 'byAmount') {
+    let cursor = entry.startNum;
+    let daysAdded = 0;
+    while(cursor <= entry.endNum) {
+      const d = addDays(start, daysAdded);
+      // 学習する曜日かどうか判定
+      if (entry.weekdays.includes(d.getDay())) {
+        const count = Math.min(entry.amountPerDay, entry.endNum - cursor + 1);
+        const rangeStart = cursor;
+        const rangeEnd = cursor + count - 1;
+        chunks.push({ date: formatISO(d), rangeStart, rangeEnd, entryId: entry.id, intervals: entry.intervals });
+        cursor = rangeEnd + 1;
+      }
+      daysAdded++;
+      // 安全装置（万が一の無限ループ防止：最大1年）
+      if (daysAdded > 365) break;
+    }
+  } 
+  // 【既存】1週間で曜日に均等割り当てモード
+  else {
+    const studyDates = [];
+    for(let i=0;i<7;i++){
+      const d = addDays(start, i);
+      if(entry.weekdays.includes(d.getDay())) studyDates.push(d);
+    }
+    if(studyDates.length === 0) return [];
+    
+    const days = studyDates.length;
+    const base = Math.floor(total/days);
+    const rem = total % days;
+    let cursor = entry.startNum;
+    
+    studyDates.forEach((d, idx) => {
+      const count = base + (idx < rem ? 1 : 0);
+      if(count <= 0) return;
+      const rangeStart = cursor;
+      const rangeEnd = cursor + count - 1;
+      chunks.push({ date: formatISO(d), rangeStart, rangeEnd, entryId: entry.id, intervals: entry.intervals });
+      cursor = rangeEnd + 1;
+    });
+  }
+  return chunks;
+}
+
+function renderEntryList(){
+  const list = document.getElementById('entryList');
+  list.innerHTML = '';
+  if(entries.length === 0) return;
+  entries.forEach(entry => {
+    const item = document.createElement('div');
+    item.className = 'entry-item';
+    const wdLabel = entry.weekdays.slice().sort((a,b)=>a-b).map(i=>WEEKDAYS[i]).join('・');
+    item.innerHTML = `
+      <div>
+        <span class="rng">${entry.startNum}〜${entry.endNum}</span>
+        <div class="meta">開始日 ${entry.startDate} ／ 学習日: ${wdLabel} ／ 復習: ${entry.intervals.join('・')}日後</div>
+      </div>
+      <button class="del-btn" data-id="${entry.id}">削除</button>
+    `;
+    list.appendChild(item);
+  });
+  list.querySelectorAll('.del-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      entries = entries.filter(e => e.id !== btn.dataset.id);
+      await saveEntries();
+      renderAll();
+    });
+  });
+}
+
+function renderSchedule(){
+  const area = document.getElementById('scheduleArea');
+  if(entries.length === 0){
+    area.innerHTML = `<div class="empty-state">まだ範囲が登録されていません。上のフォームから今週の範囲を追加してください。</div>`;
+    return;
+  }
+  const allChunks = entries.flatMap(computeChunksForEntry);
+  if(allChunks.length === 0){
+    area.innerHTML = `<div class="empty-state">学習曜日が選択されていない範囲があります。設定を確認してください。</div>`;
+    return;
+  }
+  const allReviews = [];
+  allChunks.forEach(c => {
+    c.intervals.forEach(n => {
+      allReviews.push({ date: formatISO(addDays(parseISO(c.date), n)), rangeStart: c.rangeStart, rangeEnd: c.rangeEnd, interval: n });
+    });
+  });
+  const today = new Date(); today.setHours(0,0,0,0);
+  const allDates = [...allChunks.map(c => parseISO(c.date)), ...allReviews.map(r => parseISO(r.date)), today];
+  let minDate = new Date(Math.min(...allDates));
+  let maxDate = new Date(Math.max(...allDates));
+  const MAX_DAYS = 45;
+  const spanDays = Math.round((maxDate - minDate) / 86400000) + 1;
+  let truncated = false;
+  if(spanDays > MAX_DAYS){ maxDate = addDays(minDate, MAX_DAYS - 1); truncated = true; }
+
+  const rows = [];
+  let cursor = new Date(minDate);
+  while(cursor <= maxDate){
+    const iso = formatISO(cursor);
+    const newItems = allChunks.filter(c => c.date === iso);
+    const reviewItems = allReviews.filter(r => r.date === iso);
+    if(newItems.length || reviewItems.length){ rows.push({ date: new Date(cursor), iso, newItems, reviewItems }); }
+    cursor = addDays(cursor, 1);
+  }
+
+  const todayIso = todayISO();
+  let html = `<table><thead><tr><th>日付</th><th>新規</th><th>復習</th></tr></thead><tbody>`;
+  rows.forEach(row => {
+    const isToday = row.iso === todayIso;
+    const wd = WEEKDAYS[row.date.getDay()];
+    const dateLabel = `${row.date.getMonth()+1}/${row.date.getDate()}`;
+    html += `<tr class="${isToday ? 'today' : ''}">
+      <td class="date-cell">${dateLabel}<span class="wd">(${wd})</span>${isToday ? '<span class="today-badge">今日</span>' : ''}</td>
+      <td>${row.newItems.map(c => `<span class="tag tag-new">${c.rangeStart}〜${c.rangeEnd}</span>`).join('') || '—'}</td>
+      <td>${row.reviewItems.map(r => `<span class="tag tag-review"><span class="stamp">◎</span>${r.rangeStart}〜${r.rangeEnd}（${r.interval}日後）</span>`).join('') || '—'}</td>
+    </tr>`;
+  });
+  html += `</tbody></table>`;
+  if(truncated){ html += `<div class="hint" style="margin-top:8px;">※表示は45日分までです。それ以降は範囲を追加していくと自動で延びます。</div>`; }
+  area.innerHTML = html;
+}
+
+function renderTodayNew(){
+  const box = document.getElementById('todayNewBox');
+  const todayIso = todayISO();
+  const allChunks = entries.flatMap(computeChunksForEntry);
+  const todayChunks = allChunks.filter(c => c.date === todayIso);
+  if(todayChunks.length === 0){
+    box.innerHTML = `<div class="empty-mini">今日の新規範囲はありません。</div>`;
+  }else{
+    box.innerHTML = todayChunks.map(c => `<span class="today-new-tag">${c.rangeStart}〜${c.rangeEnd}</span>`).join('');
+  }
+}
+
+function renderAll(){
+  renderEntryList();
+  renderSchedule();
+  renderTodayNew();
+}
+
+async function handleAdd(){
+  const startNum = Number(document.getElementById('startNum').value);
+  const endNum = Number(document.getElementById('endNum').value);
+  const startDate = document.getElementById('startDate').value;
+  const weekdays = getCheckedValues('weekdayRow');
+  const intervals = getCheckedValues('intervalRow');
+  const errorEl = document.getElementById('errorMsg');
+  const planMode = document.querySelector('input[name="planMode"]:checked').value;
+  const amountPerDay = Number(document.getElementById('amountPerDay').value);
+  errorEl.textContent = '';
+
+  if(!startNum || !endNum || endNum < startNum){
+    errorEl.textContent = '開始番号・終了番号を正しく入力してください（終了番号は開始番号以上）。'; return;
+  }
+  if(!startDate){ errorEl.textContent = '開始する日を選択してください。'; return; }
+  if(weekdays.length === 0){ errorEl.textContent = '学習する曜日を1つ以上選んでください。'; return; }
+  if(intervals.length === 0){ errorEl.textContent = '復習のタイミングを1つ以上選んでください。'; return; }
+  if(planMode === 'byAmount' && (!amountPerDay || amountPerDay <= 0)){
+    errorEl.textContent = '1日あたりの単語数を正しく入力してください。'; return;
+  }
+
+  entries.push({ id: 'e' + Date.now(), startNum, endNum, startDate, weekdays, intervals, planMode, amountPerDay });
+  await saveEntries();
+  renderAll();
+  //document.getElementById('startNum').value = '';
+  //document.getElementById('endNum').value = '';
+}
+
+async function handleReset(){
+  if(!confirm('登録した範囲をすべて削除します。よろしいですか？')) return;
+  entries = [];
+  await saveEntries();
+  renderAll();
+}
+
+/* ---------- leech words (shared) ---------- */
+
+async function loadLeech(){
+  try{
+    const raw = localStorage.getItem(LEECH_KEY);
+    leechWords = raw ? JSON.parse(raw) : [];
+  }catch(e){ leechWords = []; }
+}
+async function saveLeech(){
+  try{
+    localStorage.setItem(LEECH_KEY, JSON.stringify(leechWords));
+  }catch(e){ console.error('Storage error:', e); }
+}
+
+function nextDateForStep(step){
+  const idx = Math.min(step, LEECH_INTERVALS.length - 1);
+  return formatISO(addDays(new Date(), LEECH_INTERVALS[idx]));
+}
+
+async function handleLeechAdd(){
+  const wordEl = document.getElementById('leechWord');
+  const meaningEl = document.getElementById('leechMeaning');
+  const errorEl = document.getElementById('leechErrorMsg');
+  errorEl.textContent = '';
+  const word = wordEl.value.trim();
+  const meaning = meaningEl.value.trim();
+  if(!word){ errorEl.textContent = '単語を入力してください。'; return; }
+  leechWords.push({
+    id: 'w' + Date.now(), word, meaning, stepIndex: 0,
+    nextReviewDate: nextDateForStep(0), missCount: 0, status: 'active'
+  });
+  await saveLeech();
+  renderLeech();
+  wordEl.value = ''; meaningEl.value = ''; wordEl.focus();
+}
+
+async function logHistory(result){
+  history.push({ date: todayISO(), result });
+  try{
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+  }catch(e){ console.error('Storage error:', e); }
+  renderCharts();
+}
+
+async function handleLeechCorrect(id){
+  const entry = leechWords.find(w => w.id === id);
+  if(!entry) return;
+  const newStep = entry.stepIndex + 1;
+  if(newStep >= LEECH_INTERVALS.length){
+    entry.status = 'graduated';
+    entry.gradDate = todayISO();
+  }else{
+    entry.stepIndex = newStep;
+    entry.nextReviewDate = nextDateForStep(newStep);
+  }
+  await saveLeech();
+  renderLeech();
+  await logHistory('correct');
+}
+
+async function handleLeechWrong(id){
+  const entry = leechWords.find(w => w.id === id);
+  if(!entry) return;
+  entry.missCount = (entry.missCount || 0) + 1;
+  entry.stepIndex = 0;
+  entry.nextReviewDate = nextDateForStep(0);
+  await saveLeech();
+  renderLeech();
+  await logHistory('wrong');
+}
+
+async function handleLeechDelete(id){
+  leechWords = leechWords.filter(w => w.id !== id);
+  await saveLeech();
+  renderLeech();
+}
+
+function renderLeech(){
+  const todayIso = todayISO();
+  const active = leechWords.filter(w => w.status === 'active');
+  const graduated = leechWords.filter(w => w.status === 'graduated');
+  const due = active.filter(w => w.nextReviewDate <= todayIso)
+                     .sort((a,b) => a.nextReviewDate.localeCompare(b.nextReviewDate));
+
+  const dueList = document.getElementById('dueList');
+  if(due.length === 0){
+    dueList.innerHTML = `<div class="empty-mini">今日レビューする単語はありません。</div>`;
+  }else{
+    dueList.innerHTML = due.map(w => {
+      const overdue = w.nextReviewDate < todayIso;
+      const warn = w.missCount >= LEECH_WARN_THRESHOLD
+        ? `<span class="badge-warn">要注意：語源・対義語など別の覚え方を</span>` : '';
+      return `
+        <div class="due-item" data-id="${w.id}">
+          <div class="word-row">
+            <div><span class="word">${w.word}</span>${overdue ? '<span class="overdue">期限超過</span>' : ''}${warn}</div>
+            <button class="reveal-btn" data-action="reveal" data-id="${w.id}">意味を確認</button>
+          </div>
+          <div class="meaning-text" data-role="meaning" data-id="${w.id}">${w.meaning || '（メモ未登録：口頭で確認）'}</div>
+          <div class="word-actions" data-role="actions" data-id="${w.id}">
+            <button class="btn-correct" data-action="correct" data-id="${w.id}">できた</button>
+            <button class="btn-wrong" data-action="wrong" data-id="${w.id}">もう一度</button>
+          </div>
+        </div>`;
+    }).join('');
+
+    dueList.querySelectorAll('[data-action="reveal"]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
+        dueList.querySelector(`[data-role="meaning"][data-id="${id}"]`).classList.add('shown');
+        dueList.querySelector(`[data-role="actions"][data-id="${id}"]`).classList.add('shown');
+      });
+    });
+    dueList.querySelectorAll('[data-action="correct"]').forEach(btn => {
+      btn.addEventListener('click', () => handleLeechCorrect(btn.dataset.id));
+    });
+    dueList.querySelectorAll('[data-action="wrong"]').forEach(btn => {
+      btn.addEventListener('click', () => handleLeechWrong(btn.dataset.id));
+    });
+  }
+
+  const activeSorted = active.slice().sort((a,b) => a.nextReviewDate.localeCompare(b.nextReviewDate));
+  document.getElementById('activeSummary').textContent = `登録中の苦手単語（${activeSorted.length}）`;
+  const activeTable = document.getElementById('activeTable');
+  if(activeSorted.length === 0){
+    activeTable.innerHTML = `<tr><td class="empty-mini">まだ登録されていません。</td></tr>`;
+  }else{
+    activeTable.innerHTML = `
+      <tr><th>単語</th><th>次回レビュー</th><th>ミス回数</th><th></th></tr>
+      ${activeSorted.map(w => `
+      <tr>
+       <td>
+        ${w.word}
+        <button onclick="speakWord('${w.word}')" style="background:none; border:none; cursor:pointer; font-size:1rem; margin-left:6px;">🔊</button>
+        ${w.missCount >= LEECH_WARN_THRESHOLD ? '<span class="badge-warn">要注意</span>' : ''}
+       </td>
+       <td>${w.nextReviewDate}</td>
+       <td>${w.missCount}</td>
+       <td><button class="mini-del" data-id="${w.id}">削除</button></td>
+      </tr>`).join('')}
+    `;
+    activeTable.querySelectorAll('.mini-del').forEach(btn => {
+      btn.addEventListener('click', () => handleLeechDelete(btn.dataset.id));
+    });
+  }
+
+  document.getElementById('graduatedSummary').textContent = `卒業した単語（${graduated.length}）`;
+  const gradTable = document.getElementById('graduatedTable');
+  if(graduated.length === 0){
+    gradTable.innerHTML = `<tr><td class="empty-mini">まだありません。</td></tr>`;
+  }else{
+    gradTable.innerHTML = `
+      <tr><th>単語</th><th>卒業日</th><th></th></tr>
+      ${graduated.map(w => `
+        <tr>
+          <td>${w.word}</td>
+          <td>${w.gradDate || '-'}</td>
+          <td><button class="mini-del" data-id="${w.id}">削除</button></td>
+        </tr>`).join('')}
+    `;
+    gradTable.querySelectorAll('.mini-del').forEach(btn => {
+      btn.addEventListener('click', () => handleLeechDelete(btn.dataset.id));
+    });
+  }
+
+  renderCharts();
+}
+
+/* ---------- history & charts (per-device) ---------- */
+
+async function loadHistory(){
+  try{
+    const raw = localStorage.getItem(HISTORY_KEY);
+    history = raw ? JSON.parse(raw) : [];
+  }catch(e){ history = []; }
+}
+
+function buildRateSeries(days){
+  const labels = [];
+  const data = [];
+  const today = new Date(); today.setHours(0,0,0,0);
+  for(let i = days-1; i >= 0; i--){
+    const d = addDays(today, -i);
+    const iso = formatISO(d);
+    labels.push(`${d.getMonth()+1}/${d.getDate()}`);
+    const dayEntries = history.filter(h => h.date === iso);
+    if(dayEntries.length === 0){ data.push(null); continue; }
+    const correct = dayEntries.filter(h => h.result === 'correct').length;
+    data.push(Math.round((correct / dayEntries.length) * 100));
+  }
+  return { labels, data };
+}
+
+function renderCharts(){
+  if(typeof Chart === 'undefined') return;
+
+  const { labels, data } = buildRateSeries(14);
+  const rateCtx = document.getElementById('rateChart');
+  if(rateChartInstance) rateChartInstance.destroy();
+  rateChartInstance = new Chart(rateCtx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: '正答率(%)',
+        data,
+        borderColor: COLORS.ink,
+        backgroundColor: COLORS.ink,
+        spanGaps: false,
+        tension: 0.25,
+        pointRadius: 3
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        y: { min:0, max:100, grid:{ color: COLORS.grid } },
+        x: { grid:{ display:false } }
+      },
+      plugins: { legend:{ display:false } }
+    }
+  });
+
+  const active = leechWords.filter(w => w.status === 'active');
+  const graduated = leechWords.filter(w => w.status === 'graduated');
+  const warnCount = active.filter(w => w.missCount >= LEECH_WARN_THRESHOLD).length;
+  const okCount = active.length - warnCount;
+
+  const statusCtx = document.getElementById('statusChart');
+  if(statusChartInstance) statusChartInstance.destroy();
+  statusChartInstance = new Chart(statusCtx, {
+    type: 'doughnut',
+    data: {
+      labels: ['順調', '要注意', '卒業済み'],
+      datasets: [{
+        data: [okCount, warnCount, graduated.length],
+        backgroundColor: [COLORS.gold, COLORS.red, COLORS.success]
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend:{ position:'bottom', labels:{ boxWidth:12, font:{ size:11 } } } }
+    }
+  });
+}
+
+/* ---------- Test Mode Logic ---------- */
+let testQueue = [];
+let currentTestIdx = 0;
+let testSessionResults = [];
+
+document.getElementById('startTestBtn').addEventListener('click', () => {
+  const mode = document.getElementById('testMode').value;
+  // active状態の単語のみを対象にする
+  const activeWords = leechWords.filter(w => w.status === 'active');
+  
+  if(activeWords.length === 0) {
+    alert('現在、テストできる単語が登録されていません。');
+    return;
+  }
+
+  // 絞り込みロジック
+  if(mode === 'all') {
+    testQueue = [...activeWords];
+  } else if(mode === 'warn') {
+    testQueue = activeWords.filter(w => w.missCount >= LEECH_WARN_THRESHOLD);
+    if(testQueue.length === 0) { alert('現在、要注意の単語はありません。'); return; }
+  } else if(mode === 'random10') {
+    // 配列をシャッフルして最大10件取得
+    testQueue = [...activeWords].sort(() => 0.5 - Math.random()).slice(0, 10);
+  }
+  else if(mode === 'miss1') {
+    testQueue = activeWords.filter(w => w.missCount === 1);
+    if(testQueue.length === 0) { alert('現在、ミス1回の単語はありません。'); return; }
+  }
+
+  // テストの初期化
+  currentTestIdx = 0;
+  testSessionResults = [];
+  document.getElementById('testArea').style.display = 'block';
+  document.getElementById('resultArea').style.display = 'none';
+  document.getElementById('testModal').classList.add('active');
+  
+  showTestWord();
+});
+
+function showTestWord() {
+  if(currentTestIdx >= testQueue.length) {
+    finishTest();
+    return;
+  }
+  const wordData = testQueue[currentTestIdx];
+  document.getElementById('testProgress').textContent = `問題 ${currentTestIdx + 1} / ${testQueue.length}`;
+  document.getElementById('testWordDisplay').textContent = wordData.word;
+  document.getElementById('testMeaningDisplay').textContent = wordData.meaning || '（メモ未登録：口頭で確認）';
+  
+  // 意味とボタンを隠し、「意味を確認」ボタンを表示
+  document.getElementById('testMeaningDisplay').classList.remove('shown');
+  document.getElementById('testActions').classList.remove('shown');
+  document.getElementById('testRevealBtn').style.display = 'block';
+}
+
+document.getElementById('testRevealBtn').addEventListener('click', () => {
+  document.getElementById('testRevealBtn').style.display = 'none';
+  document.getElementById('testMeaningDisplay').classList.add('shown');
+  document.getElementById('testActions').classList.add('shown');
+});
+
+document.getElementById('testCorrectBtn').addEventListener('click', async () => {
+  const wordData = testQueue[currentTestIdx];
+  testSessionResults.push({ word: wordData.word, correct: true });
+  // 既存のスケジュール更新処理を呼び出す
+  await handleLeechCorrect(wordData.id);
+  currentTestIdx++;
+  showTestWord();
+});
+
+document.getElementById('testWrongBtn').addEventListener('click', async () => {
+  const wordData = testQueue[currentTestIdx];
+  testSessionResults.push({ word: wordData.word, correct: false });
+  // 既存のスケジュール更新処理を呼び出す
+  await handleLeechWrong(wordData.id);
+  currentTestIdx++;
+  showTestWord();
+});
+
+function finishTest() {
+  document.getElementById('testArea').style.display = 'none';
+  const resultArea = document.getElementById('resultArea');
+  resultArea.style.display = 'block';
+  
+  const correctCount = testSessionResults.filter(r => r.correct).length;
+  const rate = Math.round((correctCount / testQueue.length) * 100);
+  document.getElementById('resultScore').textContent = `正答率: ${correctCount} / ${testQueue.length} (${rate}%)`;
+  
+  const listHtml = testSessionResults.map(r => `
+    <div class="result-item">
+      <span style="font-family:'IBM Plex Mono', monospace; font-weight:700;">${r.word}</span>
+      <span style="color:${r.correct ? 'var(--success)' : 'var(--margin-red)'}; font-weight:700;">
+        ${r.correct ? '〇 できた' : '✖ もう一度'}
+      </span>
+    </div>
+  `).join('');
+  
+  document.getElementById('resultList').innerHTML = listHtml;
+}
+
+/* ---------- TTS (読み上げ機能) ---------- */
+function speakWord(text) {
+  window.speechSynthesis.cancel(); // 連続読み上げを防ぐ
+  const uttr = new SpeechSynthesisUtterance(text);
+  uttr.lang = 'en-US'; // 英語の読み上げ設定
+  uttr.rate = 0.9;     // 少しだけゆっくりにする（聞き取りやすく）
+  window.speechSynthesis.speak(uttr);
+}
+
+// モーダルを閉じる処理
+document.getElementById('closeTestBtn').addEventListener('click', () => {
+  document.getElementById('testModal').classList.remove('active');
+  // テスト結果によるスケジュールの変化を画面に反映
+  renderLeech();
+});
+
+function showTab(tabName) {
+  // タブコンテンツの表示・非表示を切り替え
+  document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+  document.getElementById('tab-' + tabName).style.display = 'block';
+  
+  // ボタン要素を取得
+  const btnStudy = document.getElementById('tab-btn-study');
+  const btnCoach = document.getElementById('tab-btn-coach');
+
+  // 選択されたタブに応じて色（クラス）を切り替え
+  if (tabName === 'study') {
+    btnStudy.className = 'btn-primary'; // 着色する
+    btnCoach.className = 'btn-ghost';   // 白抜きにする
+  } else if (tabName === 'coach') {
+    btnStudy.className = 'btn-ghost';   // 白抜きにする
+    btnCoach.className = 'btn-primary'; // 着色する
+  }
+}
+
+/* ---------- AI Coaching API Chat Logic ---------- */
+const API_KEY_STORAGE_KEY = 'vocab-gemini-api-key';
+let chatHistory = []; // AIとの会話履歴を保存する配列
+
+document.getElementById('chatSendBtn').addEventListener('click', handleChatSend);
+document.getElementById('chatInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') handleChatSend(); });
+document.getElementById('generatePlanBtn').addEventListener('click', generateFinalPlan);
+
+// メッセージ追加関数を画像対応にアップデート
+function appendMessage(text, isUser, imgSrc = null) {
+  const box = document.getElementById('chatBox');
+  const msgDiv = document.createElement('div');
+  msgDiv.className = `chat-msg ${isUser ? 'user-msg' : 'model-msg'}`;
+  
+  // 送信した画像があれば上に表示
+  if (imgSrc) {
+    const img = document.createElement('img');
+    img.src = imgSrc;
+    img.style.maxWidth = '100%';
+    img.style.maxHeight = '150px';
+    img.style.borderRadius = '8px';
+    img.style.marginBottom = '6px';
+    img.style.display = 'block';
+    msgDiv.appendChild(img);
+  }
+  
+  // テキストがあれば表示
+  if (text) {
+    const textSpan = document.createElement('span');
+    textSpan.textContent = text;
+    msgDiv.appendChild(textSpan);
+  }
+  
+  box.appendChild(msgDiv);
+  box.scrollTop = box.scrollHeight;
+}
+
+// 1. ファイルをGemini APIが求める「Base64」形式に変換するヘルパー関数
+function fileToGenerativePart(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64Data = reader.result.split(',')[1];
+      resolve({
+        inlineData: {
+          data: base64Data,
+          mimeType: file.type
+        },
+      });
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// 2. 画像選択時のプレビュー制御
+const fileInput = document.getElementById('chatFileInput');
+const previewContainer = document.getElementById('imagePreviewContainer');
+const previewImg = document.getElementById('imagePreview');
+const clearImgBtn = document.getElementById('clearImageBtn');
+
+fileInput.addEventListener('change', () => {
+  const file = fileInput.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      previewImg.src = e.target.result;
+      previewContainer.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  }
+});
+
+// 選択した画像をキャンセルする処理
+clearImgBtn.addEventListener('click', () => {
+  fileInput.value = '';
+  previewContainer.style.display = 'none';
+  previewImg.src = '';
+});
+
+async function handleChatSend() {
+  const apiKey = document.getElementById('geminiApiKey').value.trim();
+  const inputEl = document.getElementById('chatInput');
+  const errorEl = document.getElementById('coachErrorMsg');
+  const text = inputEl.value.trim();
+  const file = fileInput.files[0];
+  
+  if(!apiKey) { errorEl.textContent = 'APIキーを入力してください。'; return; }
+  if(!text && !file) return; // テキストも画像もない場合は何もしない
+  errorEl.textContent = '';
+  
+  // ユーザー発言のパーツ配列を組み立てる
+  const parts = [];
+  if (text) parts.push({ text: text });
+  
+  let filePart = null;
+  if (file) {
+    try {
+      filePart = await fileToGenerativePart(file);
+      parts.push(filePart);
+    } catch (e) {
+      errorEl.textContent = 'ファイルの読み込みに失敗しました。';
+      return;
+    }
+  }
+
+  // 1. ユーザーのメッセージを画面に表示（画像プレビューつき）
+  appendMessage(text, true, file ? previewImg.src : null);
+  
+  // 2. 履歴に保存
+  chatHistory.push({ role: 'user', parts: parts });
+
+  // 入力フォームとプレビューのリセット
+  inputEl.value = '';
+  fileInput.value = '';
+  previewContainer.style.display = 'none';
+  previewImg.src = '';
+  inputEl.disabled = true;
+
+  // 3. 入力中アニメーション（● ● ●）を表示
+  const chatBox = document.getElementById('chatBox');
+  const loadingIndicator = document.createElement('div');
+  loadingIndicator.className = 'typing-indicator chat-msg';
+  loadingIndicator.innerHTML = '<span></span><span></span><span></span>';
+  chatBox.appendChild(loadingIndicator);
+  chatBox.scrollTop = chatBox.scrollHeight;
+
+  // 4. AIへ送信（gemini-3.5-flash を使用）
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: "あなたはプロの学習プランナーです。ユーザーの目標達成のためのロードマップを作るために、現状をヒアリングしてください。送られた画像（成績表やノートなど）がある場合は、その内容も丁寧に分析・褒めて、アドバイスに活かしてください。1回の返信につき質問は1〜2個までにし、フレンドリーな日本語で対話してください。" }] },
+        contents: chatHistory
+      })
+    });
+
+    loadingIndicator.remove();
+
+    if (!response.ok) throw new Error(`APIエラー (Status: ${response.status})`);
+    
+    const data = await response.json();
+    const aiResponseText = data.candidates[0].content.parts[0].text;
+    
+    // 5. AIの返信を画面と履歴に追加
+    appendMessage(aiResponseText, false);
+    chatHistory.push({ role: 'model', parts: [{ text: aiResponseText }] });
+
+  } catch (error) {
+    loadingIndicator.remove();
+    errorEl.textContent = '通信エラー: ' + error.message;
+    chatHistory.pop(); // 失敗した場合は直前の発言を履歴から削除
+  } finally {
+    inputEl.disabled = false;
+    inputEl.focus();
+  }
+}
+
+// 最後にロードマップを生成する処理
+async function generateFinalPlan() {
+  const apiKey = document.getElementById('geminiApiKey').value.trim();
+  const errorEl = document.getElementById('coachErrorMsg');
+  if(!apiKey) { errorEl.textContent = 'APIキーを入力してください。'; return; }
+  if(chatHistory.length === 0) { errorEl.textContent = '先にAIと少しチャットして状況を伝えてください。'; return; }
+
+  document.getElementById('coachChatSection').style.display = 'none';
+  document.getElementById('coachResultSection').style.display = 'block';
+  document.getElementById('coachLoading').style.display = 'block';
+  document.getElementById('coachOutput').innerHTML = '';
+
+  // ▼▼▼ プロンプトを大幅に強化し、システム連携用のJSONを要求する ▼▼▼
+  const todayStr = formatISO(new Date());
+  const finalPrompt = {
+    role: 'user',
+    parts: [{ text: `ヒアリングはここまでです。これまでの対話履歴をすべて分析し、私（生徒）専用の完璧な学習ロードマップを作成してください。
+
+必ず「見出し(<h3>や<h4>)」「箇条書き(<ul>)」「美しいテーブル(<table>)」などのHTMLタグを使って装飾してください。Markdown（**や###など）は絶対に使用せず、生HTML形式で出力してください。
+
+【構成案】
+1. 課題と強みの分析
+2. 合格・達成戦略
+3. 月別ロードマップ（HTMLの表）
+4. 日々の具体的な学習量（単語の1日あたりの個数など）
+
+【重要：システム連携用データ】
+最後に、アプリのスケジュール機能に自動反映させるため、以下のJSONフォーマットを**必ず**出力の最後に含めてください。JSONは \`\`\`json と \`\`\` で囲んでください。推測で具体的な数値を埋めてください。
+※本日は ${todayStr} です。
+\`\`\`json
+{
+  "planMode": "byAmount",
+  "startNum": 開始番号(数値),
+  "endNum": 終了番号(数値),
+  "startDate": "YYYY-MM-DD",
+  "amountPerDay": 1日の単語数(数値),
+  "weekdays": [1, 2, 3, 4, 5, 6],
+  "intervals": [1, 3, 7, 14]
+}
+\`\`\`
+` }]
+  };
+  // ▲▲▲ ここまで ▲▲▲
+
+  const finalHistory = [...chatHistory, finalPrompt];
+
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: finalHistory })
+    });
+
+    if (!response.ok) throw new Error(`APIエラー`);
+    const data = await response.json();
+    let aiResponseText = data.candidates[0].content.parts[0].text;
+    
+    // ▼▼▼ JSONデータの抽出と解析 ▼▼▼
+    let planData = null;
+    const jsonMatch = aiResponseText.match(/```json\n([\s\S]*?)\n```/);
+    if (jsonMatch && jsonMatch[1]) {
+      try {
+        planData = JSON.parse(jsonMatch[1]);
+        // 画面に表示するテキストからはJSONブロックを削除して綺麗に見せる
+        aiResponseText = aiResponseText.replace(/```json\n[\s\S]*?\n```/, '');
+      } catch (e) {
+        console.error("AIが出力したJSONのパースに失敗しました", e);
+      }
+    }
+    // ▲▲▲ ここまで ▲▲▲
+
+    aiResponseText = aiResponseText.replace(/```html/g, '').replace(/```/g, ''); // クリーンアップ
+    document.getElementById('coachOutput').innerHTML = aiResponseText;
+    
+    const outputContainer = document.getElementById('coachOutput');
+    const generatedTable = outputContainer.querySelector('table'); 
+    
+    const planSection = document.getElementById('currentPlanSection');
+    const tableContainer = document.getElementById('currentPlanTableContainer');
+    const applyBtn = document.getElementById('applyPlanBtn');
+    
+    if (generatedTable) {
+      tableContainer.innerHTML = ''; 
+      tableContainer.appendChild(generatedTable.cloneNode(true)); 
+      planSection.style.display = 'block'; 
+      
+      // ▼▼▼ 反映ボタンの制御と登録ロジック ▼▼▼
+      if (planData && planData.startNum && planData.endNum) {
+        applyBtn.style.display = 'inline-block';
+        applyBtn.onclick = async () => {
+          if(!confirm(`開始番号: ${planData.startNum}〜終了番号: ${planData.endNum}\n1日 ${planData.amountPerDay}語\n\nこの計画をスケジュールに追加しますか？`)) return;
+          
+          const newEntry = {
+            id: 'e' + Date.now(),
+            startNum: Number(planData.startNum),
+            endNum: Number(planData.endNum),
+            startDate: planData.startDate,
+            planMode: planData.planMode || 'byAmount',
+            amountPerDay: Number(planData.amountPerDay) || 30,
+            weekdays: planData.weekdays || DEFAULT_WEEKDAYS,
+            intervals: planData.intervals || DEFAULT_INTERVALS
+          };
+          entries.push(newEntry);
+          await saveEntries();
+          renderAll(); // カレンダーを再描画
+          
+          alert('スケジュールに反映しました！「単語管理」タブで確認してください。');
+          showTab('study'); // 単語管理タブへ自動移動
+        };
+      } else {
+        applyBtn.style.display = 'none';
+      }
+      // ▲▲▲ ここまで ▲▲▲
+
+    } else {
+      planSection.style.display = 'none';
+      tableContainer.innerHTML = '<p style="color: #666; font-style: italic; margin: 0;">計画がここに表示されます...</p>';
+    }
+
+  } catch (error) {
+    console.error(error);
+    document.getElementById('coachOutput').innerHTML = '<div class="error-msg">生成中にエラーが発生しました。お手数ですがもう一度お試しください。</div>';
+  } finally {
+    document.getElementById('coachLoading').style.display = 'none';
+  }
+}
+
+// ① チャットを継続する（履歴を消さずに画面だけ戻す）
+function continueChat() {
+  document.getElementById('coachResultSection').style.display = 'none';
+  document.getElementById('coachChatSection').style.display = 'block';
+  
+  const box = document.getElementById('chatBox');
+  box.scrollTop = box.scrollHeight;
+}
+
+// ② チャットをリセットする（履歴を消して最初からやり直す）
+function resetChat() {
+  // 誤操作で消去されないよう、確認を挟みます
+  if (!confirm('これまでの会話履歴が消去され、最初からやり直しになりますが、よろしいですか？')) {
+    return; // キャンセルされたら何もしない
+  }
+  
+  chatHistory.length = 0; // 履歴を完全に空にする
+  document.getElementById('chatBox').innerHTML = '<div class="chat-msg model-msg">こんにちは！専属のAI学習コーチです。まずは、今回の「達成したい目標」を教えてください！</div>';
+  document.getElementById('coachResultSection').style.display = 'none';
+  document.getElementById('coachChatSection').style.display = 'block';
+}
+
+async function loadSavedApiKey() {
+  try {
+    if (typeof window.storage !== 'undefined') {
+      const res = await window.storage.get(API_KEY_STORAGE_KEY, true);
+      if(res && res.value) document.getElementById('geminiApiKey').value = res.value;
+    } else {
+      const saved = localStorage.getItem(API_KEY_STORAGE_KEY);
+      if(saved) document.getElementById('geminiApiKey').value = saved;
+    }
+  } catch(e) {}
+}
+
+/* ---------- init ---------- */
+
+(async function init(){
+  buildWeekdayChips();
+  buildIntervalChips();
+  document.querySelectorAll('input[name="planMode"]').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+      document.getElementById('amountFieldWrap').style.display = e.target.value === 'byAmount' ? 'flex' : 'none';
+    });
+  });
+  document.getElementById('startDate').value = todayISO();
+  document.getElementById('addBtn').addEventListener('click', handleAdd);
+  document.getElementById('resetBtn').addEventListener('click', handleReset);
+  document.getElementById('leechAddBtn').addEventListener('click', handleLeechAdd);
+  document.getElementById('printBtn').addEventListener('click', () => window.print());
+
+  await loadSavedApiKey();await loadEntries();
+  renderAll();
+  await loadLeech();
+  await loadHistory();
+  renderLeech();
+})();
+</script>
+</body>
+</html>
