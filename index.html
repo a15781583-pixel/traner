@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@500;700&family=Noto+Sans+JP:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.2.4/purify.min.js"></script>
 <style>
   :root{
     --paper:#F4F6FB;
@@ -221,6 +222,7 @@
   }
   .tag-new{ background:var(--gold-bg); color:var(--gold); border:1px solid #e4cd94; font-weight:600;}
   .tag-review{ background:#f7e9e7; color:var(--margin-red); border:1px solid var(--margin-red-soft); font-weight:600; }
+  .tag-ref{ background:var(--success-bg); color:var(--success); border:1px solid #bcd6c4; font-weight:600; }
   .tag-review .stamp{
     display:inline-flex; align-items:center; justify-content:center;
     width:15px; height:15px; border-radius:50%; border:1.5px solid var(--margin-red); font-size:.6rem;
@@ -274,6 +276,33 @@
   .chart-box{ position:relative; height:220px; }
   .chart-label{ font-size:.8rem; color:var(--ink-soft); font-weight:600; margin-bottom:8px; }
   .streak-note{ font-size:.78rem; color:var(--ink-soft); margin-top:10px; }
+
+  /* ---------- 成績データ・弱点分析 ---------- */
+  .score-form-row{ display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; }
+  .score-form-row .field{ flex:1; min-width:110px; }
+  .score-entry-item{
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+    background:var(--paper); border:1px solid var(--paper-line);
+    border-radius:8px; padding:8px 12px; font-size:.85rem;
+  }
+  .score-entry-item .meta{ color:var(--ink-soft); font-size:.78rem; margin-top:2px; }
+  .weak-card{
+    border:1px solid var(--paper-line); border-left:4px solid var(--ink-soft);
+    border-radius:8px; padding:14px 16px; margin-bottom:12px; background:var(--white);
+  }
+  .weak-card.sev-high{ border-left-color:var(--margin-red); }
+  .weak-card.sev-medium{ border-left-color:var(--gold); }
+  .weak-card.sev-low{ border-left-color:var(--success); }
+  .weak-card .weak-title{
+    font-weight:700; font-size:.95rem; margin-bottom:6px;
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  }
+  .sev-badge{ font-size:.68rem; font-weight:700; border-radius:4px; padding:2px 7px; white-space:nowrap; }
+  .sev-badge.sev-high{ background:#f7e9e7; color:var(--margin-red); border:1px solid var(--margin-red-soft); }
+  .sev-badge.sev-medium{ background:var(--gold-bg); color:var(--gold); border:1px solid #e4cd94; }
+  .sev-badge.sev-low{ background:var(--success-bg); color:var(--success); border:1px solid #cfe3d5; }
+  .weak-card .weak-row{ font-size:.85rem; margin-top:6px; }
+  .weak-card .weak-row b{ color:var(--ink-soft); font-weight:600; }
 
   /* ---------- setup (teacher) area ---------- */
   details.setup-details{
@@ -442,7 +471,9 @@
   </header>
   <div class="no-print" style="display:flex; gap:10px; margin-bottom:20px;">
     <button id="tab-btn-study" class="btn-primary" onclick="showTab('study')">単語管理</button>
+    <button id="tab-btn-reference" class="btn-ghost" onclick="showTab('reference')">📚 参考書スケジュール</button>
     <button id="tab-btn-coach" class="btn-ghost" onclick="showTab('coach')">AI学習計画</button>
+    <button id="tab-btn-analysis" class="btn-ghost" onclick="showTab('analysis')">弱点分析</button>
   </div>
   <div id="tab-study" class="tab-content">
   <section class="card today-card" id="today">
@@ -516,7 +547,7 @@
     <button class="btn-primary" id="addBtn" style="margin-top:10px;">この範囲をスケジュールに追加</button>
     <div class="entry-list" id="entryList"></div>
 
-    <h3 class="sub-head">② スケジュール表</h3>
+    <h3 class="sub-head">② スケジュール表（単語 + 参考書）</h3>
     <div class="schedule-wrap">
       <div id="scheduleArea"></div>
     </div>
@@ -554,6 +585,74 @@
     </details>
   </details>
   </div>
+  
+    <!-- 参考書スケジュール管理タブ -->
+  <div id="tab-reference" class="tab-content" style="display: none;">
+    <div class="card">
+      <h2>📚 参考書スケジュールの手動登録</h2>
+
+      <div class="field full" style="margin-bottom:14px;">
+        <label>割り振り方法</label>
+        <div style="display:flex; gap:16px; margin-top:6px; flex-wrap:wrap;">
+          <label style="cursor:pointer; display:flex; align-items:center; gap:4px; font-size:.85rem;">
+            <input type="radio" name="refPlanMode" value="byRange" checked>
+            学習する曜日から設定（開始日〜終了日で均等に分ける）
+          </label>
+          <label style="cursor:pointer; display:flex; align-items:center; gap:4px; font-size:.85rem;">
+            <input type="radio" name="refPlanMode" value="byAmount">
+            1日あたり進める量から設定（終了日は自動計算）
+          </label>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
+
+        <div>
+          <label>教材名</label>
+          <input type="text" id="refBookName" placeholder="例: 青チャート、NextStage" class="input-field" style="width: 100%;">
+        </div>
+        <div>
+          <label>開始ページ（番）</label>
+          <input type="number" id="refStartNum" placeholder="例: 1" class="input-field" style="width: 100%;">
+        </div>
+        <div>
+          <label>終了ページ（番）</label>
+          <input type="number" id="refEndNum" placeholder="例: 100" class="input-field" style="width: 100%;">
+        </div>
+        <div>
+          <label>開始日</label>
+          <input type="date" id="refStartDate" class="input-field" style="width: 100%;">
+        </div>
+        <div id="refEndDateWrap">
+          <label>終了日</label>
+          <input type="date" id="refEndDate" class="input-field" style="width: 100%;">
+        </div>
+        <div id="refAmountFieldWrap" style="display: none;">
+          <label>1日あたり進める量</label>
+          <input type="number" id="refAmountPerDay" min="1" placeholder="例: 5" class="input-field" style="width: 100%;">
+        </div>
+
+      </div>
+
+      <div class="field full" style="margin-bottom: 15px;">
+        <label>学習する曜日</label>
+        <div class="checkbox-row" id="refWeekdayRow"></div>
+      </div>
+
+      <div class="error-msg" id="refErrorMsg"></div>
+      <button id="saveRefPlanBtn" class="btn-primary" style="width: 100%;">スケジュールを生成して登録</button>
+      <div class="entry-list" id="refEntryList"></div>
+    </div>
+
+    <!-- スケジュールの出力エリア（単語スケジュールと合併した統合スケジュール） -->
+    <div class="card" style="margin-top: 20px;">
+      <h2>📅 統合スケジュール（単語 + 参考書）</h2>
+      <div class="schedule-wrap">
+        <div id="refScheduleOutput"></div>
+      </div>
+    </div>
+  </div>
+
   <div id="tab-coach" class="tab-content" style="display:none;">
     <!-- APIキー設定 -->
     <section class="card no-print" style="background:#f0f4f8; border:1px solid var(--paper-line);">
@@ -639,6 +738,73 @@
     </section>
   </div>
 
+  <div id="tab-analysis" class="tab-content" style="display:none;">
+    <section class="card no-print" style="background:#f0f4f8; border:1px solid var(--paper-line);">
+      <h2 style="font-size:0.9rem; margin-bottom:8px;">⚙️ AI連携設定</h2>
+      <div class="hint">「AI学習計画」タブで入力したAPIキーがこの画面でもそのまま使われます。</div>
+    </section>
+
+    <section class="card" id="scoreInputSection">
+      <h2>📝 成績・診断データの入力</h2>
+      <div class="hint" style="margin-bottom:12px;">模試・定期テスト・診断テストの結果を登録してください。教科・分野は自由入力です（例: 英語 / 文法・語法）。成績表の写真から自動入力することもできます。</div>
+
+      <div class="score-form-row">
+        <div class="field">
+          <label for="scoreSubject">教科</label>
+          <input type="text" id="scoreSubject" placeholder="例: 英語">
+        </div>
+        <div class="field">
+          <label for="scoreCategory">分野（任意）</label>
+          <input type="text" id="scoreCategory" placeholder="例: 文法・語法">
+        </div>
+        <div class="field" style="max-width:100px;">
+          <label for="scoreValue">得点</label>
+          <input type="number" id="scoreValue" min="0" placeholder="例: 62">
+        </div>
+        <div class="field" style="max-width:100px;">
+          <label for="scoreTotal">満点</label>
+          <input type="number" id="scoreTotal" min="1" value="100">
+        </div>
+        <div class="field" style="max-width:160px;">
+          <label for="scoreDate">実施日</label>
+          <input type="date" id="scoreDate">
+        </div>
+      </div>
+      <div class="field full" style="margin-top:10px;">
+        <label for="scoreNote">メモ（任意）</label>
+        <input type="text" id="scoreNote" placeholder="例: 時間切れで最後の大問が白紙だった">
+      </div>
+      <div class="error-msg" id="scoreErrorMsg"></div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:8px;">
+        <button class="btn-primary" id="scoreAddBtn">この結果を登録</button>
+        <button type="button" class="btn-ghost" onclick="document.getElementById('scoreFileInput').click()">📷 画像から自動入力</button>
+        <input type="file" id="scoreFileInput" accept="image/*" style="display:none;">
+      </div>
+      <div id="scoreExtractStatus" class="hint" style="display:none; margin-top:6px;">🔄 画像を解析しています…</div>
+
+      <div class="entry-list" id="scoreEntryList" style="margin-top:16px;"></div>
+
+      <div class="chart-box" id="scoreChartWrap" style="display:none; margin-top:20px; height:220px;">
+        <div class="chart-label">教科別 平均正答率</div>
+        <canvas id="scoreChart"></canvas>
+      </div>
+    </section>
+
+    <section class="card" id="analysisResultSection">
+      <h2>🔍 弱点・原因分析</h2>
+      <div class="hint" style="margin-bottom:12px;">登録した成績データに加えて、単語学習の履歴（苦手単語・直近の正答率）も合わせてAIが分析します。</div>
+      <div class="error-msg" id="analysisErrorMsg"></div>
+      <button class="btn-primary" id="runAnalysisBtn" style="background:var(--gold); color:#fff;">✨ AIで弱点・原因を分析する</button>
+
+      <div id="analysisLoading" style="display:none; text-align:center; padding:40px 0; color:var(--ink-soft);">
+        <div style="font-size:2rem; margin-bottom:10px; animation: spin 2s linear infinite;">🔄</div>
+        <div>AIが成績データと学習履歴を分析中...</div>
+      </div>
+
+      <div id="analysisOutput" style="margin-top:20px;"></div>
+    </section>
+  </div>
+
   <section class="card tip-box" style="background:var(--gold-bg); border:1px solid #e4cd94;">
     <h2 style="font-family:'Noto Sans JP',sans-serif; font-size:.95rem;">📌 各回の学習フロー（既にやっている進め方）</h2>
     <ol style="margin:8px 0 0 0; padding-left:1.2em; font-size:.85rem;">
@@ -680,18 +846,26 @@
 const STORAGE_KEY = 'vocab-plan-entries';
 const LEECH_KEY = 'vocab-leech-words';
 const HISTORY_KEY = 'vocab-review-history';
+const SCORE_KEY = 'vocab-score-records';
+const ANALYSIS_KEY = 'vocab-weakness-analysis';
 const WEEKDAYS = ['日','月','火','水','木','金','土'];
 const DEFAULT_WEEKDAYS = [1,2,3,4,5,6];
 const DEFAULT_INTERVALS = [1,3,7,14];
 const LEECH_INTERVALS = [1,3,7,14];
 const LEECH_WARN_THRESHOLD = 2;
 const COLORS = { ink:'#1E2A44', gold:'#a97c1f', red:'#B23A2E', success:'#3a6b4c', grid:'#CBD5E3' };
+/* ---------- 参考書用の変数 ---------- */
+const REF_STORAGE_KEY = 'vocab-reference-entries';
+
 
 let entries = [];
 let leechWords = [];
 let history = [];
+let scoreRecords = [];
 let rateChartInstance = null;
 let statusChartInstance = null;
+let scoreChartInstance = null;
+let refEntries = []; // 参考書の予定を保存する配列
 
 function pad(n){ return String(n).padStart(2,'0'); }
 function formatISO(d){ return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
@@ -701,13 +875,14 @@ function todayISO(){ return formatISO(new Date()); }
 
 /* ---------- weekly range entries (shared) ---------- */
 
-function buildWeekdayChips(){
-  const row = document.getElementById('weekdayRow');
+function buildWeekdayChips(rowId = 'weekdayRow', defaultDays = DEFAULT_WEEKDAYS){
+  const row = document.getElementById(rowId);
+  if(!row) return;
   row.innerHTML = '';
   WEEKDAYS.forEach((label, idx) => {
     const chip = document.createElement('label');
-    chip.className = 'chip' + (DEFAULT_WEEKDAYS.includes(idx) ? ' checked' : '');
-    chip.innerHTML = `<input type="checkbox" value="${idx}" ${DEFAULT_WEEKDAYS.includes(idx)?'checked':''}> ${label}`;
+    chip.className = 'chip' + (defaultDays.includes(idx) ? ' checked' : '');
+    chip.innerHTML = `<input type="checkbox" value="${idx}" ${defaultDays.includes(idx)?'checked':''}> ${label}`;
     const cb = chip.querySelector('input');
     cb.addEventListener('change', () => chip.classList.toggle('checked', cb.checked));
     row.appendChild(chip);
@@ -820,25 +995,39 @@ function renderEntryList(){
   });
 }
 
-function renderSchedule(){
-  const area = document.getElementById('scheduleArea');
-  if(entries.length === 0){
-    area.innerHTML = `<div class="empty-state">まだ範囲が登録されていません。上のフォームから今週の範囲を追加してください。</div>`;
+// 単語スケジュールと参考書スケジュールをまとめて1つのカレンダーとして描画する共通関数
+// 「単語タブ」の #scheduleArea と「参考書タブ」の #refScheduleOutput の両方から呼ばれる
+function renderMergedSchedule(containerId){
+  const area = document.getElementById(containerId);
+  if(!area) return;
+
+  const vocabChunks = entries.flatMap(computeChunksForEntry);
+  const vocabReviews = [];
+  vocabChunks.forEach(c => {
+    c.intervals.forEach(n => {
+      vocabReviews.push({ date: formatISO(addDays(parseISO(c.date), n)), rangeStart: c.rangeStart, rangeEnd: c.rangeEnd, interval: n });
+    });
+  });
+  const refChunks = refEntries.flatMap(plan =>
+    computeRefSchedule(plan).map(c => ({ ...c, bookName: plan.bookName }))
+  );
+
+  if(entries.length === 0 && refEntries.length === 0){
+    area.innerHTML = `<div class="empty-state">まだ単語範囲・参考書が登録されていません。上のフォームから追加してください。</div>`;
     return;
   }
-  const allChunks = entries.flatMap(computeChunksForEntry);
-  if(allChunks.length === 0){
+  if(vocabChunks.length === 0 && refChunks.length === 0){
     area.innerHTML = `<div class="empty-state">学習曜日が選択されていない範囲があります。設定を確認してください。</div>`;
     return;
   }
-  const allReviews = [];
-  allChunks.forEach(c => {
-    c.intervals.forEach(n => {
-      allReviews.push({ date: formatISO(addDays(parseISO(c.date), n)), rangeStart: c.rangeStart, rangeEnd: c.rangeEnd, interval: n });
-    });
-  });
+
   const today = new Date(); today.setHours(0,0,0,0);
-  const allDates = [...allChunks.map(c => parseISO(c.date)), ...allReviews.map(r => parseISO(r.date)), today];
+  const allDates = [
+    ...vocabChunks.map(c => parseISO(c.date)),
+    ...vocabReviews.map(r => parseISO(r.date)),
+    ...refChunks.map(c => parseISO(c.date)),
+    today
+  ];
   let minDate = new Date(Math.min(...allDates));
   let maxDate = new Date(Math.max(...allDates));
   const MAX_DAYS = 45;
@@ -850,14 +1039,15 @@ function renderSchedule(){
   let cursor = new Date(minDate);
   while(cursor <= maxDate){
     const iso = formatISO(cursor);
-    const newItems = allChunks.filter(c => c.date === iso);
-    const reviewItems = allReviews.filter(r => r.date === iso);
-    if(newItems.length || reviewItems.length){ rows.push({ date: new Date(cursor), iso, newItems, reviewItems }); }
+    const newItems = vocabChunks.filter(c => c.date === iso);
+    const reviewItems = vocabReviews.filter(r => r.date === iso);
+    const refItems = refChunks.filter(c => c.date === iso);
+    if(newItems.length || reviewItems.length || refItems.length){ rows.push({ date: new Date(cursor), iso, newItems, reviewItems, refItems }); }
     cursor = addDays(cursor, 1);
   }
 
   const todayIso = todayISO();
-  let html = `<table><thead><tr><th>日付</th><th>新規</th><th>復習</th></tr></thead><tbody>`;
+  let html = `<table><thead><tr><th>日付</th><th>単語：新規</th><th>単語：復習</th><th>参考書</th></tr></thead><tbody>`;
   rows.forEach(row => {
     const isToday = row.iso === todayIso;
     const wd = WEEKDAYS[row.date.getDay()];
@@ -866,11 +1056,21 @@ function renderSchedule(){
       <td class="date-cell">${dateLabel}<span class="wd">(${wd})</span>${isToday ? '<span class="today-badge">今日</span>' : ''}</td>
       <td>${row.newItems.map(c => `<span class="tag tag-new">${c.rangeStart}〜${c.rangeEnd}</span>`).join('') || '—'}</td>
       <td>${row.reviewItems.map(r => `<span class="tag tag-review"><span class="stamp">◎</span>${r.rangeStart}〜${r.rangeEnd}（${r.interval}日後）</span>`).join('') || '—'}</td>
+      <td>${row.refItems.map(c => `<span class="tag tag-ref">${escapeHtml(c.bookName)} ${c.rangeStart}〜${c.rangeEnd}</span>`).join('') || '—'}</td>
     </tr>`;
   });
   html += `</tbody></table>`;
   if(truncated){ html += `<div class="hint" style="margin-top:8px;">※表示は45日分までです。それ以降は範囲を追加していくと自動で延びます。</div>`; }
   area.innerHTML = html;
+}
+
+function refreshAllSchedules(){
+  renderMergedSchedule('scheduleArea');
+  renderMergedSchedule('refScheduleOutput');
+}
+
+function renderSchedule(){
+  refreshAllSchedules();
 }
 
 function renderTodayNew(){
@@ -1172,6 +1372,307 @@ function renderCharts(){
   });
 }
 
+/* ---------- 成績・弱点分析 ---------- */
+function escapeHtml(str){
+  return String(str == null ? '' : str).replace(/[&<>"']/g, ch => ({
+    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+  }[ch]));
+}
+
+async function loadScores(){
+  try{
+    const raw = localStorage.getItem(SCORE_KEY);
+    scoreRecords = raw ? JSON.parse(raw) : [];
+  }catch(e){ scoreRecords = []; }
+}
+async function saveScores(){
+  try{
+    localStorage.setItem(SCORE_KEY, JSON.stringify(scoreRecords));
+  }catch(e){ console.error('Storage error:', e); }
+}
+
+function renderScoreList(){
+  const listEl = document.getElementById('scoreEntryList');
+  if(!listEl) return;
+  if(scoreRecords.length === 0){
+    listEl.innerHTML = '<div class="empty-mini">まだ成績データが登録されていません。</div>';
+  } else {
+    const sorted = [...scoreRecords].sort((a,b) => (b.date||'').localeCompare(a.date||''));
+    listEl.innerHTML = sorted.map(r => {
+      const pct = r.total ? Math.round((r.score / r.total) * 100) : 0;
+      return `<div class="score-entry-item">
+        <div>
+          <span class="rng">${escapeHtml(r.subject || '教科未設定')}${r.category ? ' / ' + escapeHtml(r.category) : ''}</span>
+          <div class="meta">${escapeHtml(r.date || '')} ・ ${r.score}/${r.total}点（${pct}%）${r.note ? ' ・ ' + escapeHtml(r.note) : ''}</div>
+        </div>
+        <button class="del-btn" onclick="handleScoreDelete('${r.id}')">削除</button>
+      </div>`;
+    }).join('');
+  }
+  renderScoreChart();
+}
+
+async function handleScoreAdd(){
+  const subjectEl = document.getElementById('scoreSubject');
+  const categoryEl = document.getElementById('scoreCategory');
+  const valueEl = document.getElementById('scoreValue');
+  const totalEl = document.getElementById('scoreTotal');
+  const dateEl = document.getElementById('scoreDate');
+  const noteEl = document.getElementById('scoreNote');
+  const errorEl = document.getElementById('scoreErrorMsg');
+  errorEl.textContent = '';
+
+  const subject = subjectEl.value.trim();
+  const score = Number(valueEl.value);
+  const total = Number(totalEl.value) || 100;
+
+  if(!subject){ errorEl.textContent = '教科を入力してください。'; return; }
+  if(valueEl.value === '' || isNaN(score) || score < 0){ errorEl.textContent = '得点を正しく入力してください。'; return; }
+  if(total <= 0){ errorEl.textContent = '満点は1以上で入力してください。'; return; }
+
+  scoreRecords.push({
+    id: 's' + Date.now(),
+    subject,
+    category: categoryEl.value.trim(),
+    score, total,
+    note: noteEl.value.trim(),
+    date: dateEl.value || todayISO()
+  });
+  await saveScores();
+  renderScoreList();
+
+  subjectEl.value = ''; categoryEl.value = ''; valueEl.value = ''; totalEl.value = '100'; noteEl.value = '';
+  dateEl.value = todayISO();
+  subjectEl.focus();
+}
+
+async function handleScoreDelete(id){
+  scoreRecords = scoreRecords.filter(r => r.id !== id);
+  await saveScores();
+  renderScoreList();
+}
+
+function renderScoreChart(){
+  const wrap = document.getElementById('scoreChartWrap');
+  if(!wrap) return;
+  if(typeof Chart === 'undefined' || scoreRecords.length === 0){ wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+
+  const bySubject = {};
+  scoreRecords.forEach(r => {
+    const pct = r.total ? (r.score / r.total) * 100 : 0;
+    if(!bySubject[r.subject]) bySubject[r.subject] = [];
+    bySubject[r.subject].push(pct);
+  });
+  const labels = Object.keys(bySubject);
+  const data = labels.map(k => Math.round(bySubject[k].reduce((a,b) => a+b, 0) / bySubject[k].length));
+
+  const ctx = document.getElementById('scoreChart');
+  if(scoreChartInstance) scoreChartInstance.destroy();
+  scoreChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets: [{ label: '平均正答率(%)', data, backgroundColor: COLORS.gold }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        y: { min:0, max:100, grid:{ color: COLORS.grid } },
+        x: { grid:{ display:false } }
+      },
+      plugins: { legend:{ display:false } }
+    }
+  });
+}
+
+// AIの応答からJSON部分だけを取り出す（コードフェンス有無どちらにも対応）
+function parseJsonFromText(text){
+  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+  const raw = fenced ? fenced[1] : text;
+  return JSON.parse(raw.trim());
+}
+
+// 成績表の画像から自動でデータを読み取って登録する
+async function handleScoreImageFile(){
+  const fileInputEl = document.getElementById('scoreFileInput');
+  const file = fileInputEl.files[0];
+  if(!file) return;
+
+  const apiKey = document.getElementById('geminiApiKey').value.trim();
+  const errorEl = document.getElementById('scoreErrorMsg');
+  errorEl.textContent = '';
+
+  if(!apiKey){
+    errorEl.textContent = 'まず「AI学習計画」タブでGemini APIキーを入力してください。';
+    fileInputEl.value = '';
+    return;
+  }
+
+  const statusEl = document.getElementById('scoreExtractStatus');
+  statusEl.style.display = 'block';
+
+  try {
+    const filePart = await fileToGenerativePart(file);
+    const prompt = `この画像は成績表・模試の結果・答案などです。読み取れる範囲で、教科ごとの結果を次のJSON配列の形式だけで出力してください（説明文やコードフェンスの前後の文章は不要です）。読み取れない項目はnullにしてください。得点・満点は必ず数値にしてください。
+[{"subject":"教科名","category":"分野名またはnull","score":数値,"total":数値}]`;
+
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }, filePart] }] })
+    });
+    if(!response.ok) throw new Error(`APIエラー (Status: ${response.status})`);
+
+    const data = await response.json();
+    const text = data.candidates[0].content.parts[0].text;
+    const items = parseJsonFromText(text);
+
+    if(!Array.isArray(items) || items.length === 0){
+      errorEl.textContent = '画像から成績データを読み取れませんでした。お手数ですが手入力をお試しください。';
+      return;
+    }
+
+    const todayIso = todayISO();
+    items.forEach(it => {
+      if(!it || !it.subject) return;
+      scoreRecords.push({
+        id: 's' + Date.now() + Math.random().toString(36).slice(2, 6),
+        subject: String(it.subject),
+        category: it.category ? String(it.category) : '',
+        score: Number(it.score) || 0,
+        total: Number(it.total) || 100,
+        note: '画像から自動入力',
+        date: todayIso
+      });
+    });
+    await saveScores();
+    renderScoreList();
+  } catch(e) {
+    console.error(e);
+    errorEl.textContent = '画像の解析中にエラーが発生しました: ' + e.message;
+  } finally {
+    statusEl.style.display = 'none';
+    fileInputEl.value = '';
+  }
+}
+
+// 成績データ＋単語学習の履歴をもとにAIへ弱点・原因分析を依頼する
+async function runWeaknessAnalysis(){
+  const apiKey = document.getElementById('geminiApiKey').value.trim();
+  const errorEl = document.getElementById('analysisErrorMsg');
+  errorEl.textContent = '';
+
+  if(!apiKey){
+    errorEl.textContent = 'まず「AI学習計画」タブでGemini APIキーを入力してください。';
+    return;
+  }
+  if(scoreRecords.length === 0){
+    errorEl.textContent = '先に成績・診断データを1件以上登録してください。';
+    return;
+  }
+
+  const runBtn = document.getElementById('runAnalysisBtn');
+  runBtn.disabled = true;
+  document.getElementById('analysisLoading').style.display = 'block';
+  document.getElementById('analysisOutput').innerHTML = '';
+
+  const scoreSummary = [...scoreRecords]
+    .sort((a,b) => (a.date||'').localeCompare(b.date||''))
+    .map(r => `- ${r.date} ${r.subject}${r.category ? '/' + r.category : ''}: ${r.score}/${r.total}点（${r.total ? Math.round(r.score/r.total*100) : 0}%）${r.note ? '　メモ: ' + r.note : ''}`)
+    .join('\n');
+
+  const activeLeech = leechWords.filter(w => w.status === 'active');
+  const warnWords = activeLeech
+    .filter(w => w.missCount >= LEECH_WARN_THRESHOLD)
+    .sort((a,b) => b.missCount - a.missCount)
+    .slice(0, 10)
+    .map(w => `${w.word}（ミス${w.missCount}回）`)
+    .join('、') || 'なし';
+  const { data: recentRates } = buildRateSeries(14);
+  const validRates = recentRates.filter(v => v !== null);
+  const avgRate = validRates.length ? Math.round(validRates.reduce((a,b) => a+b, 0) / validRates.length) : null;
+
+  const contextText = `【成績・診断データ】
+${scoreSummary}
+
+【単語学習の状況】
+・直近14日間の平均正答率: ${avgRate !== null ? avgRate + '%' : 'データなし'}
+・要注意の苦手単語（ミス${LEECH_WARN_THRESHOLD}回以上・上位）: ${warnWords}
+・登録中の苦手単語数: ${activeLeech.length}件`;
+
+  const prompt = `あなたはプロの学習コーチ兼、教育心理に詳しいカウンセラーです。以下の生徒のデータを分析し、弱点とその「原因」を特定し、具体的な改善アクションを提案してください。
+
+${contextText}
+
+【出力形式】
+説明文は一切使わず、次のJSON形式のみを出力してください（コードフェンスの有無はどちらでも構いません）。
+
+{
+  "overallSummary": "全体的な傾向を2〜3文でまとめたもの",
+  "weaknesses": [
+    {
+      "subject": "教科名",
+      "topic": "具体的な弱点（分野・単元・スキルなど）",
+      "severity": "high か medium か low のいずれか",
+      "evidence": "データのどの部分からその弱点が読み取れるか",
+      "cause": "推定される根本原因（理解不足・演習不足・時間配分・ケアレスミスなど）",
+      "action": "次に取るべき具体的な行動"
+    }
+  ]
+}
+弱点は重要度が高い順に、最大5件まで挙げてください。`;
+
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }] })
+    });
+    if(!response.ok) throw new Error(`APIエラー (Status: ${response.status})`);
+
+    const data = await response.json();
+    const text = data.candidates[0].content.parts[0].text;
+    const result = parseJsonFromText(text);
+    renderAnalysisResult(result);
+
+    try {
+      localStorage.setItem(ANALYSIS_KEY, JSON.stringify({ result, generatedAt: new Date().toISOString() }));
+    } catch(e) {}
+  } catch(e) {
+    console.error(e);
+    errorEl.textContent = '分析中にエラーが発生しました: ' + e.message;
+  } finally {
+    runBtn.disabled = false;
+    document.getElementById('analysisLoading').style.display = 'none';
+  }
+}
+
+// 分析結果をカードとして描画する（AIの出力はすべてescapeHtml経由でテキストとして挿入するため、
+// generateFinalPlanのHTML直挿入と違いDOMPurifyがなくてもXSSの心配がない）
+function renderAnalysisResult(result){
+  const outEl = document.getElementById('analysisOutput');
+  if(!result || !Array.isArray(result.weaknesses) || result.weaknesses.length === 0){
+    outEl.innerHTML = '<div class="empty-mini">分析結果を読み取れませんでした。もう一度お試しください。</div>';
+    return;
+  }
+  const sevLabel = { high: '優先度：高', medium: '優先度：中', low: '優先度：低' };
+  const cardsHtml = result.weaknesses.map(w => {
+    const sev = ['high', 'medium', 'low'].includes(w.severity) ? w.severity : 'medium';
+    return `<div class="weak-card sev-${sev}">
+      <div class="weak-title">
+        <span>${escapeHtml(w.subject || '')}${w.topic ? ' ・ ' + escapeHtml(w.topic) : ''}</span>
+        <span class="sev-badge sev-${sev}">${sevLabel[sev]}</span>
+      </div>
+      ${w.evidence ? `<div class="weak-row"><b>根拠：</b>${escapeHtml(w.evidence)}</div>` : ''}
+      ${w.cause ? `<div class="weak-row"><b>推定原因：</b>${escapeHtml(w.cause)}</div>` : ''}
+      ${w.action ? `<div class="weak-row"><b>次のアクション：</b>${escapeHtml(w.action)}</div>` : ''}
+    </div>`;
+  }).join('');
+
+  outEl.innerHTML = `
+    ${result.overallSummary ? `<div class="hint" style="font-size:.9rem; margin-bottom:16px; padding:12px; background:var(--paper); border-radius:8px;">${escapeHtml(result.overallSummary)}</div>` : ''}
+    ${cardsHtml}
+  `;
+}
+
 /* ---------- Test Mode Logic ---------- */
 let testQueue = [];
 let currentTestIdx = 0;
@@ -1297,15 +1798,14 @@ function showTab(tabName) {
   // ボタン要素を取得
   const btnStudy = document.getElementById('tab-btn-study');
   const btnCoach = document.getElementById('tab-btn-coach');
+  const btnAnalysis = document.getElementById('tab-btn-analysis');
+  const btnReference = document.getElementById('tab-btn-reference');
+  const buttons = { study: btnStudy, coach: btnCoach, analysis: btnAnalysis, reference: btnReference };
 
-  // 選択されたタブに応じて色（クラス）を切り替え
-  if (tabName === 'study') {
-    btnStudy.className = 'btn-primary'; // 着色する
-    btnCoach.className = 'btn-ghost';   // 白抜きにする
-  } else if (tabName === 'coach') {
-    btnStudy.className = 'btn-ghost';   // 白抜きにする
-    btnCoach.className = 'btn-primary'; // 着色する
-  }
+  // 選択されたタブだけを着色し、他は白抜きにする
+  Object.keys(buttons).forEach(name => {
+    if(buttons[name]) buttons[name].className = (name === tabName) ? 'btn-primary' : 'btn-ghost';
+  });
 }
 
 /* ---------- AI Coaching API Chat Logic ---------- */
@@ -1617,18 +2117,27 @@ async function generateFinalPlan() {
     
     // JSONデータの抽出と解析
     let planData = null;
-    const jsonMatch = aiResponseText.match(/```json\n([\s\S]*?)\n```/);
+    // 改行の有無・空白の揺れに対応できるよう緩めた正規表現
+    const jsonRegex = /```json\s*([\s\S]*?)\s*```/;
+    const jsonMatch = aiResponseText.match(jsonRegex);
     if (jsonMatch && jsonMatch[1]) {
       try {
         planData = JSON.parse(jsonMatch[1]);
-        aiResponseText = aiResponseText.replace(/```json\n[\s\S]*?\n```/, '');
+        aiResponseText = aiResponseText.replace(jsonRegex, '');
       } catch (e) {
         console.error("AIが出力したJSONのパースに失敗しました", e);
       }
     }
 
     aiResponseText = aiResponseText.replace(/```html/g, '').replace(/```/g, ''); // クリーンアップ
-    document.getElementById('coachOutput').innerHTML = aiResponseText;
+
+    // 【安全対策】AIが生成したHTMLをそのまま挿入すると、
+    // 画像経由の間接プロンプトインジェクションなどでscript混入・XSSの危険があるため、
+    // DOMPurifyでサニタイズしてから挿入する。
+    const safeHtml = (typeof DOMPurify !== 'undefined')
+      ? DOMPurify.sanitize(aiResponseText, { ADD_ATTR: ['target'] })
+      : aiResponseText.replace(/<script[\s\S]*?<\/script>/gi, ''); // 万一DOMPurify未読込時の簡易フォールバック
+    document.getElementById('coachOutput').innerHTML = safeHtml;
     
     const outputContainer = document.getElementById('coachOutput');
     const generatedTable = outputContainer.querySelector('table'); 
@@ -1715,6 +2224,31 @@ async function loadSavedApiKey() {
   } catch(e) {}
 }
 
+// APIキーをブラウザに保存する処理（これが無いと毎回入力し直しになる）
+let apiKeySaveTimer = null;
+async function saveApiKey(value) {
+  try {
+    if (typeof window.storage !== 'undefined') {
+      await window.storage.set(API_KEY_STORAGE_KEY, value, true);
+    } else {
+      if (value) {
+        localStorage.setItem(API_KEY_STORAGE_KEY, value);
+      } else {
+        localStorage.removeItem(API_KEY_STORAGE_KEY);
+      }
+    }
+  } catch(e) { console.error('APIキー保存エラー:', e); }
+}
+function setupApiKeyPersistence() {
+  const apiKeyInput = document.getElementById('geminiApiKey');
+  if (!apiKeyInput) return;
+  apiKeyInput.addEventListener('input', () => {
+    // 連続入力中に毎回書き込まないよう少しまとめる（デバウンス）
+    clearTimeout(apiKeySaveTimer);
+    apiKeySaveTimer = setTimeout(() => saveApiKey(apiKeyInput.value.trim()), 400);
+  });
+}
+
 (async function init(){
   buildWeekdayChips();
   buildIntervalChips();
@@ -1729,12 +2263,246 @@ async function loadSavedApiKey() {
   document.getElementById('leechAddBtn').addEventListener('click', handleLeechAdd);
   document.getElementById('printBtn').addEventListener('click', () => window.print());
 
+  setupApiKeyPersistence();
   await loadSavedApiKey();await loadEntries();
   renderAll();
   await loadLeech();
   await loadHistory();
   renderLeech();
+
+  // ---- 成績・弱点分析タブの初期化 ----
+  const scoreDateEl = document.getElementById('scoreDate');
+  if(scoreDateEl) scoreDateEl.value = todayISO();
+  if(document.getElementById('scoreAddBtn')) document.getElementById('scoreAddBtn').addEventListener('click', handleScoreAdd);
+  if(document.getElementById('scoreFileInput')) document.getElementById('scoreFileInput').addEventListener('change', handleScoreImageFile);
+  if(document.getElementById('runAnalysisBtn')) document.getElementById('runAnalysisBtn').addEventListener('click', runWeaknessAnalysis);
+  await loadScores();
+  renderScoreList();
+  try {
+    const savedAnalysis = localStorage.getItem(ANALYSIS_KEY);
+    if(savedAnalysis) renderAnalysisResult(JSON.parse(savedAnalysis).result);
+  } catch(e) {}
 })();
+
+/* =========================================================
+   参考書スケジュール管理ロジック
+========================================================= */
+
+// ① 初期化（今日の日付をセットし、保存されたデータを読み込む）
+window.addEventListener('DOMContentLoaded', () => {
+  const refStartDateInput = document.getElementById('refStartDate');
+  if(refStartDateInput) {
+    const today = new Date();
+    refStartDateInput.value = today.toISOString().split('T')[0];
+  }
+
+  // 学習する曜日のチップを生成（単語スケジュールと同じ仕組みを再利用）
+  buildWeekdayChips('refWeekdayRow', DEFAULT_WEEKDAYS);
+
+  // 割り振り方法（曜日から設定 / 1日あたりの量から設定）の切り替え
+  document.querySelectorAll('input[name="refPlanMode"]').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+      const isByAmount = e.target.value === 'byAmount';
+      document.getElementById('refAmountFieldWrap').style.display = isByAmount ? 'block' : 'none';
+      document.getElementById('refEndDateWrap').style.display = isByAmount ? 'none' : 'block';
+    });
+  });
+
+  loadRefEntries();
+});
+
+// ①-2 参考書スケジュールの計算（単語スケジュールのcomputeChunksForEntryと同じ考え方）
+// planMode === 'byAmount' : 1日あたりの量を指定 → 終了日は自動計算
+// planMode === 'byRange'  : 開始日〜終了日と学習曜日を指定 → 1日あたりの量は自動計算
+function computeRefSchedule(plan){
+  const start = parseISO(plan.startDate);
+  const total = plan.endNum - plan.startNum + 1;
+  const chunks = [];
+
+  if (plan.planMode === 'byAmount') {
+    let cursor = plan.startNum;
+    let daysAdded = 0;
+    while (cursor <= plan.endNum) {
+      const d = addDays(start, daysAdded);
+      if (plan.weekdays.includes(d.getDay())) {
+        const count = Math.min(plan.amountPerDay, plan.endNum - cursor + 1);
+        const rangeStart = cursor;
+        const rangeEnd = cursor + count - 1;
+        chunks.push({ date: formatISO(d), rangeStart, rangeEnd });
+        cursor = rangeEnd + 1;
+      }
+      daysAdded++;
+      // 安全装置（万が一の無限ループ防止：最大10年）
+      if (daysAdded > 3650) break;
+    }
+  } else {
+    const end = parseISO(plan.endDate);
+    const studyDates = [];
+    let cursor = new Date(start);
+    while (cursor <= end) {
+      if (plan.weekdays.includes(cursor.getDay())) studyDates.push(new Date(cursor));
+      cursor = addDays(cursor, 1);
+      if (studyDates.length > 3650) break; // 安全装置
+    }
+    if (studyDates.length === 0) return [];
+
+    const days = studyDates.length;
+    const base = Math.floor(total / days);
+    const rem = total % days;
+    let numCursor = plan.startNum;
+
+    studyDates.forEach((d, idx) => {
+      const count = base + (idx < rem ? 1 : 0);
+      if (count <= 0) return;
+      const rangeStart = numCursor;
+      const rangeEnd = numCursor + count - 1;
+      chunks.push({ date: formatISO(d), rangeStart, rangeEnd });
+      numCursor = rangeEnd + 1;
+    });
+  }
+  return chunks;
+}
+
+// ② データの保存と読み込み
+function saveRefEntries() {
+  localStorage.setItem(REF_STORAGE_KEY, JSON.stringify(refEntries));
+}
+function loadRefEntries() {
+  const saved = localStorage.getItem(REF_STORAGE_KEY);
+  if (saved) {
+    refEntries = JSON.parse(saved);
+    renderRefSchedule(); // 読み込み後すぐに描画
+  }
+}
+
+// ③ 「スケジュールを登録」ボタンが押された時の処理
+const saveRefPlanBtn = document.getElementById('saveRefPlanBtn');
+if (saveRefPlanBtn) {
+  saveRefPlanBtn.addEventListener('click', () => {
+    const errorEl = document.getElementById('refErrorMsg');
+    if (errorEl) errorEl.textContent = '';
+
+    const bookName = document.getElementById('refBookName').value.trim();
+    const startNum = parseInt(document.getElementById('refStartNum').value, 10);
+    const endNum = parseInt(document.getElementById('refEndNum').value, 10);
+    const startDate = document.getElementById('refStartDate').value;
+    const planMode = document.querySelector('input[name="refPlanMode"]:checked').value;
+    const weekdays = getCheckedValues('refWeekdayRow');
+
+    const showError = (msg) => { if (errorEl) errorEl.textContent = msg; else alert(msg); };
+
+    if (!bookName || isNaN(startNum) || isNaN(endNum) || !startDate) {
+      showError('すべての項目を正しく入力してください。');
+      return;
+    }
+    if (startNum > endNum) {
+      showError('開始ページは終了ページ以下の数値を入力してください。');
+      return;
+    }
+    if (weekdays.length === 0) {
+      showError('学習する曜日を1つ以上選んでください。');
+      return;
+    }
+
+    const newPlan = {
+      id: 'ref_' + Date.now(),
+      bookName: bookName,
+      startNum: startNum,
+      endNum: endNum,
+      startDate: startDate,
+      weekdays: weekdays,
+      planMode: planMode
+    };
+
+    if (planMode === 'byAmount') {
+      const amount = parseInt(document.getElementById('refAmountPerDay').value, 10);
+      if (!amount || amount <= 0) {
+        showError('1日あたり進める量を正しく入力してください。');
+        return;
+      }
+      newPlan.amountPerDay = amount;
+    } else {
+      const endDate = document.getElementById('refEndDate').value;
+      if (!endDate) {
+        showError('終了日を選択してください。');
+        return;
+      }
+      if (parseISO(endDate) < parseISO(startDate)) {
+        showError('終了日は開始日以降の日付にしてください。');
+        return;
+      }
+      newPlan.endDate = endDate;
+    }
+
+    // 事前にスケジュールを計算し、該当日がなければ登録前に知らせる
+    if (computeRefSchedule(newPlan).length === 0) {
+      showError('指定した期間・曜日では学習日がありません。設定を見直してください。');
+      return;
+    }
+
+    refEntries.push(newPlan);
+    saveRefEntries();
+    renderRefSchedule(); // 画面を更新
+    
+    // 入力欄をクリア（教材名・ページ番号のみ）
+    document.getElementById('refBookName').value = '';
+    document.getElementById('refStartNum').value = '';
+    document.getElementById('refEndNum').value = '';
+  });
+}
+
+// ④ 参考書スケジュール：登録済みプランの一覧表示（単語タブのentryListと同じ考え方）
+function renderRefEntryList(){
+  const list = document.getElementById('refEntryList');
+  if(!list) return;
+  list.innerHTML = '';
+  if(refEntries.length === 0) return;
+
+  refEntries.forEach(plan => {
+    const wdLabel = (plan.weekdays || []).slice().sort((a,b)=>a-b).map(i => WEEKDAYS[i]).join('・');
+    const chunks = computeRefSchedule(plan);
+
+    let calcInfo = '';
+    if(chunks.length > 0){
+      if(plan.planMode === 'byAmount'){
+        const last = parseISO(chunks[chunks.length - 1].date);
+        calcInfo = `1日あたり ${plan.amountPerDay} ／ 終了予定日 ${last.getMonth()+1}/${last.getDate()}（自動計算）`;
+      } else {
+        const amounts = chunks.map(c => c.rangeEnd - c.rangeStart + 1);
+        const minA = Math.min(...amounts), maxA = Math.max(...amounts);
+        calcInfo = (minA === maxA) ? `1日あたり ${minA}（自動計算）` : `1日あたり ${minA}〜${maxA}（自動計算）`;
+      }
+    } else {
+      calcInfo = '該当する学習日がありません';
+    }
+
+    const item = document.createElement('div');
+    item.className = 'entry-item';
+    item.innerHTML = `
+      <div>
+        <span class="rng">${escapeHtml(plan.bookName)}　${plan.startNum}〜${plan.endNum}</span>
+        <div class="meta">開始日 ${plan.startDate} ／ 学習日: ${wdLabel || '―'} ／ ${calcInfo}</div>
+      </div>
+      <button class="del-btn ref-del-btn" data-id="${plan.id}">削除</button>
+    `;
+    list.appendChild(item);
+  });
+
+  list.querySelectorAll('.ref-del-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (!confirm('この参考書のスケジュールを削除しますか？')) return;
+      refEntries = refEntries.filter(p => p.id !== btn.dataset.id);
+      saveRefEntries();
+      renderRefSchedule();
+    });
+  });
+}
+
+// ⑤ 参考書タブ全体の再描画（登録リスト＋単語と合併したスケジュール表）
+function renderRefSchedule() {
+  renderRefEntryList();
+  refreshAllSchedules();
+}
 </script>
 </body>
 </html>
