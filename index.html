@@ -451,41 +451,38 @@
   <header class="hero">
     <div class="hero-top">
       <div>
-        <h1>英単語暗記トレーナー</h1>
-        <p class="tagline">範囲を決めるだけで週間スケジュールを自動生成。苦手単語は間隔反復でしつこく復習。進捗はグラフで見える化。</p>
+        <h1>学習自走化</h1>
       </div>
       <button class="print-btn no-print" id="printBtn">🖨️ 印刷用に表示</button>
     </div>
-    <div class="feature-grid">
-      <div class="feature-card">
-        <span class="icon">🗓️</span>
-        <div class="ft">週間スケジュール自動生成</div>
-        <div class="fd">開始番号・終了番号を入れるだけで、1日あたりの新規量を自動で割り振り</div>
-      </div>
-      <div class="feature-card">
-        <span class="icon">🔁</span>
-        <div class="ft">苦手単語の自動復習</div>
-        <div class="fd">間違えた単語は1→3→7→14日後と間隔を空けて自動的に再登場</div>
-      </div>
-      <div class="feature-card">
-        <span class="icon">📊</span>
-        <div class="ft">進捗を見える化</div>
-        <div class="fd">正答率の推移や苦手単語の状況をグラフで確認できる</div>
-      </div>
-    </div>
-    <nav class="quick-nav no-print">
-      <a href="#today">今日やること</a>
-      <a href="#progress">進捗</a>
-      <a href="#setup">スケジュール設定</a>
-    </nav>
   </header>
   <div class="no-print" style="display:flex; gap:10px; margin-bottom:20px;">
-    <button id="tab-btn-study" class="btn-primary" onclick="showTab('study')">単語管理</button>
-    <button id="tab-btn-reference" class="btn-ghost" onclick="showTab('reference')">📚 参考書スケジュール</button>
+    <button id="tabSchedule" class="btn-primary" onclick="showTab('schedule')">スケジュール</button>
+    <button id="tab-btn-study" class="btn-ghost" onclick="showTab('study')">単語スケジュール設定</button>
+    <button id="tab-btn-reference" class="btn-ghost" onclick="showTab('reference')">参考書スケジュール設定</button>
     <button id="tab-btn-coach" class="btn-ghost" onclick="showTab('coach')">AI学習計画</button>
-    <button id="tab-btn-analysis" class="btn-ghost" onclick="showTab('analysis')">弱点分析</button>
+    <button id="tab-btn-analysis" class="btn-ghost" onclick="showTab('analysis')">AI弱点分析</button>
   </div>
-  <div id="tab-study" class="tab-content">
+
+    <!-- 追加：スケジュール表示ビュー -->
+  <div id="tab-schedule" class="tab-content">
+    <h3 class="sub-head">全体のスケジュール</h3>
+    
+    <!-- 期間切り替えラジオボタン -->
+    <div style="margin-bottom: 20px; display: flex; gap: 20px; background: #f5f5f5; padding: 10px; border-radius: 6px;">
+      <label style="cursor: pointer; display: flex; align-items: center; gap: 6px;">
+        <input type="radio" name="schedulePeriod" value="week" checked> 1週間分を表示
+      </label>
+      <label style="cursor: pointer; display: flex; align-items: center; gap: 6px;">
+        <input type="radio" name="schedulePeriod" value="month"> 1ヶ月分を表示
+      </label>
+    </div>
+
+    <!-- スケジュールが日付順に並ぶコンテナ -->
+    <div id="integratedScheduleList" style="display: flex; flex-direction: column; gap: 12px;"></div>
+  </div>
+
+  <div id="tab-study" class="tab-content" style="display:none;">
   <section class="card today-card" id="today">
     <h2>📌 今日やること</h2>
     <h3 class="sub-head">今日の範囲</h3>
@@ -511,14 +508,14 @@
 
   <details class="setup-details" id="setup" open>
     <summary>⚙️ スケジュール設定</summary>
-
     <h3 class="sub-head">① 今週の範囲を登録</h3>
     <div class="field full" style="margin-bottom:14px;">
       <label>割り振り方法</label>
       <div style="display:flex; gap:16px; margin-top:6px; flex-wrap:wrap;">
         <label style="cursor:pointer; display:flex; align-items:center; gap:4px; font-size:.85rem;">
-          <input type="radio" name="planMode" value="byWeek" checked>
-          選択した曜日に均等に分ける（1週間で完了）
+          <!-- valueを byRange に変更し、文言を合わせます -->
+          <input type="radio" name="planMode" value="byRange" checked>
+          学習する曜日から設定（開始日〜終了日で均等に分ける）
         </label>
         <label style="cursor:pointer; display:flex; align-items:center; gap:4px; font-size:.85rem;">
           <input type="radio" name="planMode" value="byAmount">
@@ -536,8 +533,13 @@
         <input type="number" id="endNum" min="1" placeholder="例: 1600">
       </div>
       <div class="field">
-        <label for="startDate">この範囲を始める日</label>
+        <label for="startDate">開始日</label>
         <input type="date" id="startDate">
+      </div>
+      <!-- 追加：終了日の入力欄 -->
+      <div class="field" id="endDateWrap">
+        <label for="endDate">終了日</label>
+        <input type="date" id="endDate">
       </div>
       <div class="field" id="amountFieldWrap" style="display:none;">
         <label for="amountPerDay">1日の単語数</label>
@@ -964,13 +966,22 @@ function computeChunksForEntry(entry){
       if (daysAdded > 365) break;
     }
   } 
-  // 【既存】1週間で曜日に均等割り当てモード
+  // 【ここから変更】開始日から終了日までの期間で均等割り当て
   else {
     const studyDates = [];
-    for(let i=0;i<7;i++){
-      const d = addDays(start, i);
-      if(entry.weekdays.includes(d.getDay())) studyDates.push(d);
+    
+    // 過去のデータ（終了日が未設定のもの）は開始日から1週間とするための安全措置
+    const end = entry.endDate ? parseISO(entry.endDate) : addDays(start, 6);
+    
+    // 開始日から終了日までループして、学習する曜日だけをピックアップ
+    let cursorDate = new Date(start);
+    while (cursorDate <= end) {
+      if (entry.weekdays.includes(cursorDate.getDay())) {
+        studyDates.push(new Date(cursorDate));
+      }
+      cursorDate.setDate(cursorDate.getDate() + 1);
     }
+    
     if(studyDates.length === 0) return [];
     
     const days = studyDates.length;
@@ -998,10 +1009,19 @@ function renderEntryList(){
     const item = document.createElement('div');
     item.className = 'entry-item';
     const wdLabel = entry.weekdays.slice().sort((a,b)=>a-b).map(i=>WEEKDAYS[i]).join('・');
+    
+    // 期間の表示をスマートに分岐
+    let modeText = '';
+    if (entry.planMode === 'byAmount') {
+      modeText = `開始日 ${entry.startDate} (1日${entry.amountPerDay}単語)`;
+    } else {
+      modeText = entry.endDate ? `${entry.startDate} 〜 ${entry.endDate}` : `開始日 ${entry.startDate} (1週間)`;
+    }
+
     item.innerHTML = `
       <div>
         <span class="rng">${entry.startNum}〜${entry.endNum}</span>
-        <div class="meta">開始日 ${entry.startDate} ／ 学習日: ${wdLabel} ／ 復習: ${entry.intervals.join('・')}日後</div>
+        <div class="meta">${modeText} ／ 学習日: ${wdLabel} ／ 復習: ${entry.intervals.join('・')}日後</div>
       </div>
       <button class="del-btn" data-id="${entry.id}">削除</button>
     `;
@@ -1104,6 +1124,132 @@ function renderSchedule(){
   refreshAllSchedules();
 }
 
+function renderIntegratedSchedule() {
+  const container = document.getElementById('integratedScheduleList');
+  container.innerHTML = '';
+
+  // 表示日数の決定 (1週間なら7日、1ヶ月なら30日)
+  const periodMode = document.querySelector('input[name="schedulePeriod"]:checked').value;
+  const targetDays = periodMode === 'week' ? 7 : 30;
+
+  // 1. 単語の全スケジュールチャンクを集約
+  let allWordChunks = [];
+  entries.forEach(entry => {
+    // 以前作成した単語の計算ロジックを通す
+    allWordChunks = allWordChunks.concat(computeChunksForEntry(entry));
+  });
+
+  // 2. 参考書の全スケジュールチャンクを集約（単語と同じ refEntries / computeRefSchedule を使用）
+  let allBookChunks = [];
+  refEntries.forEach(plan => {
+    allBookChunks = allBookChunks.concat(
+      computeRefSchedule(plan).map(c => ({ ...c, bookName: plan.bookName }))
+    );
+  });
+
+  // 1-2. 単語の復習日を計算（新規登録した範囲ごとに、指定した間隔（1・3・7日後など）で復習日を割り出す）
+  let allWordReviews = [];
+  allWordChunks.forEach(c => {
+    (c.intervals || []).forEach(n => {
+      allWordReviews.push({
+        date: formatISO(addDays(parseISO(c.date), n)),
+        rangeStart: c.rangeStart,
+        rangeEnd: c.rangeEnd,
+        interval: n,
+      });
+    });
+  });
+
+  // 2-2. 参考書の復習日を計算（単語スケジュールと同じ間隔＝DEFAULT_INTERVALSを使用）
+  let allBookReviews = [];
+  allBookChunks.forEach(c => {
+    DEFAULT_INTERVALS.forEach(n => {
+      allBookReviews.push({
+        date: formatISO(addDays(parseISO(c.date), n)),
+        rangeStart: c.rangeStart,
+        rangeEnd: c.rangeEnd,
+        interval: n,
+        bookName: c.bookName,
+      });
+    });
+  });
+
+  // 3. 今日からN日分の日付ループを作成してスケジュールをマージ
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // 時刻をクリア
+
+  for (let i = 0; i < targetDays; i++) {
+    const currentLoopDate = new Date(today);
+    currentLoopDate.setDate(today.getDate() + i);
+    
+    // 比較用に YYYY-MM-DD 形式の文字列を作る
+    const yyyy = currentLoopDate.getFullYear();
+    const mm = String(currentLoopDate.getMonth() + 1).padStart(2, '0');
+    const dd = String(currentLoopDate.getDate()).padStart(2, '0');
+    const dateStr = `${yyyy}-${mm}-${dd}`;
+
+    // この日に該当する単語タスクを探す
+    const dayWords = allWordChunks.filter(chunk => chunk.date.startsWith(dateStr));
+    // この日に該当する参考書タスクを探す
+    const dayBooks = allBookChunks.filter(chunk => chunk.date.startsWith(dateStr));
+    // この日に該当する単語の復習を探す
+    const dayWordReviews = allWordReviews.filter(r => r.date.startsWith(dateStr));
+    // この日に該当する参考書の復習を探す
+    const dayBookReviews = allBookReviews.filter(r => r.date.startsWith(dateStr));
+
+    // 予定が何もない日は「1ヶ月表示」の時に見づらくなるため、1週間表示の時だけ出すか、スキップするか選べます（今回は空でも表示）
+    if (dayWords.length === 0 && dayBooks.length === 0 && dayWordReviews.length === 0 && dayBookReviews.length === 0 && periodMode === 'month') {
+      continue; // 1ヶ月表示のときは、予定がない日はスキップしてスッキリさせる
+    }
+
+    // 曜日ラベルの作成
+    const dayOfWeek = ['日', '月', '火', '水', '木', '金', '土'][currentLoopDate.getDay()];
+    
+    // 日付ごとのカードHTMLを作成
+    const dayCard = document.createElement('div');
+    dayCard.style.cssText = "background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);";
+    
+    let taskHtml = '';
+    
+    // 単語のテキスト生成
+    dayWords.forEach(w => {
+      taskHtml += `<div style="margin-top: 4px; color: #333;"><span style="background: #e3f2fd; color: #0d47a1; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; margin-right: 6px;">単語</span> ${w.rangeStart} 〜 ${w.rangeEnd}</div>`;
+    });
+
+    // 参考書のテキスト生成
+    dayBooks.forEach(b => {
+      taskHtml += `<div style="margin-top: 4px; color: #333;"><span style="background: #e8f5e9; color: #1b5e20; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; margin-right: 6px;">参考書</span> ${escapeHtml(b.bookName)}: ${b.rangeStart} 〜 ${b.rangeEnd}</div>`;
+    });
+
+    // 単語の復習日のテキスト生成
+    dayWordReviews.forEach(r => {
+      taskHtml += `<div style="margin-top: 4px; color: #333;"><span style="background: #fdecea; color: #b23a2e; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; margin-right: 6px;">復習</span> 単語 ${r.rangeStart} 〜 ${r.rangeEnd}（${r.interval}日後）</div>`;
+    });
+
+    // 参考書の復習日のテキスト生成
+    dayBookReviews.forEach(r => {
+      taskHtml += `<div style="margin-top: 4px; color: #333;"><span style="background: #fdecea; color: #b23a2e; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; margin-right: 6px;">復習</span> ${escapeHtml(r.bookName)} ${r.rangeStart} 〜 ${r.rangeEnd}（${r.interval}日後）</div>`;
+    });
+
+    if (taskHtml === '') {
+      taskHtml = `<div style="color: #999; font-size: 0.85rem; margin-top: 4px;">予定なし</div>`;
+    }
+
+    dayCard.innerHTML = `
+      <div style="font-weight: bold; font-size: 0.9rem; color: #555; border-bottom: 1px dashed #eee; padding-bottom: 4px;">
+        ${mm}/${dd} (${dayOfWeek})
+      </div>
+      <div style="padding-top: 4px;">${taskHtml}</div>
+    `;
+    
+    container.appendChild(dayCard);
+  }
+
+  if (container.innerHTML === '') {
+    container.innerHTML = '<div style="text-align:center; color:#999; padding:20px;">この期間のスケジュールはありません。設定タブから登録してください。</div>';
+  }
+}
+
 function renderTodayNew(){
   const box = document.getElementById('todayNewBox');
   const todayIso = todayISO();
@@ -1126,6 +1272,7 @@ async function handleAdd(){
   const startNum = Number(document.getElementById('startNum').value);
   const endNum = Number(document.getElementById('endNum').value);
   const startDate = document.getElementById('startDate').value;
+  const endDate = document.getElementById('endDate').value; // 追加
   const weekdays = getCheckedValues('weekdayRow');
   const intervals = getCheckedValues('intervalRow');
   const errorEl = document.getElementById('errorMsg');
@@ -1136,18 +1283,24 @@ async function handleAdd(){
   if(!startNum || !endNum || endNum < startNum){
     errorEl.textContent = '開始番号・終了番号を正しく入力してください（終了番号は開始番号以上）。'; return;
   }
-  if(!startDate){ errorEl.textContent = '開始する日を選択してください。'; return; }
+  if(!startDate){ errorEl.textContent = '開始日を選択してください。'; return; }
+  
+  // 終了日のバリデーションを追加
+  if(planMode === 'byRange') {
+    if(!endDate){ errorEl.textContent = '終了日を選択してください。'; return; }
+    if(new Date(endDate) < new Date(startDate)){ errorEl.textContent = '終了日は開始日以降の日付にしてください。'; return; }
+  }
+
   if(weekdays.length === 0){ errorEl.textContent = '学習する曜日を1つ以上選んでください。'; return; }
   if(intervals.length === 0){ errorEl.textContent = '復習のタイミングを1つ以上選んでください。'; return; }
   if(planMode === 'byAmount' && (!amountPerDay || amountPerDay <= 0)){
     errorEl.textContent = '1日あたりの単語数を正しく入力してください。'; return;
   }
 
-  entries.push({ id: 'e' + Date.now(), startNum, endNum, startDate, weekdays, intervals, planMode, amountPerDay });
+  // entryオブジェクトに endDate を追加
+  entries.push({ id: 'e' + Date.now(), startNum, endNum, startDate, endDate, weekdays, intervals, planMode, amountPerDay });
   await saveEntries();
   renderAll();
-  //document.getElementById('startNum').value = '';
-  //document.getElementById('endNum').value = '';
 }
 
 async function handleReset(){
@@ -1825,13 +1978,19 @@ function showTab(tabName) {
   // タブコンテンツの表示・非表示を切り替え
   document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
   document.getElementById('tab-' + tabName).style.display = 'block';
-  
+
+  // 「スケジュール」タブを開いたときは、最新の統合スケジュールを再描画する
+  if (tabName === 'schedule') {
+    renderIntegratedSchedule();
+  }
+
   // ボタン要素を取得
+  const btnSchedule = document.getElementById('tabSchedule');
   const btnStudy = document.getElementById('tab-btn-study');
   const btnCoach = document.getElementById('tab-btn-coach');
   const btnAnalysis = document.getElementById('tab-btn-analysis');
   const btnReference = document.getElementById('tab-btn-reference');
-  const buttons = { study: btnStudy, coach: btnCoach, analysis: btnAnalysis, reference: btnReference };
+  const buttons = { schedule: btnSchedule, study: btnStudy, coach: btnCoach, analysis: btnAnalysis, reference: btnReference };
 
   // 選択されたタブだけを着色し、他は白抜きにする
   Object.keys(buttons).forEach(name => {
@@ -2297,6 +2456,7 @@ function setupApiKeyPersistence() {
   setupApiKeyPersistence();
   await loadSavedApiKey();await loadEntries();
   renderAll();
+  renderIntegratedSchedule(); // 「スケジュール」タブは初期表示タブなので、読み込み直後に描画する
   await loadLeech();
   await loadHistory();
   renderLeech();
@@ -2342,6 +2502,7 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
   loadRefEntries();
+  renderIntegratedSchedule(); // 参考書データの読み込み後にも「スケジュール」タブを最新化する
 });
 
 // ①-2 参考書スケジュールの計算（単語スケジュールのcomputeChunksForEntryと同じ考え方）
@@ -2542,6 +2703,26 @@ function renderRefSchedule() {
   renderRefEntryList();
   refreshAllSchedules();
 }
+
+// 【追加】ラジオボタンで入力欄を切り替えるイベント
+document.querySelectorAll('input[name="planMode"]').forEach(radio => {
+  radio.addEventListener('change', (e) => {
+    if (e.target.value === 'byAmount') {
+      document.getElementById('amountFieldWrap').style.display = ''; 
+      document.getElementById('endDateWrap').style.display = 'none';
+    } else {
+      document.getElementById('amountFieldWrap').style.display = 'none';
+      document.getElementById('endDateWrap').style.display = '';
+    }
+  });
+});
+
+// 期間ラジオボタンが切り替わったら再描画
+document.querySelectorAll('input[name="schedulePeriod"]').forEach(radio => {
+  radio.addEventListener('change', renderIntegratedSchedule);
+});
+
+
 </script>
 </body>
 </html>
