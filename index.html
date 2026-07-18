@@ -25,8 +25,13 @@
     --radius:10px;
   }
   *{box-sizing:border-box;}
-  body{
+  html, body{
     margin:0;
+    /* 横スクロールをルートで完全に封じる */
+    max-width:100%;
+    overflow-x:hidden;
+  }
+  body{
     background:var(--paper);
     color:var(--ink);
     font-family:'Noto Sans JP', sans-serif;
@@ -37,6 +42,8 @@
     margin:0 auto;
     padding:0 20px 60px 34px;
     position:relative;
+    /* はみ出し要素を .app 内に封じる */
+    overflow-x:hidden;
   }
   .app::before{
     content:"";
@@ -193,10 +200,11 @@
     background:none; border:none; color:var(--margin-red); font-size:.78rem; cursor:pointer; padding:4px 6px;
     text-decoration:underline;
   }
-  .schedule-wrap{ overflow-x:auto; }
+  .schedule-wrap{ overflow-x:auto; max-width:100%; }
   table{
     border-collapse:collapse;
     width:100%;
+    /* min-width はデスクトップのみ。モバイルでは @media で上書きする */
     min-width:560px;
     background:repeating-linear-gradient(
       to bottom,
@@ -463,11 +471,14 @@
       display: flex;
       position: fixed;
       bottom: 0; left: 0; right: 0;
+      width: 100%;          /* right:0 だけでなく width も明示 */
+      max-width: 100vw;     /* ビューポートを絶対に超えない */
       background: var(--white);
       border-top: 1px solid var(--paper-line);
       z-index: 100;
       height: 62px;
       box-shadow: 0 -2px 12px rgba(30,42,68,0.08);
+      overflow: hidden;     /* ナビ自体も内部ではみ出さない */
     }
     .bottom-nav-item {
       flex: 1;
@@ -503,6 +514,28 @@
       background: var(--ink);
       border-radius: 50%;
       margin: 0 auto -2px;
+    }
+
+    /* --- テーブルの min-width をモバイルで解除 --- */
+    table {
+      min-width: 0;
+      width: 100%;
+    }
+    /* スケジュールラップもはみ出し封じ */
+    .schedule-wrap {
+      overflow-x: hidden;
+      max-width: 100%;
+    }
+    /* leech テーブルも同様 */
+    .leech-mini-table {
+      min-width: 0 !important;
+      width: 100%;
+      font-size: .78rem;
+    }
+    .leech-mini-table td,
+    .leech-mini-table th {
+      padding: 6px 6px;
+      word-break: break-all;
     }
 
     /* --- フォーム・グリッド --- */
@@ -552,7 +585,25 @@
     .schedule-wrap td:empty { display: none; }
 
     /* タグを小さく折り返し */
-    .tag { font-size: .72rem; padding: 2px 6px; margin: 2px 2px 2px 0; }
+    .tag {
+      font-size: .72rem;
+      padding: 2px 6px;
+      margin: 2px 2px 2px 0;
+      white-space: normal;   /* 強制改行を許可 */
+      word-break: break-word;
+      max-width: 100%;
+    }
+    /* タグのコンテナも折り返し許可 */
+    tbody td, .schedule-wrap td {
+      word-break: break-word;
+      max-width: 100%;
+      overflow-wrap: break-word;
+    }
+    /* section.card 内の横はみ出しも封じる */
+    section.card, .card {
+      overflow-x: hidden;
+      max-width: 100%;
+    }
 
     /* --- 進捗入力をモバイル向けに調整 --- */
     .progress-item {
@@ -1831,7 +1882,7 @@ function renderIntegratedSchedule() {
     
     // 日付ごとのカードHTMLを作成
     const dayCard = document.createElement('div');
-    dayCard.style.cssText = "background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);";
+    dayCard.style.cssText = "background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); max-width: 100%; overflow: hidden; word-break: break-word;";
     
     let taskHtml = '';
     
@@ -1849,14 +1900,16 @@ function renderIntegratedSchedule() {
     dayWordReviews.forEach(r => {
       const ts = getIntervalTierStyle(r.interval);
       const delayHtml = r.delayedDays > 0 ? `<span style="display:inline-block;font-size:.68rem;font-weight:700;background:#b23a2e;color:#fff;border-radius:4px;padding:1px 5px;margin-left:4px;">${r.delayedDays}日遅れ</span>` : '';
-      taskHtml += `<div style="margin-top:6px;"><label style="cursor:pointer;display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:6px;background:${ts.bg};border:1px solid ${ts.border};${r.done ? 'opacity:.5;text-decoration:line-through;' : ''}"><input type="checkbox" class="review-check" data-key="${r.key}" ${r.done ? 'checked' : ''} style="margin:0;"><span style="background:${ts.color};color:#fff;padding:1px 5px;border-radius:3px;font-size:.68rem;font-weight:700;white-space:nowrap;">${ts.labelShort}</span><span style="color:${ts.color};font-size:.75rem;font-weight:700;">復習</span><span style="color:#333;font-size:.8rem;">単語 ${r.rangeStart}〜${r.rangeEnd}</span><span style="color:${ts.color};font-size:.72rem;">${r.interval}日後</span>${delayHtml}</label></div>`;
+      // flex-wrap:wrap を追加してモバイルで折り返せるようにする
+      taskHtml += `<div style="margin-top:6px;max-width:100%;overflow:hidden;"><label style="cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:6px 9px;border-radius:6px;background:${ts.bg};border:1px solid ${ts.border};${r.done ? 'opacity:.5;text-decoration:line-through;' : ''}"><input type="checkbox" class="review-check" data-key="${r.key}" ${r.done ? 'checked' : ''} style="margin:0;flex-shrink:0;"><span style="background:${ts.color};color:#fff;padding:1px 5px;border-radius:3px;font-size:.68rem;font-weight:700;white-space:nowrap;flex-shrink:0;">${ts.labelShort}</span><span style="color:${ts.color};font-size:.75rem;font-weight:700;flex-shrink:0;">復習</span><span style="color:#333;font-size:.8rem;word-break:break-all;">単語 ${r.rangeStart}〜${r.rangeEnd}（${r.interval}日後）</span>${delayHtml}</label></div>`;
     });
 
     // 参考書の復習日のテキスト生成（階層カラー）
     dayBookReviews.forEach(r => {
       const ts = getIntervalTierStyle(r.interval);
       const delayHtml = r.delayedDays > 0 ? `<span style="display:inline-block;font-size:.68rem;font-weight:700;background:#b23a2e;color:#fff;border-radius:4px;padding:1px 5px;margin-left:4px;">${r.delayedDays}日遅れ</span>` : '';
-      taskHtml += `<div style="margin-top:6px;"><label style="cursor:pointer;display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:6px;background:${ts.bg};border:1px solid ${ts.border};${r.done ? 'opacity:.5;text-decoration:line-through;' : ''}"><input type="checkbox" class="review-check" data-key="${r.key}" ${r.done ? 'checked' : ''} style="margin:0;"><span style="background:${ts.color};color:#fff;padding:1px 5px;border-radius:3px;font-size:.68rem;font-weight:700;white-space:nowrap;">${ts.labelShort}</span><span style="color:${ts.color};font-size:.75rem;font-weight:700;">復習</span><span style="color:#333;font-size:.8rem;">${escapeHtml(r.bookName)} ${r.rangeStart}〜${r.rangeEnd}</span><span style="color:${ts.color};font-size:.72rem;">${r.interval}日後</span>${delayHtml}</label></div>`;
+      // flex-wrap:wrap を追加してモバイルで折り返せるようにする
+      taskHtml += `<div style="margin-top:6px;max-width:100%;overflow:hidden;"><label style="cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:6px 9px;border-radius:6px;background:${ts.bg};border:1px solid ${ts.border};${r.done ? 'opacity:.5;text-decoration:line-through;' : ''}"><input type="checkbox" class="review-check" data-key="${r.key}" ${r.done ? 'checked' : ''} style="margin:0;flex-shrink:0;"><span style="background:${ts.color};color:#fff;padding:1px 5px;border-radius:3px;font-size:.68rem;font-weight:700;white-space:nowrap;flex-shrink:0;">${ts.labelShort}</span><span style="color:${ts.color};font-size:.75rem;font-weight:700;flex-shrink:0;">復習</span><span style="color:#333;font-size:.8rem;word-break:break-all;">${escapeHtml(r.bookName)} ${r.rangeStart}〜${r.rangeEnd}（${r.interval}日後）</span>${delayHtml}</label></div>`;
     });
 
     if (taskHtml === '') {
