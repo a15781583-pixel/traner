@@ -350,6 +350,80 @@
   .weak-card .weak-row{ font-size:.85rem; margin-top:6px; }
   .weak-card .weak-row b{ color:var(--ink-soft); font-weight:600; }
 
+  /* ---------- 今日のサマリーカード ---------- */
+  .today-summary-card {
+    background: var(--ink);
+    color: var(--white);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin-bottom: 18px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+  }
+  .today-summary-card .ts-label {
+    font-size: .75rem;
+    opacity: .7;
+    margin-bottom: 3px;
+    font-weight: 500;
+  }
+  .today-summary-card .ts-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .today-summary-card .ts-unit {
+    font-size: .78rem;
+    opacity: .8;
+    margin-left: 3px;
+    font-weight: 400;
+  }
+  .today-summary-card .ts-block {
+    flex: 1;
+    min-width: 80px;
+    text-align: center;
+  }
+  .today-summary-card .ts-divider {
+    width: 1px;
+    height: 40px;
+    background: rgba(255,255,255,.2);
+  }
+  .today-summary-card .ts-date {
+    width: 100%;
+    font-size: .82rem;
+    opacity: .65;
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+  .ts-all-done {
+    width: 100%;
+    text-align: center;
+    font-size: .88rem;
+    font-weight: 700;
+    color: #a8e6c2;
+    letter-spacing: .04em;
+    padding: 4px 0;
+  }
+
+  /* セキュリティ警告バナー */
+  .security-banner {
+    background: #fff8e1;
+    border: 1px solid #f9a825;
+    border-left: 4px solid #f9a825;
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: .82rem;
+    color: #5d4037;
+    margin-bottom: 14px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .security-banner .sb-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+  .security-banner a { color: #5d4037; font-weight: 700; }
+
   /* ---------- setup (teacher) area ---------- */
   details.setup-details{
     background:var(--white); border:1px solid var(--paper-line); border-radius:var(--radius);
@@ -363,13 +437,212 @@
   details.setup-details > summary::before{ content:"▸ "; }
   details.setup-details[open] > summary::before{ content:"▾ "; }
 
-  @media (max-width:640px){
-    .form-grid{ grid-template-columns:1fr; }
-    .feature-grid{ grid-template-columns:1fr; }
-    .chart-grid{ grid-template-columns:1fr; }
-    .app{ padding-left:26px; }
-    h1{ font-size:1.3rem; }
+  /* ============================================================
+     MOBILE IMPROVEMENTS
+     ============================================================ */
+
+  /* --- ボトムナビゲーション（モバイル専用） --- */
+  .bottom-nav {
+    display: none;
   }
+  @media (max-width: 640px) {
+    /* アプリ全体の下余白をボトムナビ分確保 */
+    .app {
+      padding-bottom: 90px;
+    }
+    /* ヘッダー簡略化 */
+    .hero {
+      padding: 16px 4px 12px 4px;
+    }
+    /* 既存タブボタン群をモバイルで非表示 */
+    .desktop-tab-bar {
+      display: none !important;
+    }
+    /* ボトムナビ表示 */
+    .bottom-nav {
+      display: flex;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--white);
+      border-top: 1px solid var(--paper-line);
+      z-index: 100;
+      height: 62px;
+      box-shadow: 0 -2px 12px rgba(30,42,68,0.08);
+    }
+    .bottom-nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      padding: 6px 2px;
+      cursor: pointer;
+      font-size: .6rem;
+      font-weight: 600;
+      color: var(--ink-soft);
+      border: none;
+      background: none;
+      -webkit-tap-highlight-color: transparent;
+      transition: color .15s;
+      font-family: 'Noto Sans JP', sans-serif;
+    }
+    .bottom-nav-item .nav-icon {
+      font-size: 1.3rem;
+      line-height: 1;
+    }
+    .bottom-nav-item.active {
+      color: var(--ink);
+    }
+    .bottom-nav-item.active .nav-dot {
+      display: block;
+    }
+    .nav-dot {
+      display: none;
+      width: 4px; height: 4px;
+      background: var(--ink);
+      border-radius: 50%;
+      margin: 0 auto -2px;
+    }
+
+    /* --- フォーム・グリッド --- */
+    .form-grid { grid-template-columns: 1fr; }
+    .feature-grid { grid-template-columns: 1fr; }
+    .chart-grid { grid-template-columns: 1fr; }
+    .app { padding-left: 26px; }
+    h1 { font-size: 1.3rem; }
+
+    /* --- スケジュール表 → カードビューに変換 --- */
+    .schedule-wrap table,
+    .schedule-wrap thead,
+    .schedule-wrap tbody,
+    .schedule-wrap th,
+    .schedule-wrap td,
+    .schedule-wrap tr {
+      display: block;
+    }
+    .schedule-wrap thead {
+      display: none; /* ヘッダー行を隠す */
+    }
+    .schedule-wrap tr {
+      background: var(--white);
+      border: 1px solid var(--paper-line);
+      border-radius: 10px;
+      margin-bottom: 10px;
+      padding: 10px 12px;
+    }
+    .schedule-wrap tr.today {
+      border-color: var(--ink);
+      border-width: 2px;
+    }
+    .schedule-wrap td {
+      padding: 4px 0;
+      font-size: .85rem;
+      border: none;
+      background: transparent !important;
+    }
+    /* 各セルの前にラベルを表示 */
+    .schedule-wrap td:nth-child(1)::before { content: ""; font-weight: 700; }
+    .schedule-wrap td:nth-child(2)::before { content: "📖 単語（新規）　"; font-size: .75rem; color: var(--ink-soft); }
+    .schedule-wrap td:nth-child(3)::before { content: "🔁 単語（復習）　"; font-size: .75rem; color: var(--ink-soft); }
+    .schedule-wrap td:nth-child(4)::before { content: "📚 参考書（新規）　"; font-size: .75rem; color: var(--ink-soft); }
+    .schedule-wrap td:nth-child(5)::before { content: "📝 参考書（復習）　"; font-size: .75rem; color: var(--ink-soft); }
+    /* 「—」のみのセルはコンパクトに */
+    .schedule-wrap td:only-of-type,
+    .schedule-wrap td:empty { display: none; }
+
+    /* タグを小さく折り返し */
+    .tag { font-size: .72rem; padding: 2px 6px; margin: 2px 2px 2px 0; }
+
+    /* --- 進捗入力をモバイル向けに調整 --- */
+    .progress-item {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .progress-input-row {
+      width: 100%;
+      margin-top: 6px;
+    }
+    input.progress-num-input {
+      width: 90px;
+    }
+
+    /* --- エントリーリストをモバイル向けに調整 --- */
+    .entry-item {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .del-btn {
+      align-self: flex-end;
+    }
+
+    /* --- チップをモバイルで押しやすく --- */
+    .chip {
+      padding: 10px 14px;
+      font-size: .88rem;
+      min-height: 44px;
+    }
+
+    /* --- テストモーダル：ボタンを画面下部に固定 --- */
+    .modal-overlay {
+      align-items: flex-end;
+    }
+    .modal-content {
+      width: 100%;
+      max-width: 100%;
+      border-radius: 20px 20px 0 0;
+      max-height: 92vh;
+      padding: 24px 20px 20px;
+    }
+    .test-actions {
+      position: sticky;
+      bottom: 0;
+      background: var(--white);
+      padding: 12px 0 4px;
+      margin: 0 -20px;
+      padding-left: 20px;
+      padding-right: 20px;
+      border-top: 1px solid var(--paper-line);
+    }
+    .test-actions button {
+      padding: 16px 10px;
+      font-size: 1rem;
+      min-height: 52px;
+    }
+    .test-word {
+      font-size: 1.7rem;
+    }
+
+    /* --- チャット入力欄 --- */
+    #chatInput {
+      font-size: 16px; /* iOS自動ズーム防止 */
+    }
+    #chatBox {
+      height: 240px;
+    }
+
+    /* --- スコアフォームをモバイル向けに --- */
+    .score-form-row {
+      flex-direction: column;
+    }
+    .score-form-row .field {
+      min-width: unset;
+      flex: none;
+    }
+
+    /* --- AI弱点カード --- */
+    .weak-card .weak-title {
+      font-size: .88rem;
+    }
+
+    /* --- 印刷ボタン --- */
+    .print-btn {
+      font-size: .72rem;
+      padding: 5px 10px;
+    }
+  }
+
   @media print{
     .no-print{ display:none !important; }
     .app::before{ display:none; }
@@ -551,7 +824,8 @@
       <button class="print-btn no-print" id="printBtn">🖨️ 印刷用に表示</button>
     </div>
   </header>
-  <div class="no-print" style="display:flex; gap:10px; margin-bottom:20px;">
+  <!-- デスクトップ用タブバー（モバイルでは非表示） -->
+  <div class="desktop-tab-bar no-print" style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
     <button id="tabSchedule" class="btn-primary" onclick="showTab('schedule')">スケジュール</button>
     <button id="tab-btn-study" class="btn-ghost" onclick="showTab('study')">単語スケジュール設定</button>
     <button id="tab-btn-reference" class="btn-ghost" onclick="showTab('reference')">参考書スケジュール設定</button>
@@ -559,12 +833,62 @@
     <button id="tab-btn-analysis" class="btn-ghost" onclick="showTab('analysis')">AI弱点分析</button>
   </div>
 
+  <!-- モバイル用ボトムナビゲーション -->
+  <nav class="bottom-nav no-print" aria-label="メインナビゲーション">
+    <button class="bottom-nav-item active" id="bnav-schedule" onclick="showTab('schedule')" aria-label="スケジュール">
+      <span class="nav-dot"></span>
+      <span class="nav-icon">📅</span>
+      <span>スケジュール</span>
+    </button>
+    <button class="bottom-nav-item" id="bnav-study" onclick="showTab('study')" aria-label="単語設定">
+      <span class="nav-dot"></span>
+      <span class="nav-icon">📖</span>
+      <span>単語</span>
+    </button>
+    <button class="bottom-nav-item" id="bnav-reference" onclick="showTab('reference')" aria-label="参考書設定">
+      <span class="nav-dot"></span>
+      <span class="nav-icon">📚</span>
+      <span>参考書</span>
+    </button>
+    <button class="bottom-nav-item" id="bnav-coach" onclick="showTab('coach')" aria-label="AI学習計画">
+      <span class="nav-dot"></span>
+      <span class="nav-icon">🤖</span>
+      <span>AI計画</span>
+    </button>
+    <button class="bottom-nav-item" id="bnav-analysis" onclick="showTab('analysis')" aria-label="AI弱点分析">
+      <span class="nav-dot"></span>
+      <span class="nav-icon">📊</span>
+      <span>分析</span>
+    </button>
+  </nav>
+
     <!-- 追加：スケジュール表示ビュー -->
   <div id="tab-schedule" class="tab-content">
+
+    <!-- ★ 今日のサマリーカード -->
+    <div class="today-summary-card" id="todaySummaryCard">
+      <div class="ts-date" id="todaySummaryDate">読み込み中...</div>
+      <div class="ts-block">
+        <div class="ts-label">今日の単語</div>
+        <div class="ts-value" id="ts-words">—<span class="ts-unit">語</span></div>
+      </div>
+      <div class="ts-divider"></div>
+      <div class="ts-block">
+        <div class="ts-label">参考書</div>
+        <div class="ts-value" id="ts-pages">—<span class="ts-unit">ページ</span></div>
+      </div>
+      <div class="ts-divider"></div>
+      <div class="ts-block">
+        <div class="ts-label">復習タスク</div>
+        <div class="ts-value" id="ts-reviews">—<span class="ts-unit">件</span></div>
+      </div>
+      <div class="ts-all-done" id="ts-all-done" style="display:none;">✅ 今日の予定はすべて完了！お疲れさまです。</div>
+    </div>
+
     <h3 class="sub-head">全体のスケジュール</h3>
     
     <!-- 期間切り替えラジオボタン -->
-    <div style="margin-bottom: 20px; display: flex; gap: 20px; background: #f5f5f5; padding: 10px; border-radius: 6px;">
+    <div style="margin-bottom: 20px; display: flex; gap: 20px; background: #f5f5f5; padding: 10px; border-radius: 6px; flex-wrap:wrap;">
       <label style="cursor: pointer; display: flex; align-items: center; gap: 6px;">
         <input type="radio" name="schedulePeriod" value="week" checked> 1週間分を表示
       </label>
@@ -780,11 +1104,21 @@
     <!-- APIキー設定 -->
     <section class="card no-print" style="background:#f0f4f8; border:1px solid var(--paper-line);">
       <h2 style="font-size:0.9rem; margin-bottom:8px;">⚙️ AI連携設定</h2>
+      <!-- ★ セキュリティ警告バナー -->
+      <div class="security-banner">
+        <span class="sb-icon">⚠️</span>
+        <div>
+          <strong>APIキーの取り扱いにご注意ください。</strong><br>
+          このキーはお使いのブラウザ内にのみ保存され、外部サーバーへ送信されることはありません。
+          ただし、<strong>共有PC・共有ブラウザでのご利用はお控えください</strong>。
+          また、APIキーを他人に教えたり、スクリーンショットに写り込まないようにしてください。
+        </div>
+      </div>
       <div class="field">
-        <input type="password" id="geminiApiKey" placeholder="APIキーを入力" style="width:100%; max-width:400px;">
+        <input type="password" id="geminiApiKey" placeholder="APIキーを入力（このデバイスにのみ保存されます）" style="width:100%; max-width:400px;">
         <div class="hint">
           Gemini APIキーをお持ちでない場合は
-          <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" style="color:var(--ink); font-weight:700; text-decoration:underline; cursor:pointer;">取得方法はこちらから</a>
+          <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" style="color:var(--ink); font-weight:700; text-decoration:underline; cursor:pointer;">こちらから取得できます</a>
         </div>
       </div>
       <div class="error-msg" id="coachErrorMsg" style="margin-top: 8px;"></div>
@@ -1553,6 +1887,56 @@ function renderIntegratedSchedule() {
   }
 
   attachReviewCheckHandlers(container);
+
+  // 今日のサマリーカードを更新
+  updateTodaySummaryCard();
+}
+
+/* ---------- 今日のサマリーカード更新 ---------- */
+function updateTodaySummaryCard() {
+  const todayStr = todayISO();
+
+  // 日付表示
+  const dateEl = document.getElementById('todaySummaryDate');
+  if (dateEl) {
+    const d = new Date();
+    const weekLabel = ['日', '月', '火', '水', '木', '金', '土'][d.getDay()];
+    dateEl.textContent = `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${weekLabel}）`;
+  }
+
+  const { vocabChunks, refChunks, vocabReviews, refReviews } = buildAllReviews();
+
+  // 今日の単語数
+  const todayWords = vocabChunks.filter(c => c.date.startsWith(todayStr));
+  let totalWords = 0;
+  todayWords.forEach(w => { totalWords += w.rangeEnd - w.rangeStart + 1; });
+
+  // 今日の参考書ページ数
+  const todayBooks = refChunks.filter(c => c.date.startsWith(todayStr));
+  let totalPages = 0;
+  todayBooks.forEach(b => { totalPages += b.rangeEnd - b.rangeStart + 1; });
+
+  // 今日の未完了復習件数
+  const todayWordReviews = vocabReviews.filter(r => r.date.startsWith(todayStr) && !r.done);
+  const todayBookReviews = refReviews.filter(r => r.date.startsWith(todayStr) && !r.done);
+  const totalReviews = todayWordReviews.length + todayBookReviews.length;
+
+  const wordsEl = document.getElementById('ts-words');
+  const pagesEl = document.getElementById('ts-pages');
+  const reviewsEl = document.getElementById('ts-reviews');
+  const allDoneEl = document.getElementById('ts-all-done');
+
+  const hasAnyTask = (todayWords.length > 0 || todayBooks.length > 0 || vocabReviews.filter(r => r.date.startsWith(todayStr)).length > 0 || refReviews.filter(r => r.date.startsWith(todayStr)).length > 0);
+
+  if (wordsEl) wordsEl.innerHTML = totalWords > 0 ? `${totalWords}<span class="ts-unit">語</span>` : `—<span class="ts-unit">語</span>`;
+  if (pagesEl) pagesEl.innerHTML = totalPages > 0 ? `${totalPages}<span class="ts-unit">ページ</span>` : `—<span class="ts-unit">ページ</span>`;
+  if (reviewsEl) reviewsEl.innerHTML = `${totalReviews}<span class="ts-unit">件</span>`;
+
+  // 全完了バナー
+  if (allDoneEl) {
+    const allReviewsDone = totalReviews === 0 && hasAnyTask;
+    allDoneEl.style.display = allReviewsDone ? 'block' : 'none';
+  }
 }
 
 /* ---------- 進捗入力 UI ---------- */
@@ -2509,18 +2893,39 @@ function showTab(tabName) {
     renderIntegratedSchedule();
   }
 
-  // ボタン要素を取得
+  // デスクトップ用タブボタンの切り替え
   const btnSchedule = document.getElementById('tabSchedule');
   const btnStudy = document.getElementById('tab-btn-study');
   const btnCoach = document.getElementById('tab-btn-coach');
   const btnAnalysis = document.getElementById('tab-btn-analysis');
   const btnReference = document.getElementById('tab-btn-reference');
   const buttons = { schedule: btnSchedule, study: btnStudy, coach: btnCoach, analysis: btnAnalysis, reference: btnReference };
-
-  // 選択されたタブだけを着色し、他は白抜きにする
   Object.keys(buttons).forEach(name => {
     if(buttons[name]) buttons[name].className = (name === tabName) ? 'btn-primary' : 'btn-ghost';
   });
+
+  // モバイル用ボトムナビの active 切り替え
+  const bnavItems = {
+    schedule: document.getElementById('bnav-schedule'),
+    study:    document.getElementById('bnav-study'),
+    reference:document.getElementById('bnav-reference'),
+    coach:    document.getElementById('bnav-coach'),
+    analysis: document.getElementById('bnav-analysis'),
+  };
+  Object.keys(bnavItems).forEach(name => {
+    const el = bnavItems[name];
+    if (!el) return;
+    if (name === tabName) {
+      el.classList.add('active');
+    } else {
+      el.classList.remove('active');
+    }
+  });
+
+  // モバイルでタブ切り替え時に最上部へスクロール
+  if (window.innerWidth <= 640) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 }
 
 /* ---------- AI Coaching API Chat Logic ---------- */
@@ -2984,6 +3389,7 @@ function setupApiKeyPersistence() {
   await loadSavedApiKey();await loadEntries();
   renderAll();
   renderIntegratedSchedule(); // 「スケジュール」タブは初期表示タブなので、読み込み直後に描画する
+  updateTodaySummaryCard();   // 今日のサマリーカードを初期表示
   await loadLeech();
   await loadHistory();
   renderLeech();
