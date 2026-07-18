@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Self Study</title>
+<title>Self Studing</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@500;700&family=Noto+Sans+JP:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
@@ -1129,6 +1129,13 @@ function renderIntegratedSchedule() {
   const container = document.getElementById('integratedScheduleList');
   container.innerHTML = '';
 
+  // 経過日数から「どれくらい忘れているか」の目安をざっくり計算する
+  // （エビングハウスの忘却曲線を単純化した指数関数モデル。あくまで目安の演出用）
+  function estimateForgettingRate(daysSinceLearned) {
+    const rate = (1 - Math.exp(-daysSinceLearned / 5)) * 100;
+    return Math.round(rate);
+  }
+
   // 表示日数の決定 (1週間なら7日、1ヶ月なら30日)
   const periodMode = document.querySelector('input[name="schedulePeriod"]:checked').value;
   const targetDays = periodMode === 'week' ? 7 : 30;
@@ -1224,12 +1231,14 @@ function renderIntegratedSchedule() {
 
     // 単語の復習日のテキスト生成
     dayWordReviews.forEach(r => {
-      taskHtml += `<div style="margin-top: 4px; color: #333;"><span style="background: #fdecea; color: #b23a2e; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; margin-right: 6px;">復習</span> 単語 ${r.rangeStart} 〜 ${r.rangeEnd}（${r.interval}日後）</div>`;
+      const forgetRate = estimateForgettingRate(r.interval);
+      taskHtml += `<div style="margin-top: 4px; color: #333;"><span style="background: #fdecea; color: #b23a2e; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; margin-right: 6px;">復習</span> 単語 ${r.rangeStart} 〜 ${r.rangeEnd}（${r.interval}日後）<div style="font-size: 0.72rem; color: #b23a2e; margin-top: 2px;">📉 推定${forgetRate}％忘れています！</div></div>`;
     });
 
     // 参考書の復習日のテキスト生成
     dayBookReviews.forEach(r => {
-      taskHtml += `<div style="margin-top: 4px; color: #333;"><span style="background: #fdecea; color: #b23a2e; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; margin-right: 6px;">復習</span> ${escapeHtml(r.bookName)} ${r.rangeStart} 〜 ${r.rangeEnd}（${r.interval}日後）</div>`;
+      const forgetRate = estimateForgettingRate(r.interval);
+      taskHtml += `<div style="margin-top: 4px; color: #333;"><span style="background: #fdecea; color: #b23a2e; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; margin-right: 6px;">復習</span> ${escapeHtml(r.bookName)} ${r.rangeStart} 〜 ${r.rangeEnd}（${r.interval}日後）<div style="font-size: 0.72rem; color: #b23a2e; margin-top: 2px;">📉 推定${forgetRate}％忘れています！</div></div>`;
     });
 
     if (taskHtml === '') {
