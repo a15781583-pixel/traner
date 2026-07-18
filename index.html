@@ -229,6 +229,32 @@
     width:15px; height:15px; border-radius:50%; border:1.5px solid var(--success); font-size:.6rem;
   }
   .tag-ref-review{ background:#eaf3ec; color:var(--success); border:1px solid #bcd6c4; font-weight:600; }
+
+  /* ── 復習インターバル 階層カラー（重要度別）─────────────────── */
+  .tag-review-t1{ background:#dbeafe; color:#1e40af; border-color:#93c5fd; }
+  .tag-review-t2{ background:#d1fae5; color:#065f46; border-color:#6ee7b7; }
+  .tag-review-t3{ background:#fef3c7; color:#92400e; border-color:#fcd34d; }
+  .tag-review-t4{ background:#fee2e2; color:#991b1b; border-color:#fca5a5; }
+  .tag-review-t1 .stamp{ border-color:#1e40af; }
+  .tag-review-t2 .stamp{ border-color:#065f46; }
+  .tag-review-t3 .stamp{ border-color:#92400e; }
+  .tag-review-t4 .stamp{ border-color:#991b1b; }
+  /* 凡例コンテナ */
+  .review-legend{
+    display:flex; gap:6px; flex-wrap:wrap; align-items:center;
+    padding:9px 14px; background:var(--paper);
+    border:1px solid var(--paper-line); border-radius:8px;
+    margin-bottom:14px; font-size:.72rem;
+  }
+  .review-legend-label{ font-weight:700; color:var(--ink-soft); margin-right:2px; white-space:nowrap; }
+  .review-legend-badge{
+    display:inline-flex; align-items:center; gap:4px;
+    font-weight:700; border-radius:4px; padding:2px 9px;
+    border:1px solid transparent;
+  }
+  .review-legend-badge small{ font-weight:400; opacity:.75; font-size:.68rem; }
+  /* ─────────────────────────────────────────────────────────── */
+
   .tag-ref-review .stamp{
     display:inline-flex; align-items:center; justify-content:center;
     width:15px; height:15px; border-radius:50%; border:1.5px solid var(--success); font-size:.6rem;
@@ -967,6 +993,35 @@ let reviewDoneSet = new Set(); // クリア済みの復習項目キーの集合
 // 日別進捗記録: [{ id, date, entryId, type:'word'|'book', plannedStart, plannedEnd, actualEnd, bookName? }]
 let dailyProgress = [];
 
+// ── 復習インターバルの階層スタイルを返すヘルパー ──────────────
+function getIntervalTier(interval) {
+  if (interval <= 1) return 1;
+  if (interval <= 3) return 2;
+  if (interval <= 7) return 3;
+  return 4;
+}
+function getIntervalTierStyle(interval) {
+  const t = getIntervalTier(interval);
+  return [
+    null,
+    { bg:'#dbeafe', color:'#1e40af', border:'#93c5fd', label:'Lv.1 初期',  labelShort:'Lv.1' },
+    { bg:'#d1fae5', color:'#065f46', border:'#6ee7b7', label:'Lv.2 定着',  labelShort:'Lv.2' },
+    { bg:'#fef3c7', color:'#92400e', border:'#fcd34d', label:'Lv.3 強化',  labelShort:'Lv.3' },
+    { bg:'#fee2e2', color:'#991b1b', border:'#fca5a5', label:'Lv.4 仕上げ', labelShort:'Lv.4' },
+  ][t];
+}
+function reviewLegendHTML() {
+  return `<div class="review-legend">
+    <span class="review-legend-label">🎯 復習ステップ：</span>
+    <span class="review-legend-badge tag-review-t1">Lv.1 初期 <small>1日後</small></span>
+    <span class="review-legend-badge tag-review-t2">Lv.2 定着 <small>3日後</small></span>
+    <span class="review-legend-badge tag-review-t3">Lv.3 強化 <small>7日後</small></span>
+    <span class="review-legend-badge tag-review-t4">Lv.4 仕上げ <small>14日後〜</small></span>
+    <span style="color:var(--ink-soft); margin-left:4px; font-size:.68rem;">数字が大きいほど記憶定着の山場です</span>
+  </div>`;
+}
+// ──────────────────────────────────────────────────────────────
+
 function pad(n){ return String(n).padStart(2,'0'); }
 function formatISO(d){ return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
 function parseISO(s){ const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); }
@@ -1364,7 +1419,8 @@ function renderMergedSchedule(containerId){
   }
 
   const todayIso = todayISO();
-  let html = `<table><thead><tr><th>日付</th><th>単語：新規</th><th>単語：復習</th><th>参考書：新規</th><th>参考書：復習</th></tr></thead><tbody>`;
+  let html = reviewLegendHTML();
+  html += `<table><thead><tr><th>日付</th><th>単語：新規</th><th>単語：復習</th><th>参考書：新規</th><th>参考書：復習</th></tr></thead><tbody>`;
   rows.forEach(row => {
     const isToday = row.iso === todayIso;
     const wd = WEEKDAYS[row.date.getDay()];
@@ -1372,9 +1428,9 @@ function renderMergedSchedule(containerId){
     html += `<tr class="${isToday ? 'today' : ''}">
       <td class="date-cell">${dateLabel}<span class="wd">(${wd})</span>${isToday ? '<span class="today-badge">今日</span>' : ''}</td>
       <td>${row.newItems.map(c => `<span class="tag tag-new">${c.rangeStart}〜${c.rangeEnd}</span>`).join('') || '—'}</td>
-      <td>${row.reviewItems.map(r => `<label class="tag tag-review review-check-label${r.done ? ' is-done' : ''}"><input type="checkbox" class="review-check" data-key="${r.key}" ${r.done ? 'checked' : ''}><span class="stamp">◎</span>${r.rangeStart}〜${r.rangeEnd}（${r.interval}日後）${r.delayedDays > 0 ? `<span class="delay-badge">${r.delayedDays}日遅れ</span>` : ''}</label>`).join('') || '—'}</td>
+      <td>${row.reviewItems.map(r => `<label class="tag tag-review tag-review-t${getIntervalTier(r.interval)} review-check-label${r.done ? ' is-done' : ''}"><input type="checkbox" class="review-check" data-key="${r.key}" ${r.done ? 'checked' : ''}><span class="stamp">◎</span>${r.rangeStart}〜${r.rangeEnd}（${r.interval}日後）${r.delayedDays > 0 ? `<span class="delay-badge">${r.delayedDays}日遅れ</span>` : ''}</label>`).join('') || '—'}</td>
       <td>${row.refItems.map(c => `<span class="tag tag-ref">${escapeHtml(c.bookName)} ${c.rangeStart}〜${c.rangeEnd}</span>`).join('') || '—'}</td>
-      <td>${row.refReviewItems.map(r => `<label class="tag tag-ref-review review-check-label${r.done ? ' is-done' : ''}"><input type="checkbox" class="review-check" data-key="${r.key}" ${r.done ? 'checked' : ''}><span class="stamp">◎</span>${escapeHtml(r.bookName)} ${r.rangeStart}〜${r.rangeEnd}（${r.interval}日後）${r.delayedDays > 0 ? `<span class="delay-badge">${r.delayedDays}日遅れ</span>` : ''}</label>`).join('') || '—'}</td>
+      <td>${row.refReviewItems.map(r => `<label class="tag tag-ref-review tag-review-t${getIntervalTier(r.interval)} review-check-label${r.done ? ' is-done' : ''}"><input type="checkbox" class="review-check" data-key="${r.key}" ${r.done ? 'checked' : ''}><span class="stamp">◎</span>${escapeHtml(r.bookName)} ${r.rangeStart}〜${r.rangeEnd}（${r.interval}日後）${r.delayedDays > 0 ? `<span class="delay-badge">${r.delayedDays}日遅れ</span>` : ''}</label>`).join('') || '—'}</td>
     </tr>`;
   });
   html += `</tbody></table>`;
@@ -1397,12 +1453,9 @@ function renderIntegratedSchedule() {
   const container = document.getElementById('integratedScheduleList');
   container.innerHTML = '';
 
-  // 経過日数から「どれくらい忘れているか」の目安をざっくり計算する
-  // （エビングハウスの忘却曲線を単純化した指数関数モデル。あくまで目安の演出用）
-  function estimateForgettingRate(daysSinceLearned) {
-    const rate = (1 - Math.exp(-daysSinceLearned / 5)) * 100;
-    return Math.round(rate);
-  }
+  // ── 凡例を先頭に挿入 ──────────────────────────────────────────
+  container.insertAdjacentHTML('beforeend', reviewLegendHTML());
+  // ─────────────────────────────────────────────────────────────
 
   // 表示日数の決定 (1週間なら7日、1ヶ月なら30日)
   const periodMode = document.querySelector('input[name="schedulePeriod"]:checked').value;
@@ -1458,18 +1511,18 @@ function renderIntegratedSchedule() {
       taskHtml += `<div style="margin-top: 4px; color: #333;"><span style="background: #e8f5e9; color: #1b5e20; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; margin-right: 6px;">参考書</span> ${escapeHtml(b.bookName)}: ${b.rangeStart} 〜 ${b.rangeEnd}</div>`;
     });
 
-    // 単語の復習日のテキスト生成
+    // 単語の復習日のテキスト生成（階層カラー）
     dayWordReviews.forEach(r => {
-      const forgetRate = estimateForgettingRate(r.interval);
-      const delayHtml = r.delayedDays > 0 ? `<span style="display:inline-block; font-size:0.68rem; font-weight:bold; background:#b23a2e; color:#fff; border-radius:4px; padding:1px 5px; margin-left:4px;">${r.delayedDays}日遅れ</span>` : '';
-      taskHtml += `<div style="margin-top: 4px; color: #333;"><label style="cursor:pointer; ${r.done ? 'opacity:.55; text-decoration:line-through;' : ''}"><input type="checkbox" class="review-check" data-key="${r.key}" ${r.done ? 'checked' : ''} style="vertical-align:middle; margin-right:4px;"><span style="background: #fdecea; color: #b23a2e; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; margin-right: 6px;">復習</span>単語 ${r.rangeStart} 〜 ${r.rangeEnd}（${r.interval}日後）${delayHtml}</label><div style="font-size: 0.72rem; color: #b23a2e; margin-top: 2px;">📉 推定${forgetRate}％忘れています！</div></div>`;
+      const ts = getIntervalTierStyle(r.interval);
+      const delayHtml = r.delayedDays > 0 ? `<span style="display:inline-block;font-size:.68rem;font-weight:700;background:#b23a2e;color:#fff;border-radius:4px;padding:1px 5px;margin-left:4px;">${r.delayedDays}日遅れ</span>` : '';
+      taskHtml += `<div style="margin-top:6px;"><label style="cursor:pointer;display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:6px;background:${ts.bg};border:1px solid ${ts.border};${r.done ? 'opacity:.5;text-decoration:line-through;' : ''}"><input type="checkbox" class="review-check" data-key="${r.key}" ${r.done ? 'checked' : ''} style="margin:0;"><span style="background:${ts.color};color:#fff;padding:1px 5px;border-radius:3px;font-size:.68rem;font-weight:700;white-space:nowrap;">${ts.labelShort}</span><span style="color:${ts.color};font-size:.75rem;font-weight:700;">復習</span><span style="color:#333;font-size:.8rem;">単語 ${r.rangeStart}〜${r.rangeEnd}</span><span style="color:${ts.color};font-size:.72rem;">${r.interval}日後</span>${delayHtml}</label></div>`;
     });
 
-    // 参考書の復習日のテキスト生成
+    // 参考書の復習日のテキスト生成（階層カラー）
     dayBookReviews.forEach(r => {
-      const forgetRate = estimateForgettingRate(r.interval);
-      const delayHtml = r.delayedDays > 0 ? `<span style="display:inline-block; font-size:0.68rem; font-weight:bold; background:#b23a2e; color:#fff; border-radius:4px; padding:1px 5px; margin-left:4px;">${r.delayedDays}日遅れ</span>` : '';
-      taskHtml += `<div style="margin-top: 4px; color: #333;"><label style="cursor:pointer; ${r.done ? 'opacity:.55; text-decoration:line-through;' : ''}"><input type="checkbox" class="review-check" data-key="${r.key}" ${r.done ? 'checked' : ''} style="vertical-align:middle; margin-right:4px;"><span style="background: #fdecea; color: #b23a2e; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; margin-right: 6px;">復習</span>${escapeHtml(r.bookName)} ${r.rangeStart} 〜 ${r.rangeEnd}（${r.interval}日後）${delayHtml}</label><div style="font-size: 0.72rem; color: #b23a2e; margin-top: 2px;">📉 推定${forgetRate}％忘れています！</div></div>`;
+      const ts = getIntervalTierStyle(r.interval);
+      const delayHtml = r.delayedDays > 0 ? `<span style="display:inline-block;font-size:.68rem;font-weight:700;background:#b23a2e;color:#fff;border-radius:4px;padding:1px 5px;margin-left:4px;">${r.delayedDays}日遅れ</span>` : '';
+      taskHtml += `<div style="margin-top:6px;"><label style="cursor:pointer;display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:6px;background:${ts.bg};border:1px solid ${ts.border};${r.done ? 'opacity:.5;text-decoration:line-through;' : ''}"><input type="checkbox" class="review-check" data-key="${r.key}" ${r.done ? 'checked' : ''} style="margin:0;"><span style="background:${ts.color};color:#fff;padding:1px 5px;border-radius:3px;font-size:.68rem;font-weight:700;white-space:nowrap;">${ts.labelShort}</span><span style="color:${ts.color};font-size:.75rem;font-weight:700;">復習</span><span style="color:#333;font-size:.8rem;">${escapeHtml(r.bookName)} ${r.rangeStart}〜${r.rangeEnd}</span><span style="color:${ts.color};font-size:.72rem;">${r.interval}日後</span>${delayHtml}</label></div>`;
     });
 
     if (taskHtml === '') {
