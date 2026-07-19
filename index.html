@@ -3441,7 +3441,7 @@ async function handleChatSend() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        systemInstruction: { parts: [{ text: "あなたはプロの学習プランナーです。ユーザーの目標達成のためのロードマップを作るために、現状をヒアリングしてください。送られた画像（成績表やノートなど）がある場合は、その内容も丁寧に分析・褒めて、アドバイスに活かしてください。1回の返信につき質問は1〜2個までにし、フレンドリーな日本語で対話してください。" }] },
+        systemInstruction: { parts: [{ text: "あなたはプロの学習プランナーです。ユーザーの目標達成のためのロードマップを作るために、現状をヒアリングしてください。送られた画像（成績表やノートなど）がある場合は、その内容も丁寧に分析・褒めて、アドバイスに活かしてください。1回の返信につき質問は1〜2個までにし、フレンドリーな日本語で対話してください。回答は3~4行でわかりやすくまとめてください" }] },
         contents: chatHistory
       }),
       signal: abortController.signal
