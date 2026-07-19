@@ -446,8 +446,63 @@
   details.setup-details[open] > summary::before{ content:"▾ "; }
 
   /* ============================================================
-     MOBILE IMPROVEMENTS
+     スケジュール折りたたみ（モバイル：初期3行のみ表示）
      ============================================================ */
+  .schedule-tbody-hidden {
+    display: none;
+  }
+  .schedule-toggle-row {
+    display: none; /* デスクトップでは非表示 */
+  }
+  @media (max-width: 640px) {
+    .schedule-toggle-row {
+      display: table-row;
+    }
+    .schedule-toggle-btn {
+      width: 100%;
+      background: none;
+      border: none;
+      padding: 12px 8px;
+      font-size: .82rem;
+      font-weight: 700;
+      color: var(--ink);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-family: 'Noto Sans JP', sans-serif;
+    }
+    .schedule-toggle-btn .toggle-icon {
+      font-size: 1rem;
+      line-height: 1;
+      transition: transform .2s;
+    }
+    .schedule-toggle-btn.is-open .toggle-icon {
+      transform: rotate(180deg);
+    }
+    /* 折りたたみセルはcolspan全体を横断 */
+    .schedule-toggle-cell {
+      border-top: 1.5px dashed var(--paper-line);
+      background: var(--paper);
+      padding: 0 !important;
+    }
+    /* 「残り件数」バッジ */
+    .schedule-remaining-badge {
+      display: inline-block;
+      font-size: .72rem;
+      font-weight: 700;
+      background: var(--ink);
+      color: var(--white);
+      border-radius: 10px;
+      padding: 1px 8px;
+      margin-left: 4px;
+    }
+  }
+
+  /* ============================================================
+     MOBILE IMPROVEMENTS
+  ============================================================ */
 
   /* --- ボトムナビゲーション（モバイル専用） --- */
   .bottom-nav {
@@ -1804,21 +1859,67 @@ function renderMergedSchedule(containerId){
   }
 
   const todayIso = todayISO();
+  const MOBILE_INITIAL_ROWS = 3; // モバイルで最初に見せる行数
+
   let html = reviewLegendHTML();
-  html += `<table><thead><tr><th>日付</th><th>単語：新規</th><th>単語：復習</th><th>参考書：新規</th><th>参考書：復習</th></tr></thead><tbody>`;
-  rows.forEach(row => {
+  html += `<table><thead><tr><th>日付</th><th>単語：新規</th><th>単語：復習</th><th>参考書：新規</th><th>参考書：復習</th></tr></thead><tbody id="sched-tbody-visible-${containerId}">`;
+
+  // ── 最初の3行（常に表示） ──────────────────────────────────
+  const visibleRows  = rows.slice(0, MOBILE_INITIAL_ROWS);
+  const hiddenRows   = rows.slice(MOBILE_INITIAL_ROWS);
+  const hasHidden    = hiddenRows.length > 0;
+
+  function rowHtml(row) {
     const isToday = row.iso === todayIso;
     const wd = WEEKDAYS[row.date.getDay()];
     const dateLabel = `${row.date.getMonth()+1}/${row.date.getDate()}`;
-    html += `<tr class="${isToday ? 'today' : ''}">
+    return `<tr class="${isToday ? 'today' : ''}">
       <td class="date-cell">${dateLabel}<span class="wd">(${wd})</span>${isToday ? '<span class="today-badge">今日</span>' : ''}</td>
       <td>${row.newItems.map(c => `<span class="tag tag-new">${c.rangeStart}〜${c.rangeEnd}</span>`).join('') || '—'}</td>
       <td>${row.reviewItems.map(r => `<label class="tag tag-review tag-review-t${getIntervalTier(r.interval)} review-check-label${r.done ? ' is-done' : ''}"><input type="checkbox" class="review-check" data-key="${r.key}" ${r.done ? 'checked' : ''}><span class="stamp">◎</span>${r.rangeStart}〜${r.rangeEnd}（${r.interval}日後）${r.delayedDays > 0 ? `<span class="delay-badge">${r.delayedDays}日遅れ</span>` : ''}</label>`).join('') || '—'}</td>
       <td>${row.refItems.map(c => `<span class="tag tag-ref">${escapeHtml(c.bookName)} ${c.rangeStart}〜${c.rangeEnd}</span>`).join('') || '—'}</td>
       <td>${row.refReviewItems.map(r => `<label class="tag tag-ref-review tag-review-t${getIntervalTier(r.interval)} review-check-label${r.done ? ' is-done' : ''}"><input type="checkbox" class="review-check" data-key="${r.key}" ${r.done ? 'checked' : ''}><span class="stamp">◎</span>${escapeHtml(r.bookName)} ${r.rangeStart}〜${r.rangeEnd}（${r.interval}日後）${r.delayedDays > 0 ? `<span class="delay-badge">${r.delayedDays}日遅れ</span>` : ''}</label>`).join('') || '—'}</td>
     </tr>`;
-  });
-  html += `</tbody></table>`;
+  }
+
+  visibleRows.forEach(row => { html += rowHtml(row); });
+  html += `</tbody>`;
+
+  // ── 折りたたみ部分（モバイルのみ） ───────────────────────────
+  if (hasHidden) {
+    // 展開ボタン行（モバイル専用）
+    html += `<tbody class="schedule-toggle-row">
+      <tr>
+        <td class="schedule-toggle-cell" colspan="5">
+          <button class="schedule-toggle-btn" id="toggle-btn-${containerId}"
+                  onclick="toggleScheduleRows('${containerId}')">
+            <span class="toggle-icon">▼</span>
+            残りのスケジュールを表示
+            <span class="schedule-remaining-badge">${hiddenRows.length}日</span>
+          </button>
+        </td>
+      </tr>
+    </tbody>`;
+
+    // 非表示の行群（初期は hidden）
+    html += `<tbody id="sched-tbody-hidden-${containerId}" class="schedule-tbody-hidden">`;
+    hiddenRows.forEach(row => { html += rowHtml(row); });
+    html += `</tbody>`;
+
+    // 閉じるボタン行（展開後に一番下に出る）
+    html += `<tbody id="sched-close-row-${containerId}" class="schedule-toggle-row schedule-tbody-hidden">
+      <tr>
+        <td class="schedule-toggle-cell" colspan="5">
+          <button class="schedule-toggle-btn is-open" onclick="toggleScheduleRows('${containerId}')">
+            <span class="toggle-icon">▼</span>
+            閉じる
+          </button>
+        </td>
+      </tr>
+    </tbody>`;
+  }
+
+  html += `</table>`;
   if(truncated){ html += `<div class="hint" style="margin-top:8px;">※表示は45日分までです。それ以降は範囲を追加していくと自動で延びます。</div>`; }
   html += `<div class="hint" style="margin-top:8px;">※復習項目はチェックを入れるとクリア済みになります。予定日にクリアしていない項目は、クリアするまで「今日」の欄に繰り越されます（＝遅れた分だけ1日ずつ後ろにずれます）。</div>`;
   area.innerHTML = html;
@@ -2935,6 +3036,41 @@ document.getElementById('closeTestBtn').addEventListener('click', () => {
   // テスト結果によるスケジュールの変化を画面に反映
   renderLeech();
 });
+
+/* ---------- スケジュール折りたたみトグル ---------- */
+function toggleScheduleRows(containerId) {
+  const hiddenTbody  = document.getElementById(`sched-tbody-hidden-${containerId}`);
+  const openBtn      = document.getElementById(`toggle-btn-${containerId}`);
+  const closeRow     = document.getElementById(`sched-close-row-${containerId}`);
+  if (!hiddenTbody) return;
+
+  const isOpen = !hiddenTbody.classList.contains('schedule-tbody-hidden');
+
+  if (isOpen) {
+    // 閉じる
+    hiddenTbody.classList.add('schedule-tbody-hidden');
+    if (closeRow)  closeRow.classList.add('schedule-tbody-hidden');
+    if (openBtn) {
+      openBtn.classList.remove('is-open');
+      // 残り件数バッジを復元
+      const badge = openBtn.querySelector('.schedule-remaining-badge');
+      const rows  = hiddenTbody.querySelectorAll('tr').length;
+      openBtn.innerHTML = `<span class="toggle-icon">▼</span>残りのスケジュールを表示<span class="schedule-remaining-badge">${rows}日</span>`;
+    }
+  } else {
+    // 開く
+    hiddenTbody.classList.remove('schedule-tbody-hidden');
+    if (closeRow)  closeRow.classList.remove('schedule-tbody-hidden');
+    if (openBtn) {
+      openBtn.classList.add('is-open');
+      openBtn.innerHTML = `<span class="toggle-icon">▼</span>閉じる`;
+    }
+    // 展開後はコンテンツ先頭へスムーズスクロール（モバイルのみ）
+    if (window.innerWidth <= 640 && hiddenTbody) {
+      hiddenTbody.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+}
 
 function showTab(tabName) {
   // タブコンテンツの表示・非表示を切り替え
