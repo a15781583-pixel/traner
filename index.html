@@ -856,6 +856,32 @@
     font-size: .85rem; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
   }
   .ahead-banner .ahead-text { flex: 1; font-weight: 600; color: var(--success); }
+
+  /* ---------- 繰り越しバッジ ---------- */
+  .carry-badge {
+    display: inline-block;
+    font-size: .65rem;
+    font-weight: 700;
+    background: #f97316;
+    color: #fff;
+    border-radius: 4px;
+    padding: 1px 5px;
+    margin-left: 4px;
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+  .carry-forward-label {
+    display: inline-block;
+    font-size: .7rem;
+    font-weight: 700;
+    color: #f97316;
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    border-radius: 4px;
+    padding: 1px 7px;
+    margin-right: 5px;
+    white-space: nowrap;
+  }
   .behind-note {
     margin-top: 8px; padding: 8px 12px;
     background: #fdecea; border: 1px solid var(--margin-red-soft); border-radius: 6px;
@@ -1553,6 +1579,46 @@ function buildAllReviews(){
   return { vocabChunks, refChunks, vocabReviews, refReviews };
 }
 
+/**
+ * 過去日付のうち未達成のチャンクを今日に繰り上げて返す。
+ *
+ * 判定ルール（単語・参考書共通）:
+ * 1. 最新の進捗記録の actualEnd がこのチャンクの rangeEnd 以上 → 完了とみなしスキップ
+ * 2. このチャンクの元日付に対して progress 記録がある → 残量は computeAdjusted* で再配分済みのためスキップ
+ * 3. 上記どちらも該当しない → 未達成として今日 (todayISO) に繰り上げ
+ */
+function getCarryForwardChunks(vocabChunks, refChunks) {
+  const todayStr = todayISO();
+
+  const cfVocab = vocabChunks
+    .filter(chunk => chunk.date < todayStr)
+    .filter(chunk => {
+      // 最新進捗がこのチャンクの範囲を全て覆っていれば完了
+      const latest = getLatestProgress(chunk.entryId, 'word');
+      if (latest && latest.actualEnd >= chunk.rangeEnd) return false;
+      // この日付に何らかの進捗記録があれば残量は再配分済み
+      const hasRecord = dailyProgress.some(p =>
+        p.date === chunk.date && p.entryId === chunk.entryId && p.type === 'word'
+      );
+      return !hasRecord; // 記録なし → 繰り上げ対象
+    })
+    .map(chunk => ({ ...chunk, date: todayStr, carriedForward: true, originalDate: chunk.date }));
+
+  const cfRef = refChunks
+    .filter(chunk => chunk.date < todayStr)
+    .filter(chunk => {
+      const latest = getLatestProgress(chunk.planId, 'book');
+      if (latest && latest.actualEnd >= chunk.rangeEnd) return false;
+      const hasRecord = dailyProgress.some(p =>
+        p.date === chunk.date && p.entryId === chunk.planId && p.type === 'book'
+      );
+      return !hasRecord;
+    })
+    .map(chunk => ({ ...chunk, date: todayStr, carriedForward: true, originalDate: chunk.date }));
+
+  return { cfVocab, cfRef };
+}
+
 // 復習チェックボックスにクリックイベントを設定する共通関数。
 // チェック/解除のたびに保存し、全スケジュール表示を再描画する。
 function attachReviewCheckHandlers(container){
@@ -1830,27 +1896,33 @@ function renderMergedSchedule(containerId){
   const area = document.getElementById(containerId);
   if(!area) return;
 
-  const { vocabChunks, refChunks, vocabReviews, refReviews } = buildAllReviews();
+  const { vocabChunks: rawVocabChunks, refChunks: rawRefChunks, vocabReviews, refReviews } = buildAllReviews();
 
   if(entries.length === 0 && refEntries.length === 0){
     area.innerHTML = `<div class="empty-state">まだ単語範囲・参考書が登録されていません。上のフォームから追加してください。</div>`;
     return;
   }
-  if(vocabChunks.length === 0 && refChunks.length === 0){
+  if(rawVocabChunks.length === 0 && rawRefChunks.length === 0){
     area.innerHTML = `<div class="empty-state">学習曜日が選択されていない範囲があります。設定を確認してください。</div>`;
     return;
   }
 
+  // ── 過去の未達成チャンクを今日に繰り上げ ───────────────────────
+  const { cfVocab, cfRef } = getCarryForwardChunks(rawVocabChunks, rawRefChunks);
+  const vocabChunks = [...rawVocabChunks, ...cfVocab];
+  const refChunks   = [...rawRefChunks,   ...cfRef];
+
   const today = new Date(); today.setHours(0,0,0,0);
-  const allDates = [
-    ...vocabChunks.map(c => parseISO(c.date)),
-    ...vocabReviews.map(r => parseISO(r.date)),
-    ...refChunks.map(c => parseISO(c.date)),
-    ...refReviews.map(r => parseISO(r.date)),
+  // 表示は「今日」以降のみ（過去日は非表示）
+  let minDate = new Date(today);
+  const futureDates = [
+    ...vocabChunks.filter(c => parseISO(c.date) >= today).map(c => parseISO(c.date)),
+    ...vocabReviews.filter(r => parseISO(r.date) >= today).map(r => parseISO(r.date)),
+    ...refChunks.filter(c => parseISO(c.date) >= today).map(c => parseISO(c.date)),
+    ...refReviews.filter(r => parseISO(r.date) >= today).map(r => parseISO(r.date)),
     today
   ];
-  let minDate = new Date(Math.min(...allDates));
-  let maxDate = new Date(Math.max(...allDates));
+  let maxDate = new Date(Math.max(...futureDates));
   const MAX_DAYS = 45;
   const spanDays = Math.round((maxDate - minDate) / 86400000) + 1;
   let truncated = false;
@@ -1885,9 +1957,15 @@ function renderMergedSchedule(containerId){
     const dateLabel = `${row.date.getMonth()+1}/${row.date.getDate()}`;
     return `<tr class="${isToday ? 'today' : ''}">
       <td class="date-cell">${dateLabel}<span class="wd">(${wd})</span>${isToday ? '<span class="today-badge">今日</span>' : ''}</td>
-      <td>${row.newItems.map(c => `<span class="tag tag-new">${c.rangeStart}〜${c.rangeEnd}</span>`).join('') || '—'}</td>
+      <td>${row.newItems.map(c => {
+        const cfBadge = c.carriedForward ? `<span class="carry-badge">繰越 ${c.originalDate}</span>` : '';
+        return `<span class="tag tag-new">${c.rangeStart}〜${c.rangeEnd}${cfBadge}</span>`;
+      }).join('') || '—'}</td>
       <td>${row.reviewItems.map(r => `<label class="tag tag-review tag-review-t${getIntervalTier(r.interval)} review-check-label${r.done ? ' is-done' : ''}"><input type="checkbox" class="review-check" data-key="${r.key}" ${r.done ? 'checked' : ''}><span class="stamp">◎</span>${r.rangeStart}〜${r.rangeEnd}（${r.interval}日後）${r.delayedDays > 0 ? `<span class="delay-badge">${r.delayedDays}日遅れ</span>` : ''}</label>`).join('') || '—'}</td>
-      <td>${row.refItems.map(c => `<span class="tag tag-ref">${escapeHtml(c.bookName)} ${c.rangeStart}〜${c.rangeEnd}</span>`).join('') || '—'}</td>
+      <td>${row.refItems.map(c => {
+        const cfBadge = c.carriedForward ? `<span class="carry-badge">繰越 ${c.originalDate}</span>` : '';
+        return `<span class="tag tag-ref">${escapeHtml(c.bookName)} ${c.rangeStart}〜${c.rangeEnd}${cfBadge}</span>`;
+      }).join('') || '—'}</td>
       <td>${row.refReviewItems.map(r => `<label class="tag tag-ref-review tag-review-t${getIntervalTier(r.interval)} review-check-label${r.done ? ' is-done' : ''}"><input type="checkbox" class="review-check" data-key="${r.key}" ${r.done ? 'checked' : ''}><span class="stamp">◎</span>${escapeHtml(r.bookName)} ${r.rangeStart}〜${r.rangeEnd}（${r.interval}日後）${r.delayedDays > 0 ? `<span class="delay-badge">${r.delayedDays}日遅れ</span>` : ''}</label>`).join('') || '—'}</td>
     </tr>`;
   }
@@ -1932,7 +2010,7 @@ function renderMergedSchedule(containerId){
 
   html += `</table>`;
   if(truncated){ html += `<div class="hint" style="margin-top:8px;">※表示は45日分までです。それ以降は範囲を追加していくと自動で延びます。</div>`; }
-  html += `<div class="hint" style="margin-top:8px;">※復習項目はチェックを入れるとクリア済みになります。予定日にクリアしていない項目は、クリアするまで「今日」の欄に繰り越されます（＝遅れた分だけ1日ずつ後ろにずれます）。</div>`;
+  html += `<div class="hint" style="margin-top:8px;">※過去日のスケジュールは非表示です。未達成の新規・復習項目は「今日」の欄に自動で繰り越されます。復習はチェックを入れるとクリア済みになります。</div>`;
   area.innerHTML = html;
   attachReviewCheckHandlers(area);
 }
@@ -1959,7 +2037,11 @@ function renderIntegratedSchedule() {
   const targetDays = periodMode === 'week' ? 7 : 30;
 
   // 単語・参考書の新規チャンクと、復習日（クリアできていなければ今日までずらし済み）をまとめて取得
-  const { vocabChunks: allWordChunks, refChunks: allBookChunks, vocabReviews: allWordReviews, refReviews: allBookReviews } = buildAllReviews();
+  const { vocabChunks: rawWordChunks, refChunks: rawBookChunks, vocabReviews: allWordReviews, refReviews: allBookReviews } = buildAllReviews();
+  // 過去の未達成チャンクを今日に繰り上げて統合
+  const { cfVocab: cfWords, cfRef: cfBooks } = getCarryForwardChunks(rawWordChunks, rawBookChunks);
+  const allWordChunks = [...rawWordChunks, ...cfWords];
+  const allBookChunks = [...rawBookChunks, ...cfBooks];
 
   // 3. 今日からN日分の日付ループを作成してスケジュールをマージ
   const today = new Date();
@@ -2000,12 +2082,18 @@ function renderIntegratedSchedule() {
     
     // 単語のテキスト生成
     dayWords.forEach(w => {
-      taskHtml += `<div style="margin-top: 4px; color: #333;"><span style="background: #e3f2fd; color: #0d47a1; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; margin-right: 6px;">単語</span> ${w.rangeStart} 〜 ${w.rangeEnd}</div>`;
+      const cfBadge = w.carriedForward
+        ? `<span class="carry-forward-label">繰越</span><span style="color:#9a5400;font-size:.72rem;margin-right:4px;">${w.originalDate}</span>`
+        : '';
+      taskHtml += `<div style="margin-top:6px;display:flex;flex-wrap:wrap;align-items:center;gap:4px;"><span style="background:#e3f2fd;color:#0d47a1;padding:2px 6px;border-radius:4px;font-size:0.75rem;font-weight:bold;">単語</span>${cfBadge}<span style="color:#333;font-size:.85rem;">${w.rangeStart} 〜 ${w.rangeEnd}</span></div>`;
     });
 
     // 参考書のテキスト生成
     dayBooks.forEach(b => {
-      taskHtml += `<div style="margin-top: 4px; color: #333;"><span style="background: #e8f5e9; color: #1b5e20; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; margin-right: 6px;">参考書</span> ${escapeHtml(b.bookName)}: ${b.rangeStart} 〜 ${b.rangeEnd}</div>`;
+      const cfBadge = b.carriedForward
+        ? `<span class="carry-forward-label">繰越</span><span style="color:#9a5400;font-size:.72rem;margin-right:4px;">${b.originalDate}</span>`
+        : '';
+      taskHtml += `<div style="margin-top:6px;display:flex;flex-wrap:wrap;align-items:center;gap:4px;"><span style="background:#e8f5e9;color:#1b5e20;padding:2px 6px;border-radius:4px;font-size:0.75rem;font-weight:bold;">参考書</span>${cfBadge}<span style="color:#333;font-size:.85rem;">${escapeHtml(b.bookName)}: ${b.rangeStart} 〜 ${b.rangeEnd}</span></div>`;
     });
 
     // 単語の復習日のテキスト生成（階層カラー）
@@ -2028,27 +2116,46 @@ function renderIntegratedSchedule() {
       taskHtml = `<div style="color: #999; font-size: 0.85rem; margin-top: 4px;">予定なし</div>`;
     }
 
-    // ★ 今日のカードには進捗入力セクションを追加する
+    // ★ 今日のカードには進捗入力セクションを追加する（繰り越し分は除外して定期分のみ）
     let progressSectionHtml = '';
-    if (i === 0 && (dayWords.length > 0 || dayBooks.length > 0)) {
-      progressSectionHtml = buildProgressInputSection(dateStr, dayWords, dayBooks);
+    if (i === 0) {
+      const dayWordsForProgress = rawWordChunks.filter(c => c.date.startsWith(dateStr));
+      const dayBooksForProgress = rawBookChunks.filter(c => c.date.startsWith(dateStr));
+      if (dayWordsForProgress.length > 0 || dayBooksForProgress.length > 0) {
+        progressSectionHtml = buildProgressInputSection(dateStr, dayWordsForProgress, dayBooksForProgress);
+      }
     }
+
+    // 繰り越しアイテムの有無を判定（今日カード限定）
+    const hasCFWords = i === 0 && dayWords.some(w => w.carriedForward);
+    const hasCFBooks = i === 0 && dayBooks.some(b => b.carriedForward);
+    const carryForwardBanner = (hasCFWords || hasCFBooks)
+      ? `<div style="margin-bottom:8px;padding:7px 10px;background:#fff7ed;border:1px solid #fed7aa;border-radius:6px;font-size:.78rem;color:#9a3412;font-weight:600;">
+           ⚠️ 過去の未達成スケジュールが繰り越されています。
+         </div>`
+      : '';
 
     dayCard.innerHTML = `
       <div style="font-weight: bold; font-size: 0.9rem; color: #555; border-bottom: 1px dashed #eee; padding-bottom: 4px;">
         ${mm}/${dd} (${dayOfWeek})${i === 0 ? ' <span style="display:inline-block;font-size:.7rem;background:var(--ink);color:#fff;border-radius:4px;padding:1px 6px;margin-left:4px;">今日</span>' : ''}
       </div>
-      <div style="padding-top: 4px;">${taskHtml}</div>
+      <div style="padding-top: 4px;">${carryForwardBanner}${taskHtml}</div>
       ${progressSectionHtml}
     `;
     
     container.appendChild(dayCard);
-    // 進捗入力のイベントをアタッチ（今日のカードのみ）
-    if (i === 0) attachProgressInputHandlers(dayCard, dateStr);
+    // 進捗入力のイベントをアタッチ（今日のカードのみ・定期スケジュール分に限定）
+    if (i === 0) {
+      const dayWordsForProgress = rawWordChunks.filter(c => c.date.startsWith(dateStr));
+      const dayBooksForProgress = rawBookChunks.filter(c => c.date.startsWith(dateStr));
+      if (dayWordsForProgress.length > 0 || dayBooksForProgress.length > 0) {
+        attachProgressInputHandlers(dayCard, dateStr);
+      }
+    }
   }
 
-  if (container.innerHTML === '') {
-    container.innerHTML = '<div style="text-align:center; color:#999; padding:20px;">この期間のスケジュールはありません。設定タブから登録してください。</div>';
+  if (!container.querySelector('div:not(.review-legend)')) {
+    container.innerHTML += '<div style="text-align:center; color:#999; padding:20px;">この期間のスケジュールはありません。設定タブから登録してください。</div>';
   }
 
   attachReviewCheckHandlers(container);
@@ -2069,14 +2176,18 @@ function updateTodaySummaryCard() {
     dateEl.textContent = `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${weekLabel}）`;
   }
 
-  const { vocabChunks, refChunks, vocabReviews, refReviews } = buildAllReviews();
+  const { vocabChunks: _rawVC, refChunks: _rawRC, vocabReviews, refReviews } = buildAllReviews();
+  // 繰り越し分を含めた今日の全チャンクを使ってサマリーを計算
+  const { cfVocab: _cfV, cfRef: _cfR } = getCarryForwardChunks(_rawVC, _rawRC);
+  const vocabChunks = [..._rawVC, ..._cfV];
+  const refChunks   = [..._rawRC, ..._cfR];
 
-  // 今日の単語数
+  // 今日の単語数（繰り越し含む）
   const todayWords = vocabChunks.filter(c => c.date.startsWith(todayStr));
   let totalWords = 0;
   todayWords.forEach(w => { totalWords += w.rangeEnd - w.rangeStart + 1; });
 
-  // 今日の参考書ページ数
+  // 今日の参考書ページ数（繰り越し含む）
   const todayBooks = refChunks.filter(c => c.date.startsWith(todayStr));
   let totalPages = 0;
   todayBooks.forEach(b => { totalPages += b.rangeEnd - b.rangeStart + 1; });
