@@ -139,6 +139,22 @@
     background:var(--gold-bg); color:var(--gold); border:1px solid #e4cd94;
     border-radius:7px; padding:6px 12px;
   }
+  /* 参考書タブ「今日やること」専用タグ（緑系） */
+  .today-ref-tag{
+    font-family:'IBM Plex Mono', monospace; font-weight:700; font-size:.88rem;
+    background:var(--success-bg); color:var(--success); border:1px solid #bcd6c4;
+    border-radius:7px; padding:6px 14px; display:inline-block; line-height:1.5;
+  }
+  /* 参考書復習アイテム */
+  .ref-review-item{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:10px; flex-wrap:wrap;
+    border:1px solid var(--paper-line); border-radius:8px;
+    padding:10px 14px; background:var(--paper);
+  }
+  .ref-review-item .ref-book-info{ display:flex; flex-direction:column; gap:2px; flex:1; }
+  .ref-review-item .ref-book-title{ font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:.95rem; }
+  .ref-review-item .ref-book-range{ font-size:.82rem; color:var(--ink-soft); }
   .empty-mini{ color:var(--ink-soft); font-size:.85rem; padding:6px 2px; }
 
   .form-grid{
@@ -1201,6 +1217,20 @@
   
     <!-- 参考書スケジュール管理タブ -->
   <div id="tab-reference" class="tab-content" style="display: none;">
+
+    <!-- ★ 今日やること（参考書）カード -->
+    <section class="card today-card" id="ref-today">
+      <h2>📌 今日やること</h2>
+      <h3 class="sub-head">今日の参考書範囲</h3>
+      <div class="today-new-box" id="refTodayNewBox">
+        <div class="empty-mini">読み込み中...</div>
+      </div>
+      <h3 class="sub-head">今日の復習チェック</h3>
+      <div id="refTodayReviewList">
+        <div class="empty-mini">読み込み中...</div>
+      </div>
+    </section>
+
     <div class="card">
       <h2>📚 参考書スケジュールの手動登録</h2>
 
@@ -1263,13 +1293,6 @@
       <div class="entry-list" id="refEntryList"></div>
     </div>
 
-    <!-- スケジュールの出力エリア（単語スケジュールと合併した統合スケジュール） -->
-    <div class="card" style="margin-top: 20px;">
-      <h2>📅 統合スケジュール（単語 + 参考書）</h2>
-      <div class="schedule-wrap">
-        <div id="refScheduleOutput"></div>
-      </div>
-    </div>
   </div>
 
   <div id="tab-coach" class="tab-content" style="display:none;">
@@ -1780,6 +1803,7 @@ function attachReviewCheckHandlers(container){
       saveReviewDone();
       refreshAllSchedules();
       renderIntegratedSchedule();
+      renderRefTodayCard(); // 参考書「今日やること」カードを同期更新
     });
   });
 }
@@ -2041,7 +2065,7 @@ function renderEntryList(){
 }
 
 // 単語スケジュールと参考書スケジュールをまとめて1つのカレンダーとして描画する共通関数
-// 「単語タブ」の #scheduleArea と「参考書タブ」の #refScheduleOutput の両方から呼ばれる
+// 「単語タブ」の #scheduleArea に描画する（参考書タブは renderRefTodayCard で管理）
 function renderMergedSchedule(containerId){
   const area = document.getElementById(containerId);
   if(!area) return;
@@ -2136,7 +2160,7 @@ function renderMergedSchedule(containerId){
 
 function refreshAllSchedules(){
   renderMergedSchedule('scheduleArea');
-  renderMergedSchedule('refScheduleOutput');
+  // refScheduleOutput は削除済み（参考書タブは renderRefTodayCard で管理）
 }
 
 function renderSchedule(){
@@ -2564,6 +2588,7 @@ function handleProgressSave(dateStr) {
   // スケジュール全体を再描画（進捗に基づき再計算される）
   renderIntegratedSchedule();
   refreshAllSchedules();
+  renderRefTodayCard();
 }
 
 /**
@@ -2575,6 +2600,7 @@ function handleProgressClear(dateStr) {
   saveDailyProgress();
   renderIntegratedSchedule();
   refreshAllSchedules();
+  renderRefTodayCard();
 }
 
 function renderTodayNew(){
@@ -2587,6 +2613,65 @@ function renderTodayNew(){
   }else{
     box.innerHTML = todayChunks.map(c => `<span class="today-new-tag">${c.rangeStart}〜${c.rangeEnd}</span>`).join('');
   }
+}
+
+/**
+ * 参考書タブの「今日やること」カードを描画する。
+ * - 今日の新規参考書チャンク（繰り越し含む）を緑タグで表示
+ * - 今日の参考書復習をチェックボックス付きで表示
+ */
+function renderRefTodayCard() {
+  const newBox    = document.getElementById('refTodayNewBox');
+  const reviewList = document.getElementById('refTodayReviewList');
+  if (!newBox || !reviewList) return;
+
+  const todayStr = todayISO();
+  const { refChunks, refReviews } = buildScheduleData();
+
+  // ── 今日の新規範囲 ──────────────────────────────────────────
+  const todayChunks = refChunks.filter(c => c.date === todayStr);
+  if (todayChunks.length === 0) {
+    newBox.innerHTML = '<div class="empty-mini">今日の参考書範囲はありません。</div>';
+  } else {
+    newBox.innerHTML = todayChunks.map(c => {
+      const cfBadge = c.carriedForward
+        ? `<span class="carry-badge" style="margin-left:6px;">繰越 ${c.originalDate}</span>`
+        : '';
+      return `<span class="today-ref-tag">${escapeHtml(c.bookName)}<br><span style="font-weight:400;font-size:.82em;">p.${c.rangeStart}〜${c.rangeEnd}</span>${cfBadge}</span>`;
+    }).join('');
+  }
+
+  // ── 今日の復習 ──────────────────────────────────────────────
+  const todayReviews = refReviews.filter(r => r.date === todayStr);
+  if (todayReviews.length === 0) {
+    reviewList.innerHTML = '<div class="empty-mini">今日の参考書復習はありません。</div>';
+    return;
+  }
+
+  // 未完了を先頭、完了済みを後ろに並べる
+  const sorted = [...todayReviews].sort((a, b) => (a.done ? 1 : 0) - (b.done ? 1 : 0));
+  const itemsHtml = sorted.map(r => {
+    const ts = getIntervalTierStyle(r.interval);
+    const delayHtml = r.delayedDays > 0
+      ? `<span class="delay-badge">${r.delayedDays}日遅れ</span>`
+      : '';
+    return `<div class="ref-review-item${r.done ? ' is-done' : ''}">
+      <div class="ref-book-info">
+        <span class="ref-book-title">${escapeHtml(r.bookName)}</span>
+        <span class="ref-book-range">p.${r.rangeStart}〜${r.rangeEnd}${r.delayedDays > 0 ? `　<span style="color:var(--margin-red);font-size:.78rem;font-weight:700;">${r.delayedDays}日遅れ</span>` : ''}</span>
+      </div>
+      <label class="tag tag-ref-review tag-review-t${getIntervalTier(r.interval)} review-check-label${r.done ? ' is-done' : ''}"
+             style="cursor:pointer; padding:6px 12px; display:inline-flex; align-items:center; gap:6px; white-space:nowrap;">
+        <input type="checkbox" class="review-check" data-key="${r.key}" ${r.done ? 'checked' : ''}>
+        <span class="stamp">◎</span>
+        ${r.interval}日後&nbsp;<span style="font-weight:400;font-size:.78rem;">${ts.label}</span>
+        ${delayHtml}
+      </label>
+    </div>`;
+  }).join('');
+
+  reviewList.innerHTML = `<div class="due-list" style="gap:10px;">${itemsHtml}</div>`;
+  attachReviewCheckHandlers(reviewList);
 }
 
 function renderAll(){
@@ -4024,6 +4109,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   loadRefEntries();
   renderIntegratedSchedule(); // 参考書データの読み込み後にも「スケジュール」タブを最新化する
+  renderRefTodayCard();       // 参考書「今日やること」カードを初期描画
 });
 
 // ①-2 参考書スケジュールの計算（単語スケジュールのcomputeChunksForEntryと同じ考え方）
@@ -4219,10 +4305,11 @@ function renderRefEntryList(){
   });
 }
 
-// ⑤ 参考書タブ全体の再描画（登録リスト＋単語と合併したスケジュール表）
+// ⑤ 参考書タブ全体の再描画（登録リスト＋今日やること）
 function renderRefSchedule() {
   renderRefEntryList();
   refreshAllSchedules();
+  renderRefTodayCard();
 }
 
 // 【追加】ラジオボタンで入力欄を切り替えるイベント
