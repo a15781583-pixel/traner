@@ -788,6 +788,18 @@
       font-size: .88rem;
     }
 
+    /* --- 進んだ分の復習スケジュール（モバイル） --- */
+    .progressed-review-slots {
+      gap: 5px;
+    }
+    .progressed-review-slot {
+      font-size: .75rem;
+      padding: 4px 8px;
+    }
+    .progressed-review-section {
+      padding: 12px 12px;
+    }
+
     /* --- 印刷ボタン --- */
     .print-btn {
       font-size: .72rem;
@@ -929,6 +941,96 @@
     background: var(--success-bg); border: 1px solid #bcd6c4;
     border-radius: 5px; padding: 3px 8px;
   }
+  /* ---------- 復習タスク進捗入力行 ---------- */
+  .progress-review-divider {
+    margin: 12px 0 8px 0;
+    font-size: .82rem; font-weight: 700; color: var(--ink-soft);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .progress-review-divider::after {
+    content: ""; flex: 1; height: 1px; background: var(--paper-line);
+  }
+  .progress-item.review-item {
+    background: #f8f9ff;
+    border-left: 3px solid #93c5fd;
+    border-radius: 0 6px 6px 0;
+    padding: 8px 10px 8px 12px;
+    border-bottom: none;
+    margin-bottom: 6px;
+  }
+  .progress-item.review-item.t2 { border-left-color: #6ee7b7; background: #f0fdf4; }
+  .progress-item.review-item.t3 { border-left-color: #fcd34d; background: #fffbeb; }
+  .progress-item.review-item.t4 { border-left-color: #fca5a5; background: #fff1f2; }
+  .review-item-type-badge {
+    font-size: .68rem; font-weight: 700; border-radius: 3px; padding: 1px 5px;
+    white-space: nowrap; display: inline-block;
+  }
+  /* ---------- 進んだ分の復習スケジュール表示 ---------- */
+  .progressed-review-section {
+    margin-top: 16px;
+    padding: 14px 16px;
+    background: #eaf3ec;
+    border: 1.5px solid #bcd6c4;
+    border-radius: 10px;
+  }
+  .progressed-review-title {
+    font-weight: 700; font-size: .9rem; color: var(--success); margin-bottom: 12px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .progressed-review-book {
+    margin-bottom: 12px;
+  }
+  .progressed-review-book-name {
+    font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: .88rem;
+    color: var(--ink); margin-bottom: 6px;
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .progressed-review-book-name .range-badge {
+    font-size: .78rem; font-weight: 600; background: var(--white);
+    border: 1px solid #bcd6c4; border-radius: 5px; padding: 2px 8px;
+    color: var(--success);
+  }
+  .progressed-review-book-name .adj-badge {
+    font-size: .72rem; font-weight: 700; background: #fff7ed;
+    border: 1px solid #fed7aa; border-radius: 4px; padding: 1px 6px;
+    color: #9a5400;
+  }
+  .progressed-review-slots {
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .progressed-review-slot {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: .8rem; font-weight: 600;
+    border-radius: 6px; padding: 5px 10px;
+    border: 1px solid transparent;
+    white-space: nowrap;
+  }
+  .progressed-review-slot .slot-date {
+    font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: .82rem;
+  }
+  .progressed-review-slot .slot-lv {
+    font-size: .68rem; font-weight: 400; opacity: .75;
+  }
+  .slot-t1 { background: #dbeafe; color: #1e40af; border-color: #93c5fd; }
+  .slot-t2 { background: #d1fae5; color: #065f46; border-color: #6ee7b7; }
+  .slot-t3 { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+  .slot-t4 { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+  .progressed-adj-note {
+    margin-top: 10px; padding: 9px 12px;
+    background: var(--white); border: 1px dashed #bcd6c4; border-radius: 7px;
+    font-size: .82rem; color: var(--ink-soft); line-height: 1.6;
+  }
+  .progressed-overshot {
+    margin-top: 8px; padding: 8px 12px;
+    background: #e8f5e9; border: 1px solid #a5d6a7; border-radius: 6px;
+    font-size: .82rem; color: #2e7d32; font-weight: 600;
+  }
+  .progressed-undershot {
+    margin-top: 8px; padding: 8px 12px;
+    background: #fdecea; border: 1px solid var(--margin-red-soft); border-radius: 6px;
+    font-size: .82rem; color: var(--margin-red); font-weight: 600;
+  }
+
   /* ---------- チャット入力中アニメーション（追加分） ---------- */
   .typing-indicator {
     display: flex;
@@ -998,6 +1100,224 @@
   /* マウスを乗せたとき（ホバー時）の色 */
   #addBtn:hover, #saveRefPlanBtn:hover {
     background: #2c5239; /* 少し暗めの緑色 */
+  }
+
+  /* ════════════════════════════════════════════════
+     参考書タブ：入力 / 出力 セクション分割ラベル
+  ════════════════════════════════════════════════ */
+  .ref-section-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 6px 6px 0 0;
+    margin-bottom: -2px;   /* カード上辺とぴったりつなぐ */
+    width: fit-content;
+  }
+  .ref-section-label--output {
+    background: var(--ink);
+    color: var(--white);
+    margin-top: 4px;
+  }
+  .ref-section-label--input {
+    background: var(--gold-bg);
+    color: var(--gold);
+    border: 1px solid #e4cd94;
+    margin-top: 24px;
+  }
+  .ref-section-icon { font-size: .95rem; }
+
+  /* ────────────────────────────────────────────────
+     参考書タブ：進捗入力アコーディオン
+  ──────────────────────────────────────────────── */
+  details.ref-progress-details {
+    margin-top: 18px;
+    border: 1.5px dashed var(--paper-line);
+    border-radius: 8px;
+    background: #f8fafc;
+    overflow: hidden;
+  }
+  .ref-progress-summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    list-style: none;
+    padding: 12px 16px;
+    font-size: .88rem;
+    font-weight: 700;
+    color: var(--ink);
+    user-select: none;
+  }
+  .ref-progress-summary::-webkit-details-marker { display: none; }
+  .ref-progress-summary::before {
+    content: "▸";
+    font-size: .75rem;
+    color: var(--ink-soft);
+    transition: transform .2s;
+  }
+  details.ref-progress-details[open] .ref-progress-summary::before {
+    content: "▾";
+  }
+  .ref-progress-summary-icon { font-size: 1rem; }
+  .ref-progress-summary-badge {
+    margin-left: auto;
+    font-size: .72rem;
+    font-weight: 700;
+    background: var(--success-bg);
+    color: var(--success);
+    border: 1px solid #bcd6c4;
+    border-radius: 4px;
+    padding: 2px 8px;
+    white-space: nowrap;
+  }
+  details.ref-progress-details[open] {
+    border-color: var(--ink);
+    background: var(--white);
+  }
+  details.ref-progress-details > .ref-progress-summary + div {
+    padding: 0 16px 16px;
+  }
+
+  /* ────────────────────────────────────────────────
+     参考書タブ：スケジュール設定アコーディオン
+  ──────────────────────────────────────────────── */
+  details.ref-setting-details {
+    border: 1px solid var(--paper-line);
+    border-radius: var(--radius);
+  }
+  .ref-setting-summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    list-style: none;
+    padding: 14px 18px;
+    font-size: .9rem;
+    font-weight: 700;
+    color: var(--ink);
+    background: var(--gold-bg);
+    border-radius: var(--radius) var(--radius) 0 0;
+    user-select: none;
+  }
+  .ref-setting-summary::-webkit-details-marker { display: none; }
+  .ref-setting-summary::before {
+    content: "▸ ";
+    font-size: .75rem;
+    color: var(--gold);
+  }
+  details.ref-setting-details[open] .ref-setting-summary::before {
+    content: "▾ ";
+  }
+  details.ref-setting-details:not([open]) .ref-setting-summary {
+    border-radius: var(--radius);
+  }
+  .ref-setting-body {
+    margin: 0 !important;
+    border: none !important;
+    border-radius: 0 0 var(--radius) var(--radius) !important;
+    border-top: 1px dashed var(--paper-line) !important;
+  }
+
+  /* ══════════════════════════════════════════════
+     進捗入力 新UI（ボタン＋ステッパー方式）
+  ══════════════════════════════════════════════ */
+  .prog-control-ui { margin-top: 8px; }
+
+  /* ─ 完了 / 途中まで トグルボタン行 ─ */
+  .prog-toggle { display: flex; gap: 8px; flex-wrap: wrap; }
+  .prog-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 9px 16px; font-size: .88rem; font-weight: 700;
+    border-radius: 8px; cursor: pointer; border: 1.5px solid transparent;
+    transition: all .18s; font-family: 'Noto Sans JP', sans-serif;
+    box-shadow: none;
+  }
+  .prog-btn-done {
+    background: var(--paper); color: var(--ink-soft);
+    border-color: var(--paper-line);
+  }
+  .prog-btn-done.prog-btn-active {
+    background: var(--success); color: var(--white); border-color: var(--success);
+  }
+  .prog-btn-done:hover:not(.prog-btn-active) { border-color: var(--success); color: var(--success); }
+  .prog-btn-partial {
+    background: var(--paper); color: var(--ink-soft);
+    border-color: var(--paper-line);
+  }
+  .prog-btn-partial.prog-btn-active {
+    background: var(--gold-bg); color: var(--gold); border-color: #e4cd94;
+  }
+  .prog-btn-partial:hover:not(.prog-btn-active) { border-color: var(--gold); color: var(--gold); }
+
+  /* ─ ステータスバッジ（既存記録あり時） ─ */
+  .prog-status-wrap { margin-top: 6px; }
+
+  /* ─ 途中まで パネル ─ */
+  .prog-partial-panel {
+    margin-top: 10px; padding: 12px 14px;
+    background: var(--white); border: 1px solid var(--paper-line); border-radius: 8px;
+  }
+
+  /* ─ 完了数 / プログレスバー行 ─ */
+  .prog-count-row {
+    display: flex; align-items: center; gap: 8px;
+    font-size: .82rem; margin-bottom: 10px;
+  }
+  .prog-count-val {
+    font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: 1.15rem;
+    color: var(--ink);
+  }
+  .prog-count-total { color: var(--ink-soft); flex: 1; }
+  .prog-bar-wrap {
+    flex: 2; height: 7px; background: var(--paper-line);
+    border-radius: 4px; overflow: hidden; min-width: 60px;
+  }
+  .prog-bar-fill {
+    height: 100%; background: var(--gold); border-radius: 4px; transition: width .25s;
+  }
+
+  /* ─ ±ステッパー行 ─ */
+  .prog-stepper {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .prog-step {
+    background: var(--paper); border: 1px solid var(--paper-line); color: var(--ink);
+    border-radius: 6px; padding: 6px 12px; font-size: .9rem; font-weight: 700;
+    cursor: pointer; font-family: 'IBM Plex Mono', monospace; transition: background .15s;
+    box-shadow: none;
+  }
+  .prog-step:hover { background: var(--white); border-color: var(--ink-soft); }
+  .prog-display {
+    font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: 1.05rem;
+    min-width: 64px; text-align: center;
+    background: var(--paper); border: 1.5px solid var(--ink); border-radius: 6px;
+    padding: 5px 8px; display: inline-block;
+  }
+  .prog-unit { font-size: .82rem; color: var(--ink-soft); white-space: nowrap; }
+
+  /* ─ クイック割合ボタン ─ */
+  .prog-quick-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .prog-quick-label { font-size: .78rem; color: var(--ink-soft); white-space: nowrap; }
+  .prog-quick-btn {
+    background: var(--paper); color: var(--ink-soft);
+    border: 1px solid var(--paper-line); border-radius: 6px;
+    padding: 4px 14px; font-size: .82rem; font-weight: 700; cursor: pointer;
+    font-family: 'IBM Plex Mono', monospace; transition: all .15s; box-shadow: none;
+  }
+  .prog-quick-btn:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-bg); }
+
+  /* ─ モバイル最適化 ─ */
+  @media (max-width: 640px) {
+    .prog-btn { padding: 12px 14px; font-size: .92rem; min-height: 44px; }
+    .prog-step { padding: 9px 14px; min-height: 40px; }
+    .prog-toggle { gap: 6px; }
+    .prog-partial-panel { padding: 10px 10px; }
   }
 </style>
 </head>
@@ -1218,80 +1538,117 @@
     <!-- 参考書スケジュール管理タブ -->
   <div id="tab-reference" class="tab-content" style="display: none;">
 
+    <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         【出力エリア】今日の確認
+         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+    <div class="ref-section-label ref-section-label--output">
+      <span class="ref-section-icon">📋</span>今日の確認
+    </div>
+
     <!-- ★ 今日やること（参考書）カード -->
     <section class="card today-card" id="ref-today">
       <h2>📌 今日やること</h2>
+
       <h3 class="sub-head">今日の参考書範囲</h3>
       <div class="today-new-box" id="refTodayNewBox">
         <div class="empty-mini">読み込み中...</div>
       </div>
+
       <h3 class="sub-head">今日の復習チェック</h3>
       <div id="refTodayReviewList">
         <div class="empty-mini">読み込み中...</div>
       </div>
+
+      <!-- 進捗入力：折りたたみ式アコーディオン -->
+      <details class="ref-progress-details" id="refProgressDetails">
+        <summary class="ref-progress-summary">
+          <span class="ref-progress-summary-icon">📝</span>
+          今日の進捗を入力する
+          <span class="ref-progress-summary-badge" id="refProgressBadge" style="display:none;">記録済み ✓</span>
+        </summary>
+        <div id="refTodayProgressSection" style="margin-top:10px;"></div>
+      </details>
+
+      <!-- 進捗保存後に表示する「進んだ分の復習スケジュール」 -->
+      <div id="refProgressedReviewSection" style="margin-top:0;"></div>
     </section>
 
-    <div class="card">
-      <h2>📚 参考書スケジュールの手動登録</h2>
-
-      <div class="field full" style="margin-bottom:14px;">
-        <label>割り振り方法</label>
-        <div style="display:flex; gap:16px; margin-top:6px; flex-wrap:wrap;">
-          <label style="cursor:pointer; display:flex; align-items:center; gap:4px; font-size:.85rem;">
-            <input type="radio" name="refPlanMode" value="byRange" checked>
-            学習する曜日から設定（開始日〜終了日で均等に分ける）
-          </label>
-          <label style="cursor:pointer; display:flex; align-items:center; gap:4px; font-size:.85rem;">
-            <input type="radio" name="refPlanMode" value="byAmount">
-            1日あたり進める量から設定（終了日は自動計算）
-          </label>
-        </div>
-      </div>
-
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
-
-        <div>
-          <label>教材名</label>
-          <input type="text" id="refBookName" placeholder="例: 青チャート、NextStage" class="input-field" style="width: 100%;">
-        </div>
-        <div>
-          <label>開始ページ（番）</label>
-          <input type="number" id="refStartNum" placeholder="例: 1" class="input-field" style="width: 100%;">
-        </div>
-        <div>
-          <label>終了ページ（番）</label>
-          <input type="number" id="refEndNum" placeholder="例: 100" class="input-field" style="width: 100%;">
-        </div>
-        <div>
-          <label>開始日</label>
-          <input type="date" id="refStartDate" class="input-field" style="width: 100%;">
-        </div>
-        <div id="refEndDateWrap">
-          <label>終了日</label>
-          <input type="date" id="refEndDate" class="input-field" style="width: 100%;">
-        </div>
-        <div id="refAmountFieldWrap" style="display: none;">
-          <label>1日あたり進める量</label>
-          <input type="number" id="refAmountPerDay" min="1" placeholder="例: 5" class="input-field" style="width: 100%;">
-        </div>
-
-      </div>
-
-      <div class="field full" style="margin-bottom: 15px;">
-        <label>学習する曜日</label>
-        <div class="checkbox-row" id="refWeekdayRow"></div>
-      </div>
-
-      <div class="field full" style="margin-bottom: 15px;">
-        <label>復習を入れるタイミング</label>
-        <div class="checkbox-row" id="refIntervalRow"></div>
-        <div class="hint">推奨：1日後・3日後・7日後・14日後。ページ数や科目数に応じて間引いてOKです。</div>
-      </div>
-
-      <div class="error-msg" id="refErrorMsg"></div>
-      <button id="saveRefPlanBtn" class="btn-primary" style="width: 100%;">スケジュールを生成して登録</button>
-      <div class="entry-list" id="refEntryList"></div>
+    <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         【入力エリア】スケジュール設定
+         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+    <div class="ref-section-label ref-section-label--input">
+      <span class="ref-section-icon">⚙️</span>スケジュール設定
     </div>
+
+    <details class="ref-setting-details" id="refSettingDetails" open>
+      <summary class="ref-setting-summary">
+        📚 参考書スケジュールを登録・管理する
+      </summary>
+      <div class="card ref-setting-body">
+
+        <div class="field full" style="margin-bottom:14px;">
+          <label>割り振り方法</label>
+          <div style="display:flex; gap:16px; margin-top:6px; flex-wrap:wrap;">
+            <label style="cursor:pointer; display:flex; align-items:center; gap:4px; font-size:.85rem;">
+              <input type="radio" name="refPlanMode" value="byRange" checked>
+              学習する曜日から設定（開始日〜終了日で均等に分ける）
+            </label>
+            <label style="cursor:pointer; display:flex; align-items:center; gap:4px; font-size:.85rem;">
+              <input type="radio" name="refPlanMode" value="byAmount">
+              1日あたり進める量から設定（終了日は自動計算）
+            </label>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
+          <div>
+            <label>教材名</label>
+            <input type="text" id="refBookName" placeholder="例: 青チャート、NextStage" class="input-field" style="width: 100%;">
+          </div>
+          <div>
+            <label>開始ページ（番）</label>
+            <input type="number" id="refStartNum" placeholder="例: 1" class="input-field" style="width: 100%;">
+          </div>
+          <div>
+            <label>終了ページ（番）</label>
+            <input type="number" id="refEndNum" placeholder="例: 100" class="input-field" style="width: 100%;">
+          </div>
+          <div>
+            <label>開始日</label>
+            <input type="date" id="refStartDate" class="input-field" style="width: 100%;">
+          </div>
+          <div id="refEndDateWrap">
+            <label>終了日</label>
+            <input type="date" id="refEndDate" class="input-field" style="width: 100%;">
+          </div>
+          <div id="refAmountFieldWrap" style="display: none;">
+            <label>1日あたり進める量</label>
+            <input type="number" id="refAmountPerDay" min="1" placeholder="例: 5" class="input-field" style="width: 100%;">
+          </div>
+        </div>
+
+        <div class="field full" style="margin-bottom: 15px;">
+          <label>学習する曜日</label>
+          <div class="checkbox-row" id="refWeekdayRow"></div>
+        </div>
+
+        <div class="field full" style="margin-bottom: 15px;">
+          <div style="display:flex; align-items:flex-start; gap:10px; padding:10px 14px;
+               background:#eaf3ec; border:1.5px solid #bcd6c4; border-radius:8px; font-size:.83rem;">
+            <span style="font-size:1.05rem; flex-shrink:0;">📅</span>
+            <div style="color:#2d5c3c; line-height:1.55;">
+              <strong>復習スケジュールは進捗入力時に自動生成されます。</strong><br>
+              今日の進捗を記録すると、その日から <strong>1日後・3日後・7日後・14日後</strong> の復習予定が自動でスケジュールに追加されます。
+            </div>
+          </div>
+        </div>
+
+        <div class="error-msg" id="refErrorMsg"></div>
+        <button id="saveRefPlanBtn" class="btn-primary" style="width: 100%;">スケジュールを生成して登録</button>
+        <div class="entry-list" id="refEntryList"></div>
+
+      </div><!-- /.ref-setting-body -->
+    </details>
 
   </div>
 
@@ -1669,18 +2026,33 @@ function buildAllReviews(){
   const refChunks = refEntries.flatMap(plan =>
     computeAdjustedRefSchedule(plan).map(c => ({ ...c, bookName: plan.bookName, planId: plan.id }))
   );
+  // 参考書の復習は「進捗入力」をトリガーに生成する。
+  // dailyProgress の book タイプレコードを走査し、
+  // 実際に記録した日 + DEFAULT_INTERVALS で復習予定を作成する。
   const refReviews = [];
-  refChunks.forEach(c => {
-    DEFAULT_INTERVALS.forEach(n => {
-      const originalDate = formatISO(addDays(parseISO(c.date), n));
-      const key = buildReviewKey('r', c.planId, c.rangeStart, c.rangeEnd, n);
-      const eff = computeEffectiveReviewDate(originalDate, key);
-      refReviews.push({
-        date: eff.date, originalDate, rangeStart: c.rangeStart, rangeEnd: c.rangeEnd,
-        interval: n, bookName: c.bookName, key, delayedDays: eff.delayedDays, done: eff.done
+  dailyProgress
+    .filter(p => p.type === 'book')
+    .forEach(p => {
+      // planId があればそれを使い、なければ後方互換として entryId をそのまま試みる
+      const resolvedPlanId = p.planId || p.entryId;
+      const plan = refEntries.find(r => r.id === resolvedPlanId);
+      if (!plan) return;
+      const actualStart = p.plannedStart;
+      const actualEnd   = p.actualEnd;
+      DEFAULT_INTERVALS.forEach(n => {
+        const originalDate = formatISO(addDays(parseISO(p.date), n));
+        // キー：resolvedPlanId + 記録日 + 記録開始ページ + インターバル で一意に識別
+        const key = `r_prog_${resolvedPlanId}_${p.date}_${actualStart}_${n}`;
+        const eff = computeEffectiveReviewDate(originalDate, key);
+        refReviews.push({
+          date: eff.date, originalDate,
+          rangeStart: actualStart, rangeEnd: actualEnd,
+          interval: n, bookName: plan.bookName,
+          planId: resolvedPlanId, key,
+          delayedDays: eff.delayedDays, done: eff.done
+        });
       });
     });
-  });
 
   return { vocabChunks, refChunks, vocabReviews, refReviews };
 }
@@ -1715,9 +2087,12 @@ function getCarryForwardChunks(vocabChunks, refChunks) {
     .filter(chunk => {
       const latest = getLatestProgress(chunk.planId, 'book');
       if (latest && latest.actualEnd >= chunk.rangeEnd) return false;
-      const hasRecord = dailyProgress.some(p =>
-        p.date === chunk.date && p.entryId === chunk.planId && p.type === 'book'
-      );
+      // 新形式（複合キー）または旧形式（planIdそのまま）どちらの記録も検出する
+      const hasRecord = dailyProgress.some(p => {
+        if (p.type !== 'book' || p.date !== chunk.date) return false;
+        const resolvedPlanId = p.planId || p.entryId;
+        return resolvedPlanId === chunk.planId;
+      });
       return !hasRecord;
     })
     .map(chunk => ({ ...chunk, date: todayStr, carriedForward: true, originalDate: chunk.date }));
@@ -1742,9 +2117,8 @@ function adjustReviewsForCarryForward(vocabReviews, refReviews, cfVocab, cfRef) 
   const filteredVocabReviews = vocabReviews.filter(r =>
     !cfVocab.some(cf => isReviewFromOriginalSchedule(r, cf, 'word'))
   );
-  const filteredRefReviews = refReviews.filter(r =>
-    !cfRef.some(cf => isReviewFromOriginalSchedule(r, cf, 'book'))
-  );
+  // 参考書の復習は進捗記録ベースで生成されるため、cfRef による調整は不要
+  const filteredRefReviews = refReviews;
 
   cfVocab.forEach(c => {
     (c.intervals || []).forEach(n => {
@@ -1758,17 +2132,7 @@ function adjustReviewsForCarryForward(vocabReviews, refReviews, cfVocab, cfRef) 
     });
   });
 
-  cfRef.forEach(c => {
-    DEFAULT_INTERVALS.forEach(n => {
-      const originalDate = formatISO(addDays(parseISO(c.date), n));
-      const key = buildReviewKey('r', c.planId, c.rangeStart, c.rangeEnd, n);
-      const eff = computeEffectiveReviewDate(originalDate, key);
-      filteredRefReviews.push({
-        date: eff.date, originalDate, rangeStart: c.rangeStart, rangeEnd: c.rangeEnd,
-        interval: n, bookName: c.bookName, key, delayedDays: eff.delayedDays, done: eff.done
-      });
-    });
-  });
+  // cfRef は進捗記録ベースの復習生成に統合されるためここでは追加しない
 
   return { vocabReviews: filteredVocabReviews, refReviews: filteredRefReviews };
 }
@@ -1823,10 +2187,19 @@ function saveDailyProgress() {
 
 /**
  * 特定エントリ・日付の進捗レコードを返す（最新1件）
+ * book タイプの場合は planId でも照合する（後方互換 + 新形式の両方に対応）
  */
 function getLatestProgress(entryId, type) {
   const records = dailyProgress
-    .filter(p => p.entryId === entryId && p.type === type)
+    .filter(p => {
+      if (p.type !== type) return false;
+      if (type === 'book') {
+        // planId が一致、または entryId が一致（後方互換）、または entryId が planId で始まる（複合キー）
+        const resolvedPlanId = p.planId || p.entryId;
+        return resolvedPlanId === entryId || p.entryId === entryId;
+      }
+      return p.entryId === entryId;
+    })
     .sort((a, b) => b.date.localeCompare(a.date));
   return records[0] || null;
 }
@@ -2258,9 +2631,23 @@ function renderIntegratedSchedule() {
     let progressSectionHtml = '';
     if (i === 0) {
       const dayWordsForProgress = rawWordChunks.filter(c => c.date.startsWith(dateStr));
-      const dayBooksForProgress = rawBookChunks.filter(c => c.date.startsWith(dateStr));
-      if (dayWordsForProgress.length > 0 || dayBooksForProgress.length > 0) {
-        progressSectionHtml = buildProgressInputSection(dateStr, dayWordsForProgress, dayBooksForProgress);
+      // 繰り越し分も含めた allBookChunks を使うことで、繰り越し参考書も進捗入力対象にする
+      const dayBooksForProgress = allBookChunks.filter(c => c.date.startsWith(dateStr));
+      // 未完了の復習タスクも進捗入力対象にする
+      const dayWordReviewsForProgress = dayWordReviews.filter(r => !r.done);
+      const dayBookReviewsForProgress = dayBookReviews.filter(r => !r.done);
+      const hasAnyTask = dayWordsForProgress.length > 0 || dayBooksForProgress.length > 0
+                      || dayWordReviewsForProgress.length > 0 || dayBookReviewsForProgress.length > 0;
+      if (hasAnyTask) {
+        const html = buildProgressInputSection(
+          dateStr,
+          dayWordsForProgress,
+          dayBooksForProgress,
+          dateStr,
+          dayWordReviewsForProgress,
+          dayBookReviewsForProgress
+        );
+        progressSectionHtml = html || '';
       }
     }
 
@@ -2282,8 +2669,11 @@ function renderIntegratedSchedule() {
 
     if (i === 0) {
       const dayWordsForProgress = rawWordChunks.filter(c => c.date.startsWith(dateStr));
-      const dayBooksForProgress = rawBookChunks.filter(c => c.date.startsWith(dateStr));
-      if (dayWordsForProgress.length > 0 || dayBooksForProgress.length > 0) {
+      const dayBooksForProgress = allBookChunks.filter(c => c.date.startsWith(dateStr));
+      const dayWordReviewsForProgress2 = dayWordReviews.filter(r => !r.done);
+      const dayBookReviewsForProgress2 = dayBookReviews.filter(r => !r.done);
+      if (dayWordsForProgress.length > 0 || dayBooksForProgress.length > 0
+          || dayWordReviewsForProgress2.length > 0 || dayBookReviewsForProgress2.length > 0) {
         attachProgressInputHandlers(dayCard, dateStr);
       }
     }
@@ -2386,48 +2776,120 @@ function updateTodaySummaryCard() {
 /**
  * 今日の単語・参考書チャンクに対する進捗入力セクションのHTMLを返す
  */
-function buildProgressInputSection(dateStr, dayWords, dayBooks) {
+/**
+ * 今日の単語・参考書チャンクに対する進捗入力セクションのHTMLを返す
+ * @param {string} dateStr          - 対象日付 (YYYY-MM-DD)
+ * @param {Array}  dayWords         - 当日の単語チャンク（新規）
+ * @param {Array}  dayBooks         - 当日の参考書チャンク（新規・繰り越し含む）
+ * @param {string} [baseId]         - IDプレフィックス（省略時は dateStr）
+ * @param {Array}  [dayWordReviews] - 当日の単語復習タスク
+ * @param {Array}  [dayBookReviews] - 当日の参考書復習タスク
+ */
+/**
+ * 進捗入力コントロール（ボタン＋ステッパー方式）のHTMLを返すヘルパー
+ * @param {number} rangeStart  - 計画開始番号/ページ
+ * @param {number} rangeEnd    - 計画終了番号/ページ
+ * @param {string|number} recordedVal - 既存の記録値（空文字 = 未記録）
+ * @param {string} type        - 'word' | 'book' | 'word-review' | 'book-review'
+ * @param {string} statusHtml  - 既存記録バッジのHTML
+ * @param {string} inputAttrs  - hidden input に付与する data-* 属性の文字列
+ */
+function buildProgControlHtml(rangeStart, rangeEnd, recordedVal, type, statusHtml, inputAttrs) {
+  const isWordType  = (type === 'word' || type === 'word-review');
+  const unitWord    = isWordType ? '個' : 'ページ';
+  const unitLabel   = isWordType ? '番まで' : 'ページまで';
+  const plannedCount = rangeEnd - rangeStart + 1;
+
+  const rv       = recordedVal !== '' ? parseInt(recordedVal, 10) : null;
+  const isDone   = rv !== null && rv >= rangeEnd;
+  const isPartial = rv !== null && rv >= (rangeStart - 1) && rv < rangeEnd;
+  const completedCount = rv !== null ? Math.max(0, rv - rangeStart + 1) : 0;
+  const pct      = plannedCount > 0 ? Math.min(100, Math.round(completedCount / plannedCount * 100)) : 0;
+  const displayVal = rv !== null ? rv : rangeEnd;
+
+  return `
+    <div class="prog-control-ui"
+         data-range-start="${rangeStart}"
+         data-range-end="${rangeEnd}"
+         data-type="${type}">
+      <input type="number" class="progress-num-input" style="display:none"
+             min="${rangeStart - 1}" max="${rangeEnd + 50}"
+             value="${recordedVal}" ${inputAttrs}>
+      <div class="prog-toggle">
+        <button type="button" class="prog-btn prog-btn-done${isDone ? ' prog-btn-active' : ''}">
+          ✅ 全部完了！
+        </button>
+        <button type="button" class="prog-btn prog-btn-partial${isPartial ? ' prog-btn-active' : ''}">
+          📝 途中まで...
+        </button>
+      </div>
+      ${statusHtml ? `<div class="prog-status-wrap">${statusHtml}</div>` : ''}
+      <div class="prog-partial-panel"${isPartial ? '' : ' style="display:none"'}>
+        <div class="prog-count-row">
+          <span class="prog-count-val">${completedCount}</span>
+          <span class="prog-count-total">/ ${plannedCount}${unitWord}完了</span>
+          <div class="prog-bar-wrap"><div class="prog-bar-fill" style="width:${pct}%"></div></div>
+        </div>
+        <div class="prog-stepper">
+          <button type="button" class="prog-step" data-delta="-10">−10</button>
+          <button type="button" class="prog-step" data-delta="-1">−1</button>
+          <span class="prog-display">${displayVal}</span>
+          <span class="prog-unit">${unitLabel}</span>
+          <button type="button" class="prog-step" data-delta="+1">+1</button>
+          <button type="button" class="prog-step" data-delta="+10">+10</button>
+        </div>
+        <div class="prog-quick-row">
+          <span class="prog-quick-label">クイック：</span>
+          <button type="button" class="prog-quick-btn" data-pct="25">¼</button>
+          <button type="button" class="prog-quick-btn" data-pct="50">½</button>
+          <button type="button" class="prog-quick-btn" data-pct="75">¾</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function buildProgressInputSection(dateStr, dayWords, dayBooks, baseId, dayWordReviews, dayBookReviews) {
+  baseId = baseId || dateStr;
+  dayWordReviews = dayWordReviews || [];
+  dayBookReviews = dayBookReviews || [];
   const existingRecords = dailyProgress.filter(p => p.date === dateStr);
   const hasAnyRecord = existingRecords.length > 0;
 
   let itemsHtml = '';
 
+  // ── 新規：単語チャンク ──────────────────────────────────────
   dayWords.forEach(w => {
     const rec = existingRecords.find(p => p.entryId === w.entryId && p.type === 'word');
     const recordedVal = rec ? rec.actualEnd : '';
     const plannedCount = w.rangeEnd - w.rangeStart + 1;
     const statusHtml = rec
-      ? `<span class="progress-status-badge ${rec.actualEnd >= w.rangeEnd ? 'ps-on-track' : (rec.actualEnd > w.rangeStart ? 'ps-behind' : 'ps-behind')}">
+      ? `<span class="progress-status-badge ${rec.actualEnd >= w.rangeEnd ? 'ps-on-track' : 'ps-behind'}">
            ${rec.actualEnd >= w.rangeEnd ? '✅ 完了' : `⚠️ ${rec.actualEnd - w.rangeStart + 1}/${plannedCount}個完了`}
          </span>`
       : '';
     itemsHtml += `
       <div class="progress-item">
         <span class="progress-plan-label">単語 ${w.rangeStart}〜${w.rangeEnd}（予定 ${plannedCount}個）</span>
-        <div class="progress-input-row">
-          <span>実際に終わった番号:</span>
-          <input type="number"
-                 class="progress-num-input"
-                 min="${w.rangeStart - 1}"
-                 max="${w.rangeEnd + 50}"
-                 placeholder="${w.rangeEnd}"
-                 value="${recordedVal}"
-                 data-entry-id="${w.entryId}"
-                 data-type="word"
-                 data-planned-start="${w.rangeStart}"
-                 data-planned-end="${w.rangeEnd}"
-                 data-date="${dateStr}">
-          <span>番まで</span>
-          ${statusHtml}
-        </div>
+        ${buildProgControlHtml(
+          w.rangeStart, w.rangeEnd, recordedVal, 'word', statusHtml,
+          `data-entry-id="${w.entryId}" data-type="word" data-planned-start="${w.rangeStart}" data-planned-end="${w.rangeEnd}" data-date="${dateStr}"`
+        )}
       </div>`;
   });
 
+  // ── 新規：参考書チャンク ─────────────────────────────────────
   dayBooks.forEach(b => {
     const planId = b.planId;
-    const rec = existingRecords.find(p => p.entryId === planId && p.type === 'book');
+    // チャンクを一意に識別するキー: planId + チャンク本来の日付 + 開始ページ
+    // 繰り越し分は originalDate、通常分は dateStr（= b.date）を使う
+    const chunkOriginalDate = b.carriedForward ? (b.originalDate || b.date) : b.date;
+    const chunkEntryId = `${planId}_${chunkOriginalDate}_${b.rangeStart}`;
+    const rec = existingRecords.find(p => p.entryId === chunkEntryId && p.type === 'book');
     const recordedVal = rec ? rec.actualEnd : '';
     const plannedCount = b.rangeEnd - b.rangeStart + 1;
+    const cfNote = b.carriedForward
+      ? `<span style="font-size:.72rem;color:#9a5400;font-weight:700;background:#fff7ed;border:1px solid #fed7aa;border-radius:4px;padding:1px 6px;margin-left:4px;">繰越 ${b.originalDate}</span>`
+      : '';
     const statusHtml = rec
       ? `<span class="progress-status-badge ${rec.actualEnd >= b.rangeEnd ? 'ps-on-track' : 'ps-behind'}">
            ${rec.actualEnd >= b.rangeEnd ? '✅ 完了' : `⚠️ ${rec.actualEnd - b.rangeStart + 1}/${plannedCount}ページ完了`}
@@ -2435,49 +2897,104 @@ function buildProgressInputSection(dateStr, dayWords, dayBooks) {
       : '';
     itemsHtml += `
       <div class="progress-item">
-        <span class="progress-plan-label">${escapeHtml(b.bookName)} ${b.rangeStart}〜${b.rangeEnd}（予定 ${plannedCount}ページ）</span>
-        <div class="progress-input-row">
-          <span>実際に終わったページ:</span>
-          <input type="number"
-                 class="progress-num-input"
-                 min="${b.rangeStart - 1}"
-                 max="${b.rangeEnd + 50}"
-                 placeholder="${b.rangeEnd}"
-                 value="${recordedVal}"
-                 data-entry-id="${planId}"
-                 data-type="book"
-                 data-planned-start="${b.rangeStart}"
-                 data-planned-end="${b.rangeEnd}"
-                 data-date="${dateStr}"
-                 data-book-name="${escapeHtml(b.bookName)}">
-          <span>ページまで</span>
-          ${statusHtml}
-        </div>
+        <span class="progress-plan-label">${escapeHtml(b.bookName)} ${b.rangeStart}〜${b.rangeEnd}（予定 ${plannedCount}ページ）${cfNote}</span>
+        ${buildProgControlHtml(
+          b.rangeStart, b.rangeEnd, recordedVal, 'book', statusHtml,
+          `data-entry-id="${chunkEntryId}" data-plan-id="${planId}" data-type="book" data-planned-start="${b.rangeStart}" data-planned-end="${b.rangeEnd}" data-date="${dateStr}" data-book-name="${escapeHtml(b.bookName)}"`
+        )}
       </div>`;
   });
+
+  // ── 復習：単語 ──────────────────────────────────────────────
+  // 未完了の復習タスクのみ入力欄を表示（チェック済みはスキップ）
+  const pendingWordReviews = dayWordReviews.filter(r => !r.done);
+  if (pendingWordReviews.length > 0) {
+    itemsHtml += `<div class="progress-review-divider">🔁 復習タスク（単語）の進捗</div>`;
+    pendingWordReviews.forEach(r => {
+      const tier = getIntervalTier(r.interval);
+      const ts   = getIntervalTierStyle(r.interval);
+      const rec  = existingRecords.find(p => p.reviewKey === r.key && p.type === 'word-review');
+      const recordedVal  = rec ? rec.actualEnd : '';
+      const plannedCount = r.rangeEnd - r.rangeStart + 1;
+      const statusHtml = rec
+        ? `<span class="progress-status-badge ${rec.actualEnd >= r.rangeEnd ? 'ps-on-track' : 'ps-behind'}">
+             ${rec.actualEnd >= r.rangeEnd ? '✅ 完了' : `⚠️ ${rec.actualEnd - r.rangeStart + 1}/${plannedCount}個`}
+           </span>`
+        : '';
+      const delayNote = r.delayedDays > 0
+        ? `<span class="delay-badge" style="font-size:.65rem;margin-left:4px;">${r.delayedDays}日遅れ</span>`
+        : '';
+      itemsHtml += `
+        <div class="progress-item review-item t${tier}">
+          <span class="progress-plan-label">
+            <span class="review-item-type-badge" style="background:${ts.bg};color:${ts.color};border:1px solid ${ts.border};">復習 Lv.${tier} ${r.interval}日後</span>
+            単語 ${r.rangeStart}〜${r.rangeEnd}（${plannedCount}個）${delayNote}
+          </span>
+          ${buildProgControlHtml(
+            r.rangeStart, r.rangeEnd, recordedVal, 'word-review', statusHtml,
+            `data-review-key="${r.key}" data-type="word-review" data-planned-start="${r.rangeStart}" data-planned-end="${r.rangeEnd}" data-date="${dateStr}"`
+          )}
+        </div>`;
+    });
+  }
+
+  // ── 復習：参考書 ─────────────────────────────────────────────
+  const pendingBookReviews = dayBookReviews.filter(r => !r.done);
+  if (pendingBookReviews.length > 0) {
+    itemsHtml += `<div class="progress-review-divider">📚 復習タスク（参考書）の進捗</div>`;
+    pendingBookReviews.forEach(r => {
+      const tier = getIntervalTier(r.interval);
+      const ts   = getIntervalTierStyle(r.interval);
+      const rec  = existingRecords.find(p => p.reviewKey === r.key && p.type === 'book-review');
+      const recordedVal  = rec ? rec.actualEnd : '';
+      const plannedCount = r.rangeEnd - r.rangeStart + 1;
+      const statusHtml = rec
+        ? `<span class="progress-status-badge ${rec.actualEnd >= r.rangeEnd ? 'ps-on-track' : 'ps-behind'}">
+             ${rec.actualEnd >= r.rangeEnd ? '✅ 完了' : `⚠️ ${rec.actualEnd - r.rangeStart + 1}/${plannedCount}ページ`}
+           </span>`
+        : '';
+      const delayNote = r.delayedDays > 0
+        ? `<span class="delay-badge" style="font-size:.65rem;margin-left:4px;">${r.delayedDays}日遅れ</span>`
+        : '';
+      itemsHtml += `
+        <div class="progress-item review-item t${tier}">
+          <span class="progress-plan-label">
+            <span class="review-item-type-badge" style="background:${ts.bg};color:${ts.color};border:1px solid ${ts.border};">復習 Lv.${tier} ${r.interval}日後</span>
+            ${escapeHtml(r.bookName)} ${r.rangeStart}〜${r.rangeEnd}（${plannedCount}ページ）${delayNote}
+          </span>
+          ${buildProgControlHtml(
+            r.rangeStart, r.rangeEnd, recordedVal, 'book-review', statusHtml,
+            `data-review-key="${r.key}" data-type="book-review" data-planned-start="${r.rangeStart}" data-planned-end="${r.rangeEnd}" data-date="${dateStr}" data-book-name="${escapeHtml(r.bookName)}"`
+          )}
+        </div>`;
+    });
+  }
+
+  // 新規・復習ともにタスクがなければ null を返す
+  if (!itemsHtml) return null;
 
   const savedLabel = hasAnyRecord
     ? `<span class="progress-recorded-badge">✓ 記録済み</span>`
     : '';
 
   return `
-    <div class="progress-section" id="progress-section-${dateStr}">
+    <div class="progress-section" id="progress-section-${baseId}">
       <div class="progress-section-title">
         📝 今日の進捗を入力
         ${savedLabel}
       </div>
       ${itemsHtml}
-      <div class="ahead-banner" id="ahead-banner-${dateStr}" style="display:none;">
-        <span class="ahead-text" id="ahead-text-${dateStr}"></span>
+      <div class="ahead-banner" id="ahead-banner-${baseId}" style="display:none;">
+        <span class="ahead-text" id="ahead-text-${baseId}"></span>
         <button class="btn-primary" style="font-size:.8rem; padding:7px 12px;"
-                onclick="handleProgressSave('${dateStr}')">
+                onclick="handleProgressSave('${dateStr}', '${baseId}')">
           スケジュールを再調整する
         </button>
       </div>
-      <div class="behind-note" id="behind-note-${dateStr}" style="display:none;"></div>
+      <div class="behind-note" id="behind-note-${baseId}" style="display:none;"></div>
       <div class="progress-save-row">
         <button class="btn-primary" style="font-size:.85rem;"
-                onclick="handleProgressSave('${dateStr}')">
+                onclick="handleProgressSave('${dateStr}', '${baseId}')">
           📌 進捗を記録してスケジュールを調整
         </button>
         ${hasAnyRecord ? `<button class="btn-ghost" style="font-size:.8rem;"
@@ -2488,41 +3005,146 @@ function buildProgressInputSection(dateStr, dayWords, dayBooks) {
 
 /**
  * 進捗入力フィールドの値変化にリアルタイムで反応するイベントをアタッチ
+ * @param {string} [baseId] - buildProgressInputSection に渡したものと同じベースID
  */
-function attachProgressInputHandlers(container, dateStr) {
-  container.querySelectorAll('.progress-num-input').forEach(input => {
-    input.addEventListener('input', () => previewProgressAdjustment(container, dateStr));
+/**
+ * 進捗入力コントロール（ボタン＋ステッパー）のインタラクションをセットアップ
+ */
+function initProgressControls(container, dateStr, baseId) {
+  baseId = baseId || dateStr;
+
+  container.querySelectorAll('.prog-control-ui').forEach(ui => {
+    const hiddenInput  = ui.querySelector('.progress-num-input');
+    if (!hiddenInput) return;
+
+    const btnDone      = ui.querySelector('.prog-btn-done');
+    const btnPartial   = ui.querySelector('.prog-btn-partial');
+    const partialPanel = ui.querySelector('.prog-partial-panel');
+    const progDisplay  = ui.querySelector('.prog-display');
+    const barFill      = ui.querySelector('.prog-bar-fill');
+    const countValEl   = ui.querySelector('.prog-count-val');
+
+    const rangeStart   = parseInt(hiddenInput.dataset.plannedStart, 10);
+    const rangeEnd     = parseInt(hiddenInput.dataset.plannedEnd,   10);
+    const plannedCount = rangeEnd - rangeStart + 1;
+
+    /* ── 表示を更新し、hidden input を更新してプレビューを起動 ── */
+    function updateDisplay(val) {
+      const clampedVal     = Math.max(rangeStart - 1, Math.min(rangeEnd + 50, val));
+      const completedCount = Math.max(0, clampedVal - rangeStart + 1);
+      const pct            = plannedCount > 0 ? Math.min(100, Math.round(completedCount / plannedCount * 100)) : 0;
+
+      if (progDisplay) progDisplay.textContent = clampedVal;
+      if (barFill)     barFill.style.width      = pct + '%';
+      if (countValEl)  countValEl.textContent   = completedCount;
+
+      hiddenInput.value = clampedVal;
+      hiddenInput.dispatchEvent(new Event('input'));
+    }
+
+    /* ── ボタンのアクティブ状態を切り替える ── */
+    function setActiveState(mode) {
+      if (btnDone)     btnDone.classList.toggle('prog-btn-active',    mode === 'done');
+      if (btnPartial)  btnPartial.classList.toggle('prog-btn-active', mode === 'partial');
+      if (partialPanel) partialPanel.style.display = (mode === 'partial') ? 'block' : 'none';
+    }
+
+    /* ── 「✅ 全部完了！」 ── */
+    if (btnDone) {
+      btnDone.addEventListener('click', () => {
+        updateDisplay(rangeEnd);
+        setActiveState('done');
+      });
+    }
+
+    /* ── 「📝 途中まで...」 ── */
+    if (btnPartial) {
+      btnPartial.addEventListener('click', () => {
+        // 現在が「完了」または未入力なら、中間値を初期値にする
+        const currentVal = parseInt(hiddenInput.value, 10);
+        if (isNaN(currentVal) || currentVal >= rangeEnd) {
+          const midVal = rangeStart - 1 + Math.max(1, Math.floor(plannedCount * 0.5));
+          updateDisplay(Math.min(rangeEnd - 1, midVal));
+        }
+        setActiveState('partial');
+      });
+    }
+
+    /* ── ±ステッパーボタン ── */
+    ui.querySelectorAll('.prog-step').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const delta = parseInt(btn.dataset.delta, 10);
+        let val = parseInt(hiddenInput.value, 10);
+        if (isNaN(val)) val = rangeStart - 1;
+        updateDisplay(val + delta);
+        const newVal = parseInt(hiddenInput.value, 10);
+        setActiveState(newVal >= rangeEnd ? 'done' : 'partial');
+      });
+    });
+
+    /* ── クイック割合ボタン（¼ ½ ¾） ── */
+    ui.querySelectorAll('.prog-quick-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const pct = parseInt(btn.dataset.pct, 10);
+        const val = rangeStart - 1 + Math.max(1, Math.round(plannedCount * pct / 100));
+        updateDisplay(Math.min(rangeEnd, val));
+        setActiveState('partial');
+      });
+    });
   });
+}
+
+function attachProgressInputHandlers(container, dateStr, baseId) {
+  baseId = baseId || dateStr;
+  container.querySelectorAll('.progress-num-input').forEach(input => {
+    input.addEventListener('input', () => previewProgressAdjustment(container, dateStr, baseId));
+  });
+  // 新UIのインタラクションもここで初期化
+  initProgressControls(container, dateStr, baseId);
 }
 
 /**
  * 入力値を読みながら「進捗バナー」をリアルタイムプレビュー
+ * @param {string} [baseId] - buildProgressInputSection に渡したものと同じベースID
  */
-function previewProgressAdjustment(container, dateStr) {
+function previewProgressAdjustment(container, dateStr, baseId) {
+  baseId = baseId || dateStr;
   let hasAhead = false, hasBehind = false;
   let aheadMessages = [], behindMessages = [];
 
   container.querySelectorAll('.progress-num-input').forEach(input => {
     const val = parseInt(input.value, 10);
     if (isNaN(val)) return;
-    const plannedEnd = parseInt(input.dataset.plannedEnd, 10);
+    const plannedEnd   = parseInt(input.dataset.plannedEnd,   10);
     const plannedStart = parseInt(input.dataset.plannedStart, 10);
-    const type = input.dataset.type;
-    const label = type === 'word' ? `単語 ${plannedStart}〜${plannedEnd}` : `${input.dataset.bookName || '参考書'} ${plannedStart}〜${plannedEnd}`;
+    const type         = input.dataset.type;
 
-    if (val > plannedEnd) {
+    // 復習タスクは「ページ/個数」のみ記録（繰り越し再調整は行わない）
+    const isReview = type === 'word-review' || type === 'book-review';
+    const unit = (type === 'word' || type === 'word-review') ? '個' : 'ページ';
+    const prefix = isReview ? '復習 ' : '';
+    const label = (type === 'word' || type === 'word-review')
+      ? `${prefix}単語 ${plannedStart}〜${plannedEnd}`
+      : `${prefix}${input.dataset.bookName || '参考書'} ${plannedStart}〜${plannedEnd}`;
+
+    if (!isReview && val > plannedEnd) {
+      // 新規タスクで予定より進んだ場合のみスケジュール再調整バナーを表示
       hasAhead = true;
-      aheadMessages.push(`${label}: ${val - plannedEnd}個/ページ多く進みました！`);
+      aheadMessages.push(`${label}: ${val - plannedEnd}${unit}多く進みました！`);
     } else if (val < plannedEnd && val >= plannedStart) {
       hasBehind = true;
       const diff = plannedEnd - val;
-      behindMessages.push(`${label}: ${diff}個/ページ残っています → 残りのスケジュールに自動で分散します`);
+      if (isReview) {
+        behindMessages.push(`${label}: ${diff}${unit}残っています`);
+      } else {
+        behindMessages.push(`${label}: ${diff}${unit}残っています → 残りのスケジュールに自動で分散します`);
+      }
     }
   });
 
-  const aheadBanner = container.querySelector(`#ahead-banner-${dateStr}`);
-  const aheadText = container.querySelector(`#ahead-text-${dateStr}`);
-  const behindNote = container.querySelector(`#behind-note-${dateStr}`);
+  const aheadBanner = container.querySelector(`#ahead-banner-${baseId}`);
+  const aheadText = container.querySelector(`#ahead-text-${baseId}`);
+  const behindNote = container.querySelector(`#behind-note-${baseId}`);
 
   if (aheadBanner && aheadText) {
     if (hasAhead) {
@@ -2544,39 +3166,71 @@ function previewProgressAdjustment(container, dateStr) {
 
 /**
  * 進捗を保存してスケジュールを再描画
+ * @param {string} [baseId] - buildProgressInputSection に渡したものと同じベースID
  */
-function handleProgressSave(dateStr) {
-  const container = document.getElementById(`progress-section-${dateStr}`);
+function handleProgressSave(dateStr, baseId) {
+  baseId = baseId || dateStr;
+  const container = document.getElementById(`progress-section-${baseId}`);
   if (!container) return;
 
   const inputs = container.querySelectorAll('.progress-num-input');
   let saved = 0;
 
+  // 保存するレコードを収集（後で復習スケジュール表示に使う）
+  const savedRecords = [];
+
   inputs.forEach(input => {
     const val = parseInt(input.value, 10);
     if (isNaN(val)) return;
 
-    const entryId = input.dataset.entryId;
     const type = input.dataset.type;
     const plannedStart = parseInt(input.dataset.plannedStart, 10);
-    const plannedEnd = parseInt(input.dataset.plannedEnd, 10);
-    const bookName = input.dataset.bookName || '';
+    const plannedEnd   = parseInt(input.dataset.plannedEnd,   10);
+    const bookName     = input.dataset.bookName || '';
 
-    // 既存レコードを上書き
-    dailyProgress = dailyProgress.filter(
-      p => !(p.date === dateStr && p.entryId === entryId && p.type === type)
-    );
-    dailyProgress.push({
-      id: 'dp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
-      date: dateStr,
-      entryId,
-      type,
-      plannedStart,
-      plannedEnd,
-      actualEnd: val,
-      bookName
-    });
-    saved++;
+    if (type === 'word-review' || type === 'book-review') {
+      // ── 復習タスクの進捗記録（reviewKey で識別）──
+      const reviewKey = input.dataset.reviewKey;
+      dailyProgress = dailyProgress.filter(
+        p => !(p.date === dateStr && p.reviewKey === reviewKey && p.type === type)
+      );
+      const record = {
+        id: 'dp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+        date: dateStr,
+        reviewKey,
+        type,
+        plannedStart,
+        plannedEnd,
+        actualEnd: val,
+        bookName
+      };
+      dailyProgress.push(record);
+      savedRecords.push(record);
+      saved++;
+    } else {
+      // ── 新規タスク（word / book）の進捗記録（entryId で識別）──
+      const entryId = input.dataset.entryId;
+      // book タイプは planId（参考書プランID）も別途保持する
+      // entryId は「planId_originalDate_rangeStart」の複合キーなので refEntries への紐付けに planId を使う
+      const planId = input.dataset.planId || entryId;
+      dailyProgress = dailyProgress.filter(
+        p => !(p.date === dateStr && p.entryId === entryId && p.type === type)
+      );
+      const record = {
+        id: 'dp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+        date: dateStr,
+        entryId,
+        planId: type === 'book' ? planId : undefined, // book のみ planId を保持
+        type,
+        plannedStart,
+        plannedEnd,
+        actualEnd: val,
+        bookName
+      };
+      dailyProgress.push(record);
+      savedRecords.push(record);
+      saved++;
+    }
   });
 
   if (saved === 0) {
@@ -2589,6 +3243,126 @@ function handleProgressSave(dateStr) {
   renderIntegratedSchedule();
   refreshAllSchedules();
   renderRefTodayCard();
+
+  // 保存完了後：バッジを表示してアコーディオンを閉じる（結果表示に集中させる）
+  const progressBadge = document.getElementById('refProgressBadge');
+  const progressDetails = document.getElementById('refProgressDetails');
+  if (progressBadge) progressBadge.style.display = 'inline-block';
+  if (progressDetails) progressDetails.open = false;
+
+  // 進んだ分の復習スケジュールを表示（参考書タブの今日やることカードのみ）
+  renderProgressedReviewSection(dateStr, savedRecords);
+}
+
+/**
+ * 進捗を保存した後、「進んだ範囲の復習スケジュール」を今日やることカードに表示する。
+ * - 実際に進んだ範囲(actualStart〜actualEnd)の復習予定日を一覧で表示
+ * - 過剰進行（overshot）・不足（undershot）の差分を明示
+ * - 以降のスケジュール再計算結果の概要も表示
+ */
+function renderProgressedReviewSection(dateStr, savedRecords) {
+  const el = document.getElementById('refProgressedReviewSection');
+  if (!el) return;
+
+  // 参考書タイプのレコードのみ対象
+  const bookRecords = savedRecords.filter(r => r.type === 'book');
+  if (bookRecords.length === 0) {
+    // 単語のみの場合はセクション非表示
+    el.innerHTML = '';
+    return;
+  }
+
+  // 更新後のスケジュールデータを取得（保存後のため再計算済み）
+  const { refChunks, refReviews } = buildScheduleData();
+
+  let booksHtml = '';
+
+  bookRecords.forEach(rec => {
+    // planId があればそれを使い、なければ後方互換として entryId をそのまま試みる
+    const resolvedPlanId = rec.planId || rec.entryId;
+    const plan = refEntries.find(p => p.id === resolvedPlanId);
+    if (!plan) return;
+
+    const actualStart = rec.plannedStart; // 実際の開始は計画開始と同じ
+    const actualEnd = rec.actualEnd;
+    const plannedEnd = rec.plannedEnd;
+    const diff = actualEnd - plannedEnd;
+
+    // 過剰・不足バッジ
+    let diffHtml = '';
+    if (diff > 0) {
+      diffHtml = `<div class="progressed-overshot">🎉 予定より ${diff}ページ多く進みました！ 余分に進んだ分も復習対象に追加されました。</div>`;
+    } else if (diff < 0) {
+      diffHtml = `<div class="progressed-undershot">⚠️ ${Math.abs(diff)}ページ残りました。残りは以降のスケジュールに自動分散されました。</div>`;
+    }
+
+    // 進捗記録した日を起点に DEFAULT_INTERVALS で復習予定を生成して表示
+    const reviewSlots = DEFAULT_INTERVALS.map(n => {
+      const reviewDate = formatISO(addDays(parseISO(dateStr), n));
+      const tier = getIntervalTier(n);
+      const tierLabel = ['', 'Lv.1 初期', 'Lv.2 定着', 'Lv.3 強化', 'Lv.4 仕上げ'][tier];
+      // 日付を「M/D（曜日）」形式で表示
+      const d = parseISO(reviewDate);
+      const wdLabel = ['日','月','火','水','木','金','土'][d.getDay()];
+      const dispDate = `${d.getMonth()+1}/${d.getDate()}（${wdLabel}）`;
+      return { n, reviewDate, dispDate, tier, tierLabel };
+    });
+
+    const slotsHtml = reviewSlots.map(s =>
+      `<span class="progressed-review-slot slot-t${s.tier}">
+        <span class="slot-date">${s.dispDate}</span>
+        <span class="slot-lv">${s.n}日後 ${s.tierLabel}</span>
+      </span>`
+    ).join('');
+
+    // 調整後のスケジュール概要（未来のチャンクを数件表示）
+    const futureChunks = refChunks
+      .filter(c => c.planId === plan.id && c.date > dateStr && !c.carriedForward)
+      .slice(0, 4);
+    let schedNoteHtml = '';
+    if (futureChunks.length > 0) {
+      const schedItems = futureChunks.map(c => {
+        const d = parseISO(c.date);
+        const wdLabel = ['日','月','火','水','木','金','土'][d.getDay()];
+        const count = c.rangeEnd - c.rangeStart + 1;
+        const adjMark = c.isAdjusted ? '🔄 ' : '';
+        return `<span style="white-space:nowrap;">${adjMark}${d.getMonth()+1}/${d.getDate()}（${wdLabel}）: p.${c.rangeStart}〜${c.rangeEnd}（${count}ページ）</span>`;
+      }).join('<br>');
+      schedNoteHtml = `<div class="progressed-adj-note">
+        📅 <strong>更新後の以降スケジュール（先頭${futureChunks.length}件）：</strong><br>${schedItems}
+        ${refChunks.filter(c => c.planId === plan.id && c.date > dateStr && !c.carriedForward).length > 4
+          ? `<span style="color:var(--ink-soft);font-size:.78rem;">… 他 ${refChunks.filter(c => c.planId === plan.id && c.date > dateStr && !c.carriedForward).length - 4} 日分</span>` : ''}
+        <br><span style="font-size:.75rem;color:var(--ink-soft);">🔄 マークはスケジュールが再調整された日です</span>
+      </div>`;
+    }
+
+    const adjBadge = diff !== 0 ? `<span class="adj-badge">スケジュール再調整済み</span>` : '';
+    booksHtml += `
+      <div class="progressed-review-book">
+        <div class="progressed-review-book-name">
+          ${escapeHtml(plan.bookName)}
+          <span class="range-badge">p.${actualStart}〜${actualEnd}</span>
+          ${adjBadge}
+        </div>
+        ${diffHtml}
+        <div style="font-size:.8rem; color:var(--ink-soft); margin-bottom:6px; font-weight:600;">📅 この範囲の復習予定日：</div>
+        <div class="progressed-review-slots">${slotsHtml}</div>
+        ${schedNoteHtml}
+      </div>`;
+  });
+
+  if (!booksHtml) {
+    el.innerHTML = '';
+    return;
+  }
+
+  el.innerHTML = `
+    <div class="progressed-review-section">
+      <div class="progressed-review-title">
+        ✅ 進捗を記録しました — 復習スケジュールが更新されました
+      </div>
+      ${booksHtml}
+    </div>`;
 }
 
 /**
@@ -2601,6 +3375,9 @@ function handleProgressClear(dateStr) {
   renderIntegratedSchedule();
   refreshAllSchedules();
   renderRefTodayCard();
+  // 復習スケジュールセクションも消去
+  const reviewEl = document.getElementById('refProgressedReviewSection');
+  if (reviewEl) reviewEl.innerHTML = '';
 }
 
 function renderTodayNew(){
@@ -2644,34 +3421,80 @@ function renderRefTodayCard() {
   // ── 今日の復習 ──────────────────────────────────────────────
   const todayReviews = refReviews.filter(r => r.date === todayStr);
   if (todayReviews.length === 0) {
-    reviewList.innerHTML = '<div class="empty-mini">今日の参考書復習はありません。</div>';
-    return;
+    reviewList.innerHTML = '<div class="empty-mini">今日の参考書復習はありません。<br><span style="font-size:.78rem;color:var(--ink-soft);">📝 進捗を入力すると、翌日以降に復習予定が自動で追加されます。</span></div>';
+  } else {
+    // 未完了を先頭、完了済みを後ろに並べる
+    const sorted = [...todayReviews].sort((a, b) => (a.done ? 1 : 0) - (b.done ? 1 : 0));
+    const itemsHtml = sorted.map(r => {
+      const ts = getIntervalTierStyle(r.interval);
+      const delayHtml = r.delayedDays > 0
+        ? `<span class="delay-badge">${r.delayedDays}日遅れ</span>`
+        : '';
+      return `<div class="ref-review-item${r.done ? ' is-done' : ''}">
+        <div class="ref-book-info">
+          <span class="ref-book-title">${escapeHtml(r.bookName)}</span>
+          <span class="ref-book-range">p.${r.rangeStart}〜${r.rangeEnd}${r.delayedDays > 0 ? `　<span style="color:var(--margin-red);font-size:.78rem;font-weight:700;">${r.delayedDays}日遅れ</span>` : ''}</span>
+        </div>
+        <label class="tag tag-ref-review tag-review-t${getIntervalTier(r.interval)} review-check-label${r.done ? ' is-done' : ''}"
+               style="cursor:pointer; padding:6px 12px; display:inline-flex; align-items:center; gap:6px; white-space:nowrap;">
+          <input type="checkbox" class="review-check" data-key="${r.key}" ${r.done ? 'checked' : ''}>
+          <span class="stamp">◎</span>
+          ${r.interval}日後&nbsp;<span style="font-weight:400;font-size:.78rem;">${ts.label}</span>
+          ${delayHtml}
+        </label>
+      </div>`;
+    }).join('');
+    reviewList.innerHTML = `<div class="due-list" style="gap:10px;">${itemsHtml}</div>`;
+    attachReviewCheckHandlers(reviewList);
   }
 
-  // 未完了を先頭、完了済みを後ろに並べる
-  const sorted = [...todayReviews].sort((a, b) => (a.done ? 1 : 0) - (b.done ? 1 : 0));
-  const itemsHtml = sorted.map(r => {
-    const ts = getIntervalTierStyle(r.interval);
-    const delayHtml = r.delayedDays > 0
-      ? `<span class="delay-badge">${r.delayedDays}日遅れ</span>`
-      : '';
-    return `<div class="ref-review-item${r.done ? ' is-done' : ''}">
-      <div class="ref-book-info">
-        <span class="ref-book-title">${escapeHtml(r.bookName)}</span>
-        <span class="ref-book-range">p.${r.rangeStart}〜${r.rangeEnd}${r.delayedDays > 0 ? `　<span style="color:var(--margin-red);font-size:.78rem;font-weight:700;">${r.delayedDays}日遅れ</span>` : ''}</span>
-      </div>
-      <label class="tag tag-ref-review tag-review-t${getIntervalTier(r.interval)} review-check-label${r.done ? ' is-done' : ''}"
-             style="cursor:pointer; padding:6px 12px; display:inline-flex; align-items:center; gap:6px; white-space:nowrap;">
-        <input type="checkbox" class="review-check" data-key="${r.key}" ${r.done ? 'checked' : ''}>
-        <span class="stamp">◎</span>
-        ${r.interval}日後&nbsp;<span style="font-weight:400;font-size:.78rem;">${ts.label}</span>
-        ${delayHtml}
-      </label>
-    </div>`;
-  }).join('');
+  // ── 今日の進捗入力（繰り越し分を含む全チャンクが対象）────────────────
+  const progressEl = document.getElementById('refTodayProgressSection');
+  const progressDetails = document.getElementById('refProgressDetails');
+  const progressBadge = document.getElementById('refProgressBadge');
 
-  reviewList.innerHTML = `<div class="due-list" style="gap:10px;">${itemsHtml}</div>`;
-  attachReviewCheckHandlers(reviewList);
+  if (progressEl) {
+    // 復習タスク（未完了のみ）も進捗入力対象に含める
+    const pendingReviews = todayReviews.filter(r => !r.done);
+    const hasAnyProgressTarget = todayChunks.length > 0 || pendingReviews.length > 0;
+
+    if (hasAnyProgressTarget) {
+      // スケジュールタブと ID が衝突しないよう 'ref-' プレフィックスを付ける
+      const refBaseId = 'ref-' + todayStr;
+      const html = buildProgressInputSection(
+        todayStr,
+        [],            // 単語チャンクは参考書タブでは不要
+        todayChunks,   // 参考書新規チャンク
+        refBaseId,
+        [],            // 単語復習は参考書タブでは扱わない
+        pendingReviews // 参考書復習タスク（未完了）
+      );
+      progressEl.innerHTML = html || '';
+      if (html) attachProgressInputHandlers(progressEl, todayStr, refBaseId);
+
+      // 既に記録がある場合：バッジを表示してアコーディオンを開く
+      const hasRecord = dailyProgress.some(p => p.date === todayStr);
+      if (progressBadge) progressBadge.style.display = hasRecord ? 'inline-block' : 'none';
+      if (progressDetails) progressDetails.open = hasRecord;
+
+      // 進捗アコーディオンを表示
+      if (progressDetails) progressDetails.style.display = '';
+    } else {
+      progressEl.innerHTML = '';
+      // 今日のチャンクも復習もない場合はアコーディオンごと非表示
+      if (progressDetails) progressDetails.style.display = 'none';
+      if (progressBadge) progressBadge.style.display = 'none';
+    }
+  }
+
+  // ── 既に今日の進捗記録があれば「復習スケジュール」セクションを復元表示 ──
+  const todayBookRecords = dailyProgress.filter(p => p.date === todayStr && p.type === 'book');
+  if (todayBookRecords.length > 0) {
+    renderProgressedReviewSection(todayStr, todayBookRecords);
+  } else {
+    const reviewEl = document.getElementById('refProgressedReviewSection');
+    if (reviewEl) reviewEl.innerHTML = '';
+  }
 }
 
 function renderAll(){
@@ -4095,8 +4918,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // 学習する曜日のチップを生成（単語スケジュールと同じ仕組みを再利用）
   buildWeekdayChips('refWeekdayRow', DEFAULT_WEEKDAYS);
-  // 復習を入れるタイミングのチップを生成（単語スケジュールと同じ仕組みを再利用）
-  buildIntervalChips('refIntervalRow', DEFAULT_INTERVALS);
+  // 復習インターバルは進捗入力時に DEFAULT_INTERVALS で自動生成するため、チップ選択UIは不要
 
   // 割り振り方法（曜日から設定 / 1日あたりの量から設定）の切り替え
   document.querySelectorAll('input[name="refPlanMode"]').forEach(radio => {
@@ -4173,6 +4995,13 @@ function loadRefEntries() {
   if (saved) {
     refEntries = JSON.parse(saved);
     renderRefSchedule(); // 読み込み後すぐに描画
+
+    // 既にスケジュールが登録されている場合：設定アコーディオンを初期状態で閉じる
+    // （「今日の確認」エリアを最初に見せることでUXを改善）
+    if (refEntries.length > 0) {
+      const settingDetails = document.getElementById('refSettingDetails');
+      if (settingDetails) settingDetails.open = false;
+    }
   }
 }
 
@@ -4189,7 +5018,6 @@ if (saveRefPlanBtn) {
     const startDate = document.getElementById('refStartDate').value;
     const planMode = document.querySelector('input[name="refPlanMode"]:checked').value;
     const weekdays = getCheckedValues('refWeekdayRow');
-    const intervals = getCheckedValues('refIntervalRow');
 
     const showError = (msg) => { if (errorEl) errorEl.textContent = msg; else alert(msg); };
 
@@ -4205,10 +5033,6 @@ if (saveRefPlanBtn) {
       showError('学習する曜日を1つ以上選んでください。');
       return;
     }
-    if (intervals.length === 0) {
-      showError('復習のタイミングを1つ以上選んでください。');
-      return;
-    }
 
     const newPlan = {
       id: 'ref_' + Date.now(),
@@ -4217,7 +5041,6 @@ if (saveRefPlanBtn) {
       endNum: endNum,
       startDate: startDate,
       weekdays: weekdays,
-      intervals: intervals,
       planMode: planMode
     };
 
@@ -4255,6 +5078,10 @@ if (saveRefPlanBtn) {
     document.getElementById('refBookName').value = '';
     document.getElementById('refStartNum').value = '';
     document.getElementById('refEndNum').value = '';
+
+    // 登録完了後：設定アコーディオンを閉じて「今日の確認」に注目させる
+    const settingDetails = document.getElementById('refSettingDetails');
+    if (settingDetails) settingDetails.open = false;
   });
 }
 
@@ -4288,7 +5115,7 @@ function renderRefEntryList(){
     item.innerHTML = `
       <div>
         <span class="rng">${escapeHtml(plan.bookName)}　${plan.startNum}〜${plan.endNum}</span>
-        <div class="meta">開始日 ${plan.startDate} ／ 学習日: ${wdLabel || '―'} ／ ${calcInfo} ／ 復習: ${DEFAULT_INTERVALS.join('・')}日後</div>
+        <div class="meta">開始日 ${plan.startDate} ／ 学習日: ${wdLabel || '―'} ／ ${calcInfo} ／ 復習: 進捗入力時に自動設定</div>
       </div>
       <button class="del-btn ref-del-btn" data-id="${plan.id}">削除</button>
     `;
