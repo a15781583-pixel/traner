@@ -6,16 +6,24 @@
 /* ────────────────────────────────────────────────
    0. AIタブ セクション構造
    ─ 参考書タブの section.card と縦方向を揃える
+   ─
+   使い方：AI学習計画・AI弱点分析タブ内の
+   セクション最外殻要素に .ai-section を付与する。
+   （HTML 側で <section class="card"> の代わりに使用）
 ──────────────────────────────────────────────── */
 
+/*  css-style.css の section.card と完全同仕様
+    ─ background: var(--white) で白カードを可視化し
+      左端を視覚的アンカーとして機能させる          */
 .ai-section {
-  background: var(--white);
+  background: var(--white);           /* ← section.card と同値 */
   border: 1px solid var(--paper-line);
   border-radius: var(--radius);
   padding: 18px 20px;
-  margin-bottom: 18px;
+  margin-bottom: 18px;               /* ← section.card と同値 */
 }
 
+/* h2 タイトル行：section.card 内の h2 と同仕様 */
 .ai-section > h2:first-child {
   font-family: 'Noto Serif JP', serif;
   font-size: 1.05rem;
@@ -25,6 +33,7 @@
   gap: 8px;
 }
 
+/* タグライン（サブ説明文）：参考書タブの .tagline と統一 */
 .ai-section-desc {
   color: var(--ink-soft);
   font-size: 0.88rem;
@@ -33,61 +42,10 @@
 }
 
 /* ────────────────────────────────────────────────
-   0b. AIタブ セクションラベル
-   ─ 参考書タブの .ref-section-label と完全同仕様
-   ─ 単語・参考書タブと視覚的統一感を出す
-──────────────────────────────────────────────── */
-.ai-section-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: .78rem;
-  font-weight: 700;
-  letter-spacing: .06em;
-  text-transform: uppercase;
-  padding: 5px 14px;
-  border-radius: 6px 6px 0 0;
-  margin-bottom: -2px;
-  width: fit-content;
-}
-
-/* 出力エリア（ロードマップ・分析結果） */
-.ai-section-label--output {
-  background: var(--ink);
-  color: var(--white);
-  margin-top: 4px;
-}
-
-/* 入力エリア（チャット・成績データ） */
-.ai-section-label--input {
-  background: var(--gold-bg);
-  color: var(--gold);
-  border: 1px solid #e4cd94;
-  margin-top: 24px;
-}
-
-/* 設定エリア（API設定） */
-.ai-section-label--setup {
-  background: var(--paper);
-  color: var(--ink-soft);
-  border: 1px solid var(--paper-line);
-  margin-top: 4px;
-}
-
-.ai-section-label .ai-section-icon { font-size: .95rem; }
-
-/* ────────────────────────────────────────────────
-   0c. フィールドサイズクラス
-   ─ inline style の max-width をクラスで代替
-   ─ モバイルでは @media 内で 100% にリセット
-──────────────────────────────────────────────── */
-.field-xs { max-width: 100px; }
-.field-sm { max-width: 160px; }
-
-/* ────────────────────────────────────────────────
    1. 成績入力フォーム
 ──────────────────────────────────────────────── */
 
+/* フォーム行：css-style.css の .form-grid と統一 */
 .score-form-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -96,7 +54,8 @@
 }
 .score-form-grid .field.full { grid-column: 1 / -1; }
 
-/* 旧 .score-form-row（互換性のため残す） */
+/* 旧 .score-form-row は .score-form-grid に統合済み。
+   互換性のため残す */
 .score-form-row {
   display: flex;
   gap: 10px;
@@ -108,6 +67,7 @@
   min-width: 120px;
 }
 
+/* インプット要素：css-style.css の input / select スタイルと統一 */
 select.score-select,
 input[type="text"].score-text,
 input[type="password"] {
@@ -133,6 +93,7 @@ input[type="password"]:focus {
    2. 成績エントリーリスト
 ──────────────────────────────────────────────── */
 
+/* css-style.css の .entry-list / .entry-item と同構造 */
 .score-entry-list {
   display: flex;
   flex-direction: column;
@@ -157,6 +118,7 @@ input[type="password"]:focus {
   margin-top: 2px;
 }
 
+/* 試験種別バッジ */
 .exam-type-badge {
   display: inline-flex;
   align-items: center;
@@ -170,6 +132,7 @@ input[type="password"]:focus {
   white-space: nowrap;
 }
 
+/* 偏差値バッジ：IBM Plex Mono で数値を際立たせる */
 .hensachi-badge {
   display: inline-flex;
   align-items: center;
@@ -189,6 +152,7 @@ input[type="password"]:focus {
    3. 成績グラフ
 ──────────────────────────────────────────────── */
 
+/* css-style.css の .chart-grid と同じパターン */
 .score-chart-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -210,6 +174,7 @@ input[type="password"]:focus {
    4. 弱点カード
 ──────────────────────────────────────────────── */
 
+/* css-style.css の section.card / .progress-section と同系統 */
 .weak-card {
   background: var(--white);
   border: 1px solid var(--paper-line);
@@ -219,9 +184,9 @@ input[type="password"]:focus {
   margin-bottom: 12px;
   transition: box-shadow 0.2s ease;
 }
-.weak-card.sev-high   { border-left-color: var(--margin-red); }
+.weak-card.sev-high  { border-left-color: var(--margin-red); }
 .weak-card.sev-medium { border-left-color: var(--gold); }
-.weak-card.sev-low    { border-left-color: var(--success); }
+.weak-card.sev-low   { border-left-color: var(--success); }
 
 .weak-card .weak-title {
   font-weight: 700;
@@ -242,6 +207,7 @@ input[type="password"]:focus {
   font-weight: 600;
 }
 
+/* 重要度バッジ：css-style.css の .sev-badge / .badge-warn と統一 */
 .sev-badge {
   font-size: 0.68rem;
   font-weight: 700;
@@ -269,6 +235,7 @@ input[type="password"]:focus {
    5. セキュリティ警告バナー
 ──────────────────────────────────────────────── */
 
+/* css-style.css の .behind-note / .ahead-banner と同一構造 */
 .security-banner {
   display: flex;
   gap: 10px;
@@ -293,12 +260,17 @@ input[type="password"]:focus {
    6. AI設定カード
 ──────────────────────────────────────────────── */
 
+/*  css-style.css の section.card と完全同仕様。
+    ─ background を var(--white) にすることで
+      ページ背景（var(--paper)）と区別し、
+      左端の白カード縁が視覚的アンカーになる。
+    ─ margin-bottom で参考書タブとの縦間隔を揃える。 */
 .ai-settings-card {
-  background: var(--white);
+  background: var(--white);           /* 修正：paper → white で可視化 */
   border: 1px solid var(--paper-line);
   border-radius: var(--radius);
   padding: 18px 20px;
-  margin-bottom: 18px;
+  margin-bottom: 18px;               /* 追加：section.card と同値 */
 }
 
 /* ────────────────────────────────────────────────
@@ -316,15 +288,18 @@ input[type="password"]:focus {
   flex-direction: column;
   gap: 12px;
   margin-bottom: 12px;
+  /* スムーズスクロール */
   scroll-behavior: smooth;
 }
 
+/* メッセージバブル */
 .chat-msg {
   padding: 10px 14px;
   border-radius: 14px;
   max-width: 85%;
   font-size: 0.9rem;
   line-height: 1.6;
+  /* css-style.css の button と同じアニメーション */
   transition: opacity 0.2s ease;
 }
 .model-msg {
@@ -340,7 +315,7 @@ input[type="password"]:focus {
   border-bottom-right-radius: 4px;
 }
 
-/* 入力行 */
+/* 入力行：css-style.css の .footer-actions / .leech-form-row と同系統 */
 .chat-input-row {
   display: flex;
   gap: 8px;
@@ -363,7 +338,7 @@ input[type="password"]:focus {
   outline-offset: 1px;
 }
 
-/* 画像プレビュー */
+/* 画像プレビューボックス */
 .image-preview-box {
   display: none;
   position: relative;
@@ -400,8 +375,10 @@ input[type="password"]:focus {
 
 /* ────────────────────────────────────────────────
    8. ボタン拡張
+   （css-style.css の .btn-primary / .btn-ghost を継承）
 ──────────────────────────────────────────────── */
 
+/* ゴールドボタン：.today-new-tag のカラーと統一 */
 .btn-gold {
   background: var(--gold);
   color: var(--white);
@@ -411,6 +388,7 @@ input[type="password"]:focus {
 .btn-gold:hover  { background: #8e6819; }
 .btn-gold:active { transform: translateY(1px); box-shadow: 0 1px 2px rgba(30, 42, 68, 0.05); }
 
+/* 成功ボタン：.btn-correct と統一 */
 .btn-success {
   background: var(--success);
   color: var(--white);
@@ -453,52 +431,11 @@ input[type="password"]:focus {
 
 /* ────────────────────────────────────────────────
    10. レスポンシブ（モバイル最適化）
-   ─ max-width: 640px
 ──────────────────────────────────────────────── */
 
 @media (max-width: 640px) {
 
-  /* ── AIタブ全体の横はみ出しを封じる ── */
-  #tab-coach,
-  #tab-analysis {
-    overflow-x: hidden;
-    max-width: 100%;
-  }
-
-  /* ── セクションラベル ── */
-  .ai-section-label {
-    font-size: .72rem;
-    padding: 4px 10px;
-  }
-  /* 最初のラベルは上マージン不要 */
-  .ai-section-label--setup:first-child {
-    margin-top: 0;
-  }
-
-  /* ── AI設定・セクションカード ── */
-  .ai-settings-card,
-  .ai-section {
-    padding: 14px 14px;
-    margin-bottom: 14px;
-  }
-
-  /* ── フィールドサイズクラスをモバイルでリセット ── */
-  .field-xs,
-  .field-sm {
-    max-width: 100% !important;
-    width: 100%;
-  }
-
-  /* ── score-form-grid：全フィールドを全幅 + 1カラム ── */
-  .score-form-grid {
-    grid-template-columns: 1fr !important;
-  }
-  .score-form-grid .field {
-    max-width: 100% !important;
-    width: 100%;
-  }
-
-  /* ── 旧フォーム行 ── */
+  /* ── フォーム ── */
   .score-form-row {
     flex-direction: column;
     gap: 12px;
@@ -508,8 +445,12 @@ input[type="password"]:focus {
     flex: none;
     width: 100%;
   }
+  .score-form-grid {
+    /* 1カラムに固定 */
+    grid-template-columns: 1fr !important;
+  }
 
-  /* ── iOS ズーム防止（フォント 16px 以上） ── */
+  /* ── インプット：iOS のズームを防ぐ ── */
   select.score-select,
   input[type="text"].score-text,
   input[type="password"],
@@ -517,7 +458,7 @@ input[type="password"]:focus {
     font-size: 16px;
   }
 
-  /* ── グラフを 1 カラムに ── */
+  /* ── グラフ ── */
   .score-chart-grid {
     grid-template-columns: 1fr;
     gap: 12px;
@@ -534,7 +475,7 @@ input[type="password"]:focus {
     font-size: 0.9rem;
   }
 
-  /* ── エントリーリスト：縦積み ── */
+  /* ── エントリーリスト：css-style.css の .entry-item と同じ縦積み ── */
   .score-entry-item {
     flex-direction: column;
     align-items: flex-start;
@@ -551,72 +492,16 @@ input[type="password"]:focus {
     max-width: 92%;
     font-size: 0.88rem;
   }
-
-  /* チャット入力行：
-     テキスト入力を最上行（全幅）、ボタン群を下行に並べる */
   .chat-input-row {
-    flex-wrap: wrap;
-    align-items: stretch;
-    gap: 6px;
-  }
-  .chat-input-row .chat-input-text {
-    order: 1;
-    flex: 0 0 100%;   /* 第1行として全幅占有 */
-    width: 100%;
-    font-size: 16px;  /* iOS ズーム防止 */
-  }
-  .chat-input-row > button {
-    order: 2;         /* 第2行：ボタンを横並び */
-    flex: 1;
-    min-height: 44px; /* タッチターゲット確保 */
-    white-space: nowrap;
+    /* 送信ボタンを右、テキスト入力を左に保持 */
+    align-items: flex-end;
   }
 
-  /* ── ゴールド／成功ボタン：44px タッチターゲット ── */
+  /* ── ボタン：44px 以上のタッチターゲット ── */
   .btn-gold,
   .btn-success {
     min-height: 44px;
     padding: 12px 16px;
-  }
-
-  /* ── メイン CTA ボタン：全幅 ── */
-  #generatePlanBtn,
-  #runAnalysisBtn {
-    width: 100%;
-    font-size: 1rem;
-    min-height: 48px;
-  }
-
-  /* ── コーチ結果：ボタン行を縦積み ── */
-  #coachResultSection [style*="justify-content: center"] {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  #coachResultSection [style*="justify-content: center"] .btn-ghost {
-    width: 100%;
-    min-height: 44px;
-    text-align: center;
-  }
-
-  /* ── currentPlanSection（ネストカード） ── */
-  #currentPlanSection {
-    margin-top: 12px !important;
-    overflow-x: hidden;
-  }
-  #applyPlanBtn {
-    width: 100% !important;
-    font-size: 0.95rem;
-    min-height: 48px;
-    padding: 14px !important;
-  }
-
-  /* ── 成績登録ボタン行 ── */
-  #scoreInputSection [style*="display:flex"][style*="gap:10px"] {
-    flex-direction: column;
-  }
-  #scoreAddBtn {
-    width: 100%;
-    min-height: 44px;
   }
 
   /* ── セキュリティバナー ── */
@@ -628,4 +513,46 @@ input[type="password"]:focus {
   .security-banner .sb-icon {
     margin-top: 0;
   }
+
+  /* ── AI設定・セクションカード ── */
+  .ai-settings-card,
+  .ai-section {
+    padding: 14px 14px;
+    margin-bottom: 14px;
+  }
+}
+/* ────────────────────────────────────────────────
+   11. AI機能コンテナのレイアウト統一
+   ─ #ai-features-container を .app と同一レイアウトに揃える
+   ─ AI タブ群が .app の外側に配置されているため、
+     padding / max-width / margin を .app と同値で付与する
+──────────────────────────────────────────────── */
+
+#ai-features-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 20px 60px 34px;   /* .app と同値 */
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* .app::before と同じ赤い縦罫線 */
+#ai-features-container::before {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0; left: 20px;
+  width: 2px;
+  background: var(--margin-red-soft);
+}
+
+@media (max-width: 640px) {
+  #ai-features-container {
+    padding-bottom: 90px;   /* ボトムナビ分の余白 (.app と同値) */
+    padding-left: 26px;     /* .app と同値 */
+  }
+}
+
+@media print {
+  #ai-features-container::before { display: none; }
+  #ai-features-container { padding-bottom: 0; }
 }
