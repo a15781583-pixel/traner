@@ -256,3 +256,11 @@ function resetChat() {
     continueChat();
   }
 }
+
+// スコア画像処理用の関数（未定義エラーを防ぐための記述）
+if (typeof handleScoreImageFile === 'undefined') {
+  window.handleScoreImageFile = function(event) {
+    console.log('Score image selected:', event.target.files[0]);
+    // 画像読み込みや解析の処理が必要な場合はここに記述
+  };
+}
