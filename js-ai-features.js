@@ -188,7 +188,7 @@ async function handleChatSend() {
   chatBox.scrollTop = chatBox.scrollHeight;
 
   try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -199,7 +199,16 @@ async function handleChatSend() {
     });
 
     loadingIndicator.remove();
-    if (!response.ok) throw new Error(`APIエラー (Status: ${response.status})`);
+    if (!response.ok) {
+      const msgs = {
+        400: 'リクエストが不正です。APIキーまたは入力内容を確認してください（400）。',
+        401: 'APIキーが無効です。キーを確認してください（401）。',
+        403: 'このAPIキーには権限がありません（403）。',
+        429: 'リクエスト数の上限に達しました。1分ほど待ってから再送信してください（429）。',
+        500: 'Gemini サーバーでエラーが発生しました。しばらく後にお試しください（500）。',
+      };
+      throw new Error(msgs[response.status] || `APIエラー (Status: ${response.status})`);
+    }
 
     const data = await response.json();
     const aiResponseText = data.candidates[0].content.parts[0].text;
@@ -229,7 +238,7 @@ async function generateFinalPlan() {
   document.getElementById('coachLoading').style.display = 'block';
 
   try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ contents: [...chatHistory, { role: 'user', parts: [{ text: "これまでの対話履歴をすべて分析し、学習ロードマップを作成してください。" }] }] })
