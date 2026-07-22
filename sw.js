@@ -1,12 +1,22 @@
-const CACHE_NAME = 'vocab-trainer-v1';
+/* ============================================================
+   Service Worker (sw.js) - バージョン v2
+============================================================ */
 
-// キャッシュするファイルのリスト（GitHub Pages用パス）
+// ★バージョン名を v2 に変更（これでブラウザが古いキャッシュを全消去します）
+const CACHE_NAME = 'vocab-trainer-v2';
+
+// ★キャッシュするファイルのリストに新しいファイル群を追加
 const STATIC_ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './icon-192.png',
-  './icon-512.png'
+  './icon-512.png',
+  './css-style.css',
+  './css-ai-features.css',
+  './js-app.js',
+  './js-ai-features.js',
+  './components-ai-features.html'
 ];
 
 // インストール時に静的アセットをキャッシュ
@@ -18,7 +28,7 @@ self.addEventListener('install', event => {
   );
 });
 
-// アクティベート時に古いキャッシュを削除
+// アクティベート時に古いキャッシュ（v1など）を自動削除
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
