@@ -1,0 +1,1187 @@
+
+  :root{
+    --paper:#F4F6FB;
+    --paper-line:#CBD5E3;
+    --margin-red:#B23A2E;
+    --margin-red-soft:#e7c9c6;
+    --ink:#1E2A44;
+    --ink-soft:#5B6B85;
+    --gold:#a97c1f;
+    --gold-bg:#f6ecd4;
+    --success:#3a6b4c;
+    --success-bg:#e3ede6;
+    --white:#FFFFFF;
+    --danger:#B23A2E;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html, body{
+    margin:0;
+    /* 横スクロールをルートで完全に封じる */
+    max-width:100%;
+    overflow-x:hidden;
+  }
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Noto Sans JP', sans-serif;
+    line-height:1.6;
+  }
+  .app{
+    max-width:900px;
+    margin:0 auto;
+    padding:0 20px 60px 34px;
+    position:relative;
+    /* はみ出し要素を .app 内に封じる */
+    overflow-x:hidden;
+  }
+  .app::before{
+    content:"";
+    position:absolute;
+    top:0; bottom:0; left:20px;
+    width:2px;
+    background:var(--margin-red-soft);
+  }
+
+  /* ---------- HERO / LP INTRO ---------- */
+  .hero{
+    padding:34px 4px 22px 4px;
+    border-bottom:1px solid var(--paper-line);
+    margin-bottom:22px;
+  }
+  .hero-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; }
+  h1{
+    font-family:'Noto Serif JP', serif;
+    font-weight:700;
+    font-size:1.6rem;
+    margin:0 0 6px 0;
+    letter-spacing:.02em;
+  }
+  .tagline{
+    color:var(--ink-soft);
+    font-size:.92rem;
+    margin:0 0 20px 0;
+    max-width:520px;
+  }
+  .feature-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:12px;
+    margin-bottom:18px;
+  }
+  .feature-card{
+    background:var(--white);
+    border:1px solid var(--paper-line);
+    border-radius:var(--radius);
+    padding:14px 16px;
+  }
+  .feature-card .icon{ font-size:1.15rem; margin-bottom:6px; display:block; }
+  .feature-card .ft{ font-weight:700; font-size:.85rem; margin-bottom:3px; }
+  .feature-card .fd{ font-size:.78rem; color:var(--ink-soft); }
+  .quick-nav{ display:flex; gap:10px; flex-wrap:wrap; }
+  .quick-nav a{
+    font-size:.82rem; font-weight:600; color:var(--ink);
+    text-decoration:none; border:1px solid var(--paper-line);
+    border-radius:20px; padding:6px 14px; background:var(--white);
+  }
+  .quick-nav a:hover{ border-color:var(--ink); }
+  .print-btn{
+    background:transparent; border:1px solid var(--ink-soft); color:var(--ink-soft);
+    border-radius:7px; padding:7px 14px; font-size:.8rem; font-weight:600; cursor:pointer;
+  }
+  .print-btn:hover{ border-color:var(--ink); color:var(--ink); }
+
+  section.card{
+    background:var(--white);
+    border:1px solid var(--paper-line);
+    border-radius:var(--radius);
+    padding:18px 20px;
+    margin-bottom:18px;
+  }
+  .today-card{ border:1.5px solid var(--ink); }
+  h2{
+    font-family:'Noto Serif JP', serif;
+    font-size:1.05rem;
+    margin:0 0 14px 0;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  h2 .num{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.8rem;
+    color:var(--white);
+    background:var(--ink);
+    border-radius:5px;
+    padding:2px 7px;
+  }
+  h3.sub-head{
+    font-size:.9rem; margin:20px 0 8px 0; color:var(--ink-soft);
+    border-top:1px dashed var(--paper-line); padding-top:16px;
+  }
+  h3.sub-head:first-of-type{ border-top:none; padding-top:0; margin-top:4px; }
+
+  .today-new-box{
+    display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;
+  }
+  .today-new-tag{
+    font-family:'IBM Plex Mono', monospace; font-weight:600; font-size:.9rem;
+    background:var(--gold-bg); color:var(--gold); border:1px solid #e4cd94;
+    border-radius:7px; padding:6px 12px;
+  }
+  /* 参考書タブ「今日やること」専用タグ（緑系） */
+  .today-ref-tag{
+    font-family:'IBM Plex Mono', monospace; font-weight:700; font-size:.88rem;
+    background:var(--success-bg); color:var(--success); border:1px solid #bcd6c4;
+    border-radius:7px; padding:6px 14px; display:inline-block; line-height:1.5;
+  }
+  /* 参考書復習アイテム */
+  .ref-review-item{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:10px; flex-wrap:wrap;
+    border:1px solid var(--paper-line); border-radius:8px;
+    padding:10px 14px; background:var(--paper);
+  }
+  .ref-review-item .ref-book-info{ display:flex; flex-direction:column; gap:2px; flex:1; }
+  .ref-review-item .ref-book-title{ font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:.95rem; }
+  .ref-review-item .ref-book-range{ font-size:.82rem; color:var(--ink-soft); }
+  .empty-mini{ color:var(--ink-soft); font-size:.85rem; padding:6px 2px; }
+
+  .form-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px 16px;
+  }
+  .field{ display:flex; flex-direction:column; gap:5px; }
+  .field.full{ grid-column:1 / -1; }
+  label{ font-size:.82rem; color:var(--ink-soft); font-weight:500; }
+  input[type=number], input[type=date]{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.95rem;
+    padding:8px 10px;
+    border:1px solid var(--paper-line);
+    border-radius:6px;
+    background:var(--paper);
+    color:var(--ink);
+  }
+  input:focus{ outline:2px solid var(--ink); outline-offset:1px; }
+  .checkbox-row{ display:flex; flex-wrap:wrap; gap:8px; }
+  .chip{
+    display:inline-flex; align-items:center; gap:6px;
+    border:1px solid var(--paper-line);
+    border-radius:20px;
+    padding:6px 12px;
+    font-size:.85rem;
+    cursor:pointer;
+    user-select:none;
+    background:var(--paper);
+  }
+  .chip input{ accent-color:var(--ink); margin:0; }
+  .chip.checked{ background:var(--ink); color:var(--white); border-color:var(--ink); }
+  .chip.checked input{ accent-color:var(--white); }
+  .hint{ font-size:.78rem; color:var(--ink-soft); margin-top:2px; }
+  button{
+    font-family:'Noto Sans JP', sans-serif;
+    font-weight:700;
+    font-size:.9rem;
+    border:none;
+    border-radius:7px;
+    padding:10px 18px;
+    cursor:pointer;
+  }
+  .btn-primary{ background:var(--ink); color:var(--white); }
+  .btn-primary:hover{ background:#141c30; }
+  .btn-ghost{ background:transparent; color:var(--ink-soft); border:1px solid var(--paper-line); }
+  .btn-ghost:hover{ border-color:var(--ink-soft); color:var(--ink); }
+  .error-msg{ color:var(--danger); font-size:.85rem; margin-top:6px; min-height:1.2em; }
+  .entry-list{ display:flex; flex-direction:column; gap:8px; margin-top:14px; }
+  .entry-item{
+    display:flex; justify-content:space-between; align-items:center;
+    background:var(--paper); border:1px solid var(--paper-line);
+    border-radius:8px; padding:8px 12px; font-size:.85rem;
+  }
+  .entry-item .rng{ font-family:'IBM Plex Mono', monospace; font-weight:600; }
+  .entry-item .meta{ color:var(--ink-soft); font-size:.78rem; margin-top:2px; }
+  .del-btn{
+    background:none; border:none; color:var(--margin-red); font-size:.78rem; cursor:pointer; padding:4px 6px;
+    text-decoration:underline;
+  }
+  .schedule-wrap{ overflow-x:auto; max-width:100%; }
+  table{
+    border-collapse:collapse;
+    width:100%;
+    /* min-width はデスクトップのみ。モバイルでは @media で上書きする */
+    min-width:560px;
+    background:repeating-linear-gradient(
+      to bottom,
+      var(--white) 0px, var(--white) 47px, var(--paper-line) 47px, var(--paper-line) 48px
+    );
+  }
+  thead th{
+    text-align:left; font-size:.78rem; color:var(--ink-soft); font-weight:600;
+    padding:8px 10px; border-bottom:2px solid var(--ink); background:var(--white);
+  }
+  tbody td{ padding:9px 10px; font-size:.85rem; vertical-align:middle; }
+  tr.today{ background:#fbf6e8; }
+  .date-cell{ font-family:'IBM Plex Mono', monospace; white-space:nowrap; }
+  .date-cell .wd{ color:var(--ink-soft); font-size:.75rem; margin-left:2px;}
+  .today-badge{
+    display:inline-block; font-size:.68rem; background:var(--ink); color:var(--white);
+    border-radius:4px; padding:1px 5px; margin-left:6px;
+  }
+  .tag{
+    display:inline-flex; align-items:center; gap:4px;
+    font-family:'IBM Plex Mono', monospace; font-size:.78rem;
+    border-radius:5px; padding:3px 8px; margin:2px 4px 2px 0; white-space:nowrap;
+  }
+  .tag-new{ background:var(--gold-bg); color:var(--gold); border:1px solid #e4cd94; font-weight:600;}
+  .tag-review{ background:#f7e9e7; color:var(--margin-red); border:1px solid var(--margin-red-soft); font-weight:600; }
+  .tag-ref{ background:var(--success-bg); color:var(--success); border:1px solid #bcd6c4; font-weight:600; }
+  .tag-ref-review{ background:var(--success-bg); color:var(--success); border:1px dashed #8fb89c; font-weight:600; }
+  .tag-ref-review .stamp{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:15px; height:15px; border-radius:50%; border:1.5px solid var(--success); font-size:.6rem;
+  }
+  .tag-ref-review{ background:#eaf3ec; color:var(--success); border:1px solid #bcd6c4; font-weight:600; }
+
+  /* ── 復習インターバル 階層カラー（重要度別）─────────────────── */
+  .tag-review-t1{ background:#dbeafe; color:#1e40af; border-color:#93c5fd; }
+  .tag-review-t2{ background:#d1fae5; color:#065f46; border-color:#6ee7b7; }
+  .tag-review-t3{ background:#fef3c7; color:#92400e; border-color:#fcd34d; }
+  .tag-review-t4{ background:#fee2e2; color:#991b1b; border-color:#fca5a5; }
+  .tag-review-t1 .stamp{ border-color:#1e40af; }
+  .tag-review-t2 .stamp{ border-color:#065f46; }
+  .tag-review-t3 .stamp{ border-color:#92400e; }
+  .tag-review-t4 .stamp{ border-color:#991b1b; }
+  /* 凡例コンテナ */
+  .review-legend{
+    display:flex; gap:6px; flex-wrap:wrap; align-items:center;
+    padding:9px 14px; background:var(--paper);
+    border:1px solid var(--paper-line); border-radius:8px;
+    margin-bottom:14px; font-size:.72rem;
+  }
+  .review-legend-label{ font-weight:700; color:var(--ink-soft); margin-right:2px; white-space:nowrap; }
+  .review-legend-badge{
+    display:inline-flex; align-items:center; gap:4px;
+    font-weight:700; border-radius:4px; padding:2px 9px;
+    border:1px solid transparent;
+  }
+  .review-legend-badge small{ font-weight:400; opacity:.75; font-size:.68rem; }
+  /* ─────────────────────────────────────────────────────────── */
+
+  .tag-ref-review .stamp{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:15px; height:15px; border-radius:50%; border:1.5px solid var(--success); font-size:.6rem;
+  }
+  .tag-review .stamp{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:15px; height:15px; border-radius:50%; border:1.5px solid var(--margin-red); font-size:.6rem;
+  }
+  /* ---------- 復習チェック（完了チェックボックス／遅延バッジ） ---------- */
+  .review-check-label{ cursor:pointer; }
+  .review-check-label input.review-check{ accent-color:var(--margin-red); margin:0; cursor:pointer; }
+  .tag-ref-review.review-check-label input.review-check{ accent-color:var(--success); }
+  .review-check-label.is-done{ opacity:.55; text-decoration:line-through; }
+  .delay-badge{
+    display:inline-block; font-size:.68rem; font-weight:700;
+    background:var(--margin-red); color:var(--white);
+    border-radius:4px; padding:1px 5px; margin-left:2px; text-decoration:none;
+  }
+  .empty-state{ text-align:center; color:var(--ink-soft); padding:30px 10px; font-size:.9rem; }
+  .footer-actions{ display:flex; justify-content:flex-end; margin-top:10px; }
+
+  .leech-form-row{ display:flex; gap:10px; flex-wrap:wrap; }
+  .leech-form-row input[type=text]{
+    font-family:'Noto Sans JP', sans-serif; font-size:.9rem; padding:8px 10px;
+    border:1px solid var(--paper-line); border-radius:6px; background:var(--paper);
+    color:var(--ink); flex:1; min-width:140px;
+  }
+  .leech-form-row input[type=text]:focus{ outline:2px solid var(--ink); outline-offset:1px; }
+  .due-list{ display:flex; flex-direction:column; gap:10px; }
+  .due-item{ border:1px solid var(--paper-line); border-radius:8px; padding:12px 14px; background:var(--paper); }
+  .due-item .word-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+  .due-item .word{ font-family:'IBM Plex Mono', monospace; font-weight:700; font-size:1.05rem; }
+  .due-item .overdue{ color:var(--margin-red); font-size:.72rem; margin-left:8px; }
+  .reveal-btn{
+    background:none; border:1px solid var(--ink-soft); color:var(--ink-soft);
+    border-radius:6px; padding:6px 14px; font-size:.82rem; font-weight:600; cursor:pointer;
+  }
+  .meaning-text{
+    margin-top:8px; font-size:.88rem; color:var(--ink); background:var(--white);
+    border:1px dashed var(--paper-line); border-radius:6px; padding:9px 11px; display:none;
+  }
+  .meaning-text.shown{ display:block; }
+  .word-actions{ display:none; gap:8px; margin-top:8px; }
+  .word-actions.shown{ display:flex; }
+  .word-actions button{ flex:1; padding:11px 10px; font-size:.88rem; }
+  .btn-correct{ background:var(--success); color:var(--white); }
+  .btn-correct:hover{ background:#2c5239; }
+  .btn-wrong{ background:var(--margin-red); color:var(--white); }
+  .btn-wrong:hover{ background:#8f2e24; }
+  .badge-warn{
+    display:inline-block; font-size:.7rem; background:#f7e9e7; color:var(--margin-red);
+    border:1px solid var(--margin-red-soft); border-radius:4px; padding:1px 6px; margin-left:8px;
+  }
+  details.leech-details{ margin-top:14px; }
+  details.leech-details summary{
+    cursor:pointer; font-size:.85rem; color:var(--ink-soft); font-weight:600; padding:4px 0;
+  }
+
+  /* ---------- スケジュール折りたたみ（苦手単語リストと同様の details） ---------- */
+  details.schedule-details{
+    margin-top:12px;
+    border:1px solid var(--paper-line);
+    border-radius:8px;
+    padding:8px 12px;
+    background:var(--paper);
+  }
+  details.schedule-details > summary{
+    cursor:pointer; font-size:.85rem; color:var(--ink-soft); font-weight:600; padding:4px 0;
+    list-style:none;
+  }
+  details.schedule-details > summary::-webkit-details-marker{ display:none; }
+  details.schedule-details > summary::before{ content:"▸ "; }
+  details.schedule-details[open] > summary::before{ content:"▾ "; }
+  details.schedule-details .schedule-details-body{
+    display:flex; flex-direction:column; gap:12px; margin-top:8px;
+  }
+
+  .leech-mini-table{ width:100%; border-collapse:collapse; margin-top:8px; font-size:.8rem; }
+  .leech-mini-table th{ text-align:left; color:var(--ink-soft); font-weight:600; padding:5px 6px; border-bottom:1px solid var(--paper-line); }
+  .leech-mini-table td{ padding:5px 6px; border-bottom:1px solid var(--paper-line); font-family:'IBM Plex Mono', monospace; }
+  .mini-del{ background:none; border:none; color:var(--margin-red); font-size:.75rem; cursor:pointer; text-decoration:underline; font-family:'Noto Sans JP', sans-serif; }
+
+  /* ---------- progress charts ---------- */
+  .chart-grid{ display:grid; grid-template-columns:1.4fr 1fr; gap:20px; }
+  .chart-box{ position:relative; height:220px; }
+  .chart-label{ font-size:.8rem; color:var(--ink-soft); font-weight:600; margin-bottom:8px; }
+  .streak-note{ font-size:.78rem; color:var(--ink-soft); margin-top:10px; }
+
+  /* [ai-features.html] 成績データ・弱点分析スタイル → ai-features.html に移動 */
+
+  /* ---------- 今日のサマリーカード ---------- */
+  .today-summary-card {
+    background: var(--ink);
+    color: var(--white);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin-bottom: 18px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+  }
+  .today-summary-card .ts-label {
+    font-size: .75rem;
+    opacity: .7;
+    margin-bottom: 3px;
+    font-weight: 500;
+  }
+  .today-summary-card .ts-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .today-summary-card .ts-unit {
+    font-size: .78rem;
+    opacity: .8;
+    margin-left: 3px;
+    font-weight: 400;
+  }
+  .today-summary-card .ts-block {
+    flex: 1;
+    min-width: 80px;
+    text-align: center;
+  }
+  .today-summary-card .ts-divider {
+    width: 1px;
+    height: 40px;
+    background: rgba(255,255,255,.2);
+  }
+  .today-summary-card .ts-date {
+    width: 100%;
+    font-size: .82rem;
+    opacity: .65;
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+  .ts-all-done {
+    width: 100%;
+    text-align: center;
+    font-size: .88rem;
+    font-weight: 700;
+    color: #a8e6c2;
+    letter-spacing: .04em;
+    padding: 4px 0;
+  }
+
+  /* [ai-features.html] セキュリティバナースタイル → ai-features.html に移動 */
+
+  /* ---------- setup (teacher) area ---------- */
+  details.setup-details{
+    background:var(--white); border:1px solid var(--paper-line); border-radius:var(--radius);
+    padding:18px 20px; margin-bottom:18px;
+  }
+  details.setup-details > summary{
+    cursor:pointer; font-family:'Noto Serif JP', serif; font-size:1.05rem; font-weight:700;
+    list-style:none;
+  }
+  details.setup-details > summary::-webkit-details-marker{ display:none; }
+  details.setup-details > summary::before{ content:"▸ "; }
+  details.setup-details[open] > summary::before{ content:"▾ "; }
+
+  /* （旧モバイル専用トグルは schedule-details に統合済み） */
+
+  /* ============================================================
+     MOBILE IMPROVEMENTS
+  ============================================================ */
+
+  /* --- ボトムナビゲーション（モバイル専用） --- */
+  .bottom-nav {
+    display: none;
+  }
+  @media (max-width: 640px) {
+    /* アプリ全体の下余白をボトムナビ分確保 */
+    .app {
+      padding-bottom: 90px;
+    }
+    /* ヘッダー簡略化 */
+    .hero {
+      padding: 16px 4px 12px 4px;
+    }
+    /* 既存タブボタン群をモバイルで非表示 */
+    .desktop-tab-bar {
+      display: none !important;
+    }
+    /* ボトムナビ表示 */
+    .bottom-nav {
+      display: flex;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      width: 100%;          /* right:0 だけでなく width も明示 */
+      max-width: 100vw;     /* ビューポートを絶対に超えない */
+      background: var(--white);
+      border-top: 1px solid var(--paper-line);
+      z-index: 100;
+      height: 62px;
+      box-shadow: 0 -2px 12px rgba(30,42,68,0.08);
+      overflow: hidden;     /* ナビ自体も内部ではみ出さない */
+    }
+    .bottom-nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      padding: 6px 2px;
+      cursor: pointer;
+      font-size: .6rem;
+      font-weight: 600;
+      color: var(--ink-soft);
+      border: none;
+      background: none;
+      -webkit-tap-highlight-color: transparent;
+      transition: color .15s;
+      font-family: 'Noto Sans JP', sans-serif;
+    }
+    .bottom-nav-item .nav-icon {
+      font-size: 1.3rem;
+      line-height: 1;
+    }
+    .bottom-nav-item.active {
+      color: var(--ink);
+    }
+    .bottom-nav-item.active .nav-dot {
+      display: block;
+    }
+    .nav-dot {
+      display: none;
+      width: 4px; height: 4px;
+      background: var(--ink);
+      border-radius: 50%;
+      margin: 0 auto -2px;
+    }
+
+    /* --- テーブルの min-width をモバイルで解除 --- */
+    table {
+      min-width: 0;
+      width: 100%;
+    }
+    /* スケジュールラップもはみ出し封じ */
+    .schedule-wrap {
+      overflow-x: hidden;
+      max-width: 100%;
+    }
+    /* leech テーブルも同様 */
+    .leech-mini-table {
+      min-width: 0 !important;
+      width: 100%;
+      font-size: .78rem;
+    }
+    .leech-mini-table td,
+    .leech-mini-table th {
+      padding: 6px 6px;
+      word-break: break-all;
+    }
+
+    /* --- フォーム・グリッド --- */
+    .form-grid { grid-template-columns: 1fr; }
+    .feature-grid { grid-template-columns: 1fr; }
+    .chart-grid { grid-template-columns: 1fr; }
+    .app { padding-left: 26px; }
+    h1 { font-size: 1.3rem; }
+
+    /* --- スケジュール表 → カードビューに変換 --- */
+    .schedule-wrap table,
+    .schedule-wrap thead,
+    .schedule-wrap tbody,
+    .schedule-wrap th,
+    .schedule-wrap td,
+    .schedule-wrap tr {
+      display: block;
+    }
+    .schedule-wrap thead {
+      display: none; /* ヘッダー行を隠す */
+    }
+    .schedule-wrap tr {
+      background: var(--white);
+      border: 1px solid var(--paper-line);
+      border-radius: 10px;
+      margin-bottom: 10px;
+      padding: 10px 12px;
+    }
+    .schedule-wrap tr.today {
+      border-color: var(--ink);
+      border-width: 2px;
+    }
+    .schedule-wrap td {
+      padding: 4px 0;
+      font-size: .85rem;
+      border: none;
+      background: transparent !important;
+    }
+    /* 各セルの前にラベルを表示 */
+    .schedule-wrap td:nth-child(1)::before { content: ""; font-weight: 700; }
+    .schedule-wrap td:nth-child(2)::before { content: "📖 単語（新規）　"; font-size: .75rem; color: var(--ink-soft); }
+    .schedule-wrap td:nth-child(3)::before { content: "🔁 単語（復習）　"; font-size: .75rem; color: var(--ink-soft); }
+    .schedule-wrap td:nth-child(4)::before { content: "📚 参考書（新規）　"; font-size: .75rem; color: var(--ink-soft); }
+    .schedule-wrap td:nth-child(5)::before { content: "📝 参考書（復習）　"; font-size: .75rem; color: var(--ink-soft); }
+    /* 「—」のみのセルはコンパクトに */
+    .schedule-wrap td:only-of-type,
+    .schedule-wrap td:empty { display: none; }
+
+    /* タグを小さく折り返し */
+    .tag {
+      font-size: .72rem;
+      padding: 2px 6px;
+      margin: 2px 2px 2px 0;
+      white-space: normal;   /* 強制改行を許可 */
+      word-break: break-word;
+      max-width: 100%;
+    }
+    /* タグのコンテナも折り返し許可 */
+    tbody td, .schedule-wrap td {
+      word-break: break-word;
+      max-width: 100%;
+      overflow-wrap: break-word;
+    }
+    /* section.card 内の横はみ出しも封じる */
+    section.card, .card {
+      overflow-x: hidden;
+      max-width: 100%;
+    }
+
+    /* --- 進捗入力をモバイル向けに調整 --- */
+    .progress-item {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .progress-input-row {
+      width: 100%;
+      margin-top: 6px;
+    }
+    input.progress-num-input {
+      width: 90px;
+    }
+
+    /* --- エントリーリストをモバイル向けに調整 --- */
+    .entry-item {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .del-btn {
+      align-self: flex-end;
+    }
+
+    /* --- チップをモバイルで押しやすく --- */
+    .chip {
+      padding: 10px 14px;
+      font-size: .88rem;
+      min-height: 44px;
+    }
+
+    /* --- テストモーダル：ボタンを画面下部に固定 --- */
+    .modal-overlay {
+      align-items: flex-end;
+    }
+    .modal-content {
+      width: 100%;
+      max-width: 100%;
+      border-radius: 20px 20px 0 0;
+      max-height: 92vh;
+      padding: 24px 20px 20px;
+    }
+    .test-actions {
+      position: sticky;
+      bottom: 0;
+      background: var(--white);
+      padding: 12px 0 4px;
+      margin: 0 -20px;
+      padding-left: 20px;
+      padding-right: 20px;
+      border-top: 1px solid var(--paper-line);
+    }
+    .test-actions button {
+      padding: 16px 10px;
+      font-size: 1rem;
+      min-height: 52px;
+    }
+    .test-word {
+      font-size: 1.7rem;
+    }
+
+    /* [ai-features.html] チャット入力欄モバイルスタイル → ai-features.html に移動 */
+
+    /* [ai-features.html] スコアフォーム・AI弱点カードモバイルスタイル → ai-features.html に移動 */
+
+    /* --- 進んだ分の復習スケジュール（モバイル） --- */
+    .progressed-review-slots {
+      gap: 5px;
+    }
+    .progressed-review-slot {
+      font-size: .75rem;
+      padding: 4px 8px;
+    }
+    .progressed-review-section {
+      padding: 12px 12px;
+    }
+
+    /* --- 印刷ボタン --- */
+    .print-btn {
+      font-size: .72rem;
+      padding: 5px 10px;
+    }
+  }
+
+  @media print{
+    .no-print{ display:none !important; }
+    .app::before{ display:none; }
+    body{ background:#fff; }
+    section.card, details.setup-details{ border:1px solid #999; break-inside:avoid; }
+  }
+  .modal-overlay {
+    display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: var(--paper); /* 背景を完全に塗りつぶして別画面感を出す */
+    z-index: 9999; /* ページの一番手前に強制表示 */
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal-content {
+    background: var(--white); padding: 32px 24px; border-radius: 12px;
+    width: 90%; max-width: 500px; max-height: 95vh; overflow-y: auto; position: relative;
+    box-shadow: 0 20px 40px rgba(30,42,68,0.15);
+    border: 2px solid var(--ink);
+  }
+  .modal-close {
+    position: absolute; top: 12px; right: 16px; background: none; border: none;
+    font-size: 1.5rem; cursor: pointer; color: var(--ink-soft);
+  }
+  .test-progress { font-family: 'IBM Plex Mono', monospace; font-size: .95rem; color: var(--ink-soft); text-align: center; margin-bottom: 16px; }
+  .test-word { font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: 2.2rem; text-align: center; margin-bottom: 24px; }
+  .test-meaning {
+    font-size: 1.1rem; text-align: center; margin-bottom: 24px; padding: 20px;
+    background: var(--paper); border: 1px dashed var(--ink-soft); border-radius: 8px; display: none;
+  }
+  .test-meaning.shown { display: block; }
+  .test-actions { display: none; gap: 12px; justify-content: center; }
+  .test-actions.shown { display: flex; }
+  .test-actions button { font-size: 1.1rem; padding: 14px; }
+  .result-list { margin-top: 20px; display: flex; flex-direction: column; gap: 8px; }
+  .result-item { display: flex; justify-content: space-between; padding: 10px 12px; border-bottom: 1px solid var(--paper-line); font-size: .95rem; }
+  .tab-content { transition: opacity 0.3s ease; }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  /* [ai-features.html] AIチャットスタイル → ai-features.html に移動 */
+  /* ---------- 進捗入力セクション ---------- */
+  .progress-section {
+    margin-top: 14px;
+    padding: 14px 16px;
+    background: #f8fafc;
+    border: 1.5px dashed var(--paper-line);
+    border-radius: 10px;
+  }
+  .progress-section-title {
+    font-weight: 700; font-size: .88rem; color: var(--ink); margin-bottom: 10px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .progress-item {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+    padding: 8px 0; border-bottom: 1px solid var(--paper-line); font-size: .85rem;
+  }
+  .progress-item:last-of-type { border-bottom: none; }
+  .progress-plan-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: .82rem; font-weight: 600;
+    background: var(--paper); border: 1px solid var(--paper-line);
+    border-radius: 5px; padding: 3px 8px; white-space: nowrap;
+  }
+  .progress-input-row {
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap; flex: 1;
+  }
+  .progress-input-row span { font-size: .82rem; color: var(--ink-soft); white-space: nowrap; }
+  input.progress-num-input {
+    font-family: 'IBM Plex Mono', monospace; font-size: .92rem;
+    padding: 5px 8px; border: 1.5px solid var(--ink); border-radius: 6px;
+    background: var(--white); color: var(--ink); width: 80px; text-align: center;
+  }
+  input.progress-num-input:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
+  .progress-status-badge {
+    font-size: .75rem; font-weight: 700; border-radius: 4px; padding: 2px 7px;
+    white-space: nowrap;
+  }
+  .ps-behind { background: #fdecea; color: var(--margin-red); border: 1px solid var(--margin-red-soft); }
+  .ps-ahead  { background: var(--success-bg); color: var(--success); border: 1px solid #bcd6c4; }
+  .ps-on-track { background: var(--gold-bg); color: var(--gold); border: 1px solid #e4cd94; }
+  .progress-save-row {
+    display: flex; gap: 10px; align-items: center; margin-top: 12px; flex-wrap: wrap;
+  }
+  .ahead-banner {
+    margin-top: 12px; padding: 12px 14px;
+    background: var(--success-bg); border: 1.5px solid #bcd6c4; border-radius: 8px;
+    font-size: .85rem; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+  }
+  .ahead-banner .ahead-text { flex: 1; font-weight: 600; color: var(--success); }
+
+  /* ---------- 繰り越しバッジ ---------- */
+  .carry-badge {
+    display: inline-block;
+    font-size: .65rem;
+    font-weight: 700;
+    background: #f97316;
+    color: #fff;
+    border-radius: 4px;
+    padding: 1px 5px;
+    margin-left: 4px;
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+  .carry-forward-label {
+    display: inline-block;
+    font-size: .7rem;
+    font-weight: 700;
+    color: #f97316;
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    border-radius: 4px;
+    padding: 1px 7px;
+    margin-right: 5px;
+    white-space: nowrap;
+  }
+  .behind-note {
+    margin-top: 8px; padding: 8px 12px;
+    background: #fdecea; border: 1px solid var(--margin-red-soft); border-radius: 6px;
+    font-size: .82rem; color: var(--margin-red);
+  }
+  .progress-recorded-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: .78rem; font-weight: 700; color: var(--success);
+    background: var(--success-bg); border: 1px solid #bcd6c4;
+    border-radius: 5px; padding: 3px 8px;
+  }
+  /* ---------- 復習タスク進捗入力行 ---------- */
+  .progress-review-divider {
+    margin: 12px 0 8px 0;
+    font-size: .82rem; font-weight: 700; color: var(--ink-soft);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .progress-review-divider::after {
+    content: ""; flex: 1; height: 1px; background: var(--paper-line);
+  }
+  .progress-item.review-item {
+    background: #f8f9ff;
+    border-left: 3px solid #93c5fd;
+    border-radius: 0 6px 6px 0;
+    padding: 8px 10px 8px 12px;
+    border-bottom: none;
+    margin-bottom: 6px;
+  }
+  .progress-item.review-item.t2 { border-left-color: #6ee7b7; background: #f0fdf4; }
+  .progress-item.review-item.t3 { border-left-color: #fcd34d; background: #fffbeb; }
+  .progress-item.review-item.t4 { border-left-color: #fca5a5; background: #fff1f2; }
+  .review-item-type-badge {
+    font-size: .68rem; font-weight: 700; border-radius: 3px; padding: 1px 5px;
+    white-space: nowrap; display: inline-block;
+  }
+  /* ---------- 進んだ分の復習スケジュール表示 ---------- */
+  .progressed-review-section {
+    margin-top: 16px;
+    padding: 14px 16px;
+    background: #eaf3ec;
+    border: 1.5px solid #bcd6c4;
+    border-radius: 10px;
+  }
+  .progressed-review-title {
+    font-weight: 700; font-size: .9rem; color: var(--success); margin-bottom: 12px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .progressed-review-book {
+    margin-bottom: 12px;
+  }
+  .progressed-review-book-name {
+    font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: .88rem;
+    color: var(--ink); margin-bottom: 6px;
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .progressed-review-book-name .range-badge {
+    font-size: .78rem; font-weight: 600; background: var(--white);
+    border: 1px solid #bcd6c4; border-radius: 5px; padding: 2px 8px;
+    color: var(--success);
+  }
+  .progressed-review-book-name .adj-badge {
+    font-size: .72rem; font-weight: 700; background: #fff7ed;
+    border: 1px solid #fed7aa; border-radius: 4px; padding: 1px 6px;
+    color: #9a5400;
+  }
+  .progressed-review-slots {
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .progressed-review-slot {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: .8rem; font-weight: 600;
+    border-radius: 6px; padding: 5px 10px;
+    border: 1px solid transparent;
+    white-space: nowrap;
+  }
+  .progressed-review-slot .slot-date {
+    font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: .82rem;
+  }
+  .progressed-review-slot .slot-lv {
+    font-size: .68rem; font-weight: 400; opacity: .75;
+  }
+  .slot-t1 { background: #dbeafe; color: #1e40af; border-color: #93c5fd; }
+  .slot-t2 { background: #d1fae5; color: #065f46; border-color: #6ee7b7; }
+  .slot-t3 { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+  .slot-t4 { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+  .progressed-adj-note {
+    margin-top: 10px; padding: 9px 12px;
+    background: var(--white); border: 1px dashed #bcd6c4; border-radius: 7px;
+    font-size: .82rem; color: var(--ink-soft); line-height: 1.6;
+  }
+  .progressed-overshot {
+    margin-top: 8px; padding: 8px 12px;
+    background: #e8f5e9; border: 1px solid #a5d6a7; border-radius: 6px;
+    font-size: .82rem; color: #2e7d32; font-weight: 600;
+  }
+  .progressed-undershot {
+    margin-top: 8px; padding: 8px 12px;
+    background: #fdecea; border: 1px solid var(--margin-red-soft); border-radius: 6px;
+    font-size: .82rem; color: var(--margin-red); font-weight: 600;
+  }
+
+  /* [ai-features.html] タイピングインジケータースタイル → ai-features.html に移動 */
+  /* 1. ボタンに立体感とインタラクション（押しやすさ）を与える */
+  button, .btn-primary, .btn-ghost {
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(30, 42, 68, 0.1);
+  }
+  button:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(30, 42, 68, 0.05);
+  }
+
+  /* 2. 「今日やること」を最重要カードとして際立たせる */
+  .today-card {
+    border: 2px solid var(--ink);
+    box-shadow: 0 8px 24px rgba(30, 42, 68, 0.12); /* 浮き出させて視線を誘導 */
+    background: linear-gradient(135deg, var(--white) 0%, #fbfbfc 100%);
+  }
+
+  /* 3. モーダル（テスト画面）のUX：より集中できるダークスクリーン風に */
+  .modal-overlay {
+    background: rgba(30, 42, 68, 0.85); /* 完全に消さず、薄暗くして没入感を出す */
+    backdrop-filter: blur(4px); /* 背景をぼかしてテストに超集中させる */
+  }
+  .modal-content {
+    border: none;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.3);
+  }
+
+  /* 4. スマホでの押しやすさ（タスク・ターゲット） */
+  @media (max-width: 640px) {
+    .chip {
+      padding: 10px 16px; /* 親指でタップしやすいサイズ（44px以上を意識） */
+      font-size: 0.9rem;
+    }
+  }
+  /* スケジュール設定ボタンのカラーをカスタム */
+  #addBtn, #saveRefPlanBtn {
+    background: var(--success); /* 例: アプリ内のデザインに合う緑色に変更 */
+    color: var(--white);
+  }
+  
+  /* マウスを乗せたとき（ホバー時）の色 */
+  #addBtn:hover, #saveRefPlanBtn:hover {
+    background: #2c5239; /* 少し暗めの緑色 */
+  }
+
+  /* ════════════════════════════════════════════════
+     参考書タブ：入力 / 出力 セクション分割ラベル
+  ════════════════════════════════════════════════ */
+  .ref-section-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 6px 6px 0 0;
+    margin-bottom: -2px;   /* カード上辺とぴったりつなぐ */
+    width: fit-content;
+  }
+  .ref-section-label--output {
+    background: var(--ink);
+    color: var(--white);
+    margin-top: 4px;
+  }
+  .ref-section-label--input {
+    background: var(--gold-bg);
+    color: var(--gold);
+    border: 1px solid #e4cd94;
+    margin-top: 24px;
+  }
+  .ref-section-icon { font-size: .95rem; }
+
+  /* ────────────────────────────────────────────────
+     参考書タブ：進捗入力アコーディオン
+  ──────────────────────────────────────────────── */
+  details.ref-progress-details {
+    margin-top: 18px;
+    border: 1.5px dashed var(--paper-line);
+    border-radius: 8px;
+    background: #f8fafc;
+    overflow: hidden;
+  }
+  .ref-progress-summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    list-style: none;
+    padding: 12px 16px;
+    font-size: .88rem;
+    font-weight: 700;
+    color: var(--ink);
+    user-select: none;
+  }
+  .ref-progress-summary::-webkit-details-marker { display: none; }
+  .ref-progress-summary::before {
+    content: "▸";
+    font-size: .75rem;
+    color: var(--ink-soft);
+    transition: transform .2s;
+  }
+  details.ref-progress-details[open] .ref-progress-summary::before {
+    content: "▾";
+  }
+  .ref-progress-summary-icon { font-size: 1rem; }
+  .ref-progress-summary-badge {
+    margin-left: auto;
+    font-size: .72rem;
+    font-weight: 700;
+    background: var(--success-bg);
+    color: var(--success);
+    border: 1px solid #bcd6c4;
+    border-radius: 4px;
+    padding: 2px 8px;
+    white-space: nowrap;
+  }
+  details.ref-progress-details[open] {
+    border-color: var(--ink);
+    background: var(--white);
+  }
+  details.ref-progress-details > .ref-progress-summary + div {
+    padding: 0 16px 16px;
+  }
+
+  /* ────────────────────────────────────────────────
+     参考書タブ：スケジュール設定アコーディオン
+  ──────────────────────────────────────────────── */
+  details.ref-setting-details {
+    border: 1px solid var(--paper-line);
+    border-radius: var(--radius);
+  }
+  .ref-setting-summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    list-style: none;
+    padding: 14px 18px;
+    font-size: .9rem;
+    font-weight: 700;
+    color: var(--ink);
+    background: var(--gold-bg);
+    border-radius: var(--radius) var(--radius) 0 0;
+    user-select: none;
+  }
+  .ref-setting-summary::-webkit-details-marker { display: none; }
+  .ref-setting-summary::before {
+    content: "▸ ";
+    font-size: .75rem;
+    color: var(--gold);
+  }
+  details.ref-setting-details[open] .ref-setting-summary::before {
+    content: "▾ ";
+  }
+  details.ref-setting-details:not([open]) .ref-setting-summary {
+    border-radius: var(--radius);
+  }
+  .ref-setting-body {
+    margin: 0 !important;
+    border: none !important;
+    border-radius: 0 0 var(--radius) var(--radius) !important;
+    border-top: 1px dashed var(--paper-line) !important;
+  }
+
+  /* ══════════════════════════════════════════════
+     進捗入力 新UI（ボタン＋ステッパー方式）
+  ══════════════════════════════════════════════ */
+  .prog-control-ui { margin-top: 8px; }
+
+  /* ─ 完了 / 未完了 選択ステップ ─ */
+  .prog-step1-label {
+    font-size: .78rem; font-weight: 700; color: var(--ink-soft);
+    margin-bottom: 6px; display: flex; align-items: center; gap: 5px;
+  }
+  .prog-step1-label::before {
+    content: '①'; font-size: .7rem; background: var(--ink-soft); color: var(--white);
+    border-radius: 50%; width: 16px; height: 16px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .prog-step1-label.step-done::before { background: var(--success); }
+  .prog-step1-label.step-partial::before { background: var(--gold); }
+  .prog-toggle { display: flex; gap: 8px; flex-wrap: wrap; }
+  .prog-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 9px 16px; font-size: .88rem; font-weight: 700;
+    border-radius: 8px; cursor: pointer; border: 1.5px solid transparent;
+    transition: all .18s; font-family: 'Noto Sans JP', sans-serif;
+    box-shadow: none;
+  }
+  .prog-btn-done {
+    background: var(--paper); color: var(--ink-soft);
+    border-color: var(--paper-line);
+  }
+  .prog-btn-done.prog-btn-active {
+    background: var(--success); color: var(--white); border-color: var(--success);
+  }
+  .prog-btn-done:hover:not(.prog-btn-active) { border-color: var(--success); color: var(--success); }
+  .prog-btn-partial {
+    background: var(--paper); color: var(--ink-soft);
+    border-color: var(--paper-line);
+  }
+  .prog-btn-partial.prog-btn-active {
+    background: var(--gold-bg); color: var(--gold); border-color: #e4cd94;
+  }
+  .prog-btn-partial:hover:not(.prog-btn-active) { border-color: var(--gold); color: var(--gold); }
+
+  /* ─ ステータスバッジ（既存記録あり時） ─ */
+  .prog-status-wrap { margin-top: 6px; }
+
+  /* ─ 途中まで パネル ─ */
+  .prog-partial-panel {
+    margin-top: 10px; padding: 12px 14px;
+    background: var(--white); border: 1px solid var(--paper-line); border-radius: 8px;
+  }
+
+  /* ─ 完了数 / プログレスバー行 ─ */
+  .prog-count-row {
+    display: flex; align-items: center; gap: 8px;
+    font-size: .82rem; margin-bottom: 10px;
+  }
+  .prog-count-val {
+    font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: 1.15rem;
+    color: var(--ink);
+  }
+  .prog-count-total { color: var(--ink-soft); flex: 1; }
+  .prog-bar-wrap {
+    flex: 2; height: 7px; background: var(--paper-line);
+    border-radius: 4px; overflow: hidden; min-width: 60px;
+  }
+  .prog-bar-fill {
+    height: 100%; background: var(--gold); border-radius: 4px; transition: width .25s;
+  }
+
+  /* ─ ±ステッパー行 ─ */
+  .prog-stepper {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .prog-step {
+    background: var(--paper); border: 1px solid var(--paper-line); color: var(--ink);
+    border-radius: 6px; padding: 6px 12px; font-size: .9rem; font-weight: 700;
+    cursor: pointer; font-family: 'IBM Plex Mono', monospace; transition: background .15s;
+    box-shadow: none;
+  }
+  .prog-step:hover { background: var(--white); border-color: var(--ink-soft); }
+  .prog-display {
+    font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: 1.05rem;
+    min-width: 64px; text-align: center;
+    background: var(--paper); border: 1.5px solid var(--ink); border-radius: 6px;
+    padding: 5px 8px; display: inline-block;
+  }
+  /* 直接タイピング可能な数値入力フィールド */
+  .prog-display-input {
+    font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: 1.05rem;
+    width: 72px; text-align: center;
+    background: var(--white); border: 2px solid var(--ink); border-radius: 6px;
+    padding: 5px 8px; color: var(--ink); cursor: text;
+    -moz-appearance: textfield;
+  }
+  .prog-display-input::-webkit-outer-spin-button,
+  .prog-display-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .prog-display-input:focus { outline: 2px solid var(--gold); outline-offset: 1px; border-color: var(--gold); }
+  /* ページ数入力エリアの見出し */
+  .prog-partial-heading {
+    font-size: .78rem; font-weight: 700; color: var(--ink-soft);
+    margin-bottom: 8px; display: flex; align-items: center; gap: 5px;
+  }
+  .prog-partial-heading::before {
+    content: '②'; font-size: .7rem; background: var(--gold); color: var(--white);
+    border-radius: 50%; width: 16px; height: 16px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .prog-unit { font-size: .82rem; color: var(--ink-soft); white-space: nowrap; }
+
+  /* ─ クイック割合ボタン ─ */
+  .prog-quick-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .prog-quick-label { font-size: .78rem; color: var(--ink-soft); white-space: nowrap; }
+  .prog-quick-btn {
+    background: var(--paper); color: var(--ink-soft);
+    border: 1px solid var(--paper-line); border-radius: 6px;
+    padding: 4px 14px; font-size: .82rem; font-weight: 700; cursor: pointer;
+    font-family: 'IBM Plex Mono', monospace; transition: all .15s; box-shadow: none;
+  }
+  .prog-quick-btn:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-bg); }
+
+  /* ─ モバイル最適化 ─ */
+  @media (max-width: 640px) {
+    .prog-btn { padding: 12px 14px; font-size: .92rem; min-height: 44px; }
+    .prog-step { padding: 9px 14px; min-height: 40px; }
+    .prog-toggle { gap: 6px; }
+    .prog-partial-panel { padding: 10px 10px; }
+    .prog-display-input { width: 64px; font-size: .98rem; }
+  }
