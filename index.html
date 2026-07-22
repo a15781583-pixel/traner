@@ -10,6 +10,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.2.4/purify.min.js"></script>
 <link rel="stylesheet" href="css-style.css">
 <link rel="stylesheet" href="css-ai-features.css">
+<script>
+  // js-app.js が動く前にグローバル関数を強制的に作っておく（未定義エラー回避）
+  window.handleScoreImageFile = window.handleScoreImageFile || function(e) { console.log('Score image:', e); };
+</script>
 </head>
 <body>
 <div class="app">
