@@ -1,3 +1,8 @@
+/* --- AI関数の未定義エラー防止ガード --- */
+window.handleScoreImageFile = window.handleScoreImageFile || function(e){ console.log(e); };
+window.runWeaknessAnalysis = window.runWeaknessAnalysis || function(){ console.log('弱点分析'); };
+window.generateStudyPlan = window.generateStudyPlan || function(){ console.log('学習計画'); };
+window.setupApiKeyPersistence = window.setupApiKeyPersistence || function(){};
 
 const STORAGE_KEY = 'vocab-plan-entries';
 const LEECH_KEY = 'vocab-leech-words';
