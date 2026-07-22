@@ -2482,14 +2482,19 @@ function showTab(tabName) {
   const scoreDateEl = document.getElementById('scoreDate');
   if(scoreDateEl) scoreDateEl.value = todayISO();
   if(document.getElementById('scoreAddBtn')) document.getElementById('scoreAddBtn').addEventListener('click', handleScoreAdd);
-  if(document.getElementById('scoreFileInput')) document.getElementById('scoreFileInput').addEventListener('change', handleScoreImageFile);
-  if(document.getElementById('runAnalysisBtn')) document.getElementById('runAnalysisBtn').addEventListener('click', runWeaknessAnalysis);
+  // scoreFileInput / runAnalysisBtn のリスナーは initAiFeatures() 内で登録するため、ここでは重複登録しない
   await loadScores();
   renderScoreList();
   try {
     const savedAnalysis = localStorage.getItem(ANALYSIS_KEY);
     if(savedAnalysis) renderAnalysisResult(JSON.parse(savedAnalysis).result);
   } catch(e) {}
+
+  // ---- AI機能の初期化 ----
+  // js-ai-features.js で定義された initAiFeatures() を呼び出す。
+  // chatSendBtn・chatInput・chatStopBtn・generatePlanBtn などの
+  // イベントリスナーがここで初めて登録される。
+  if (typeof initAiFeatures === 'function') initAiFeatures();
 })();
 
 /* =========================================================
