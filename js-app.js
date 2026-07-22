@@ -1,8 +1,10 @@
-/* --- AI関数の未定義エラー防止ガード --- */
+/* --- AI・APIキー関数の未定義エラー防止ガード（完全版） --- */
+window.loadSavedApiKey = window.loadSavedApiKey || function(){ return localStorage.getItem('gemini_api_key') || ''; };
+window.setupApiKeyPersistence = window.setupApiKeyPersistence || function(){};
 window.handleScoreImageFile = window.handleScoreImageFile || function(e){ console.log(e); };
 window.runWeaknessAnalysis = window.runWeaknessAnalysis || function(){ console.log('弱点分析'); };
 window.generateStudyPlan = window.generateStudyPlan || function(){ console.log('学習計画'); };
-window.setupApiKeyPersistence = window.setupApiKeyPersistence || function(){};
+window.saveApiKey = window.saveApiKey || function(){};
 
 const STORAGE_KEY = 'vocab-plan-entries';
 const LEECH_KEY = 'vocab-leech-words';
