@@ -375,7 +375,231 @@
   </div>
 
   <!-- ★② ここに追記：AI機能を読み込む枠 -->
-  <div id="ai-features-container"></div>
+  <div id="ai-features-container">
+    <!-- ============================================================
+   AI機能画面パーツ (components-ai-features.html)
+============================================================ -->
+
+  <!-- タブボタンテンプレート（JSがナビゲーションバーに自動挿入します） -->
+  <template id="ai-nav-desktop-template">
+    <button id="tab-btn-coach" class="btn-ghost" onclick="showTab('coach')">AI学習計画</button>
+    <button id="tab-btn-analysis" class="btn-ghost" onclick="showTab('analysis')">AI弱点分析</button>
+  </template>
+
+  <template id="ai-nav-mobile-template">
+    <button class="bottom-nav-item" id="bnav-coach" onclick="showTab('coach')" aria-label="AI学習計画">
+      <span class="nav-dot"></span>
+      <span class="nav-icon">🤖</span>
+      <span>AI計画</span>
+    </button>
+    <button class="bottom-nav-item" id="bnav-analysis" onclick="showTab('analysis')" aria-label="AI弱点分析">
+      <span class="nav-dot"></span>
+      <span class="nav-icon">📊</span>
+      <span>分析</span>
+    </button>
+  </template>
+
+  <!-- ① AI学習計画タブ本体 -->
+  <div id="tab-coach" class="tab-content" style="display:none;">
+    <!-- APIキー設定 -->
+    <section class="card no-print ai-settings-card">
+      <h2 style="font-size:0.9rem; margin-bottom:8px;">⚙️ AI連携設定</h2>
+      <div class="security-banner">
+        <span class="sb-icon">⚠️</span>
+        <div>
+          <strong>APIキーの取り扱いにご注意ください。</strong><br>
+          このキーはお使いのブラウザ内にのみ保存され、外部サーバーへ送信されることはありません。
+          ただし、<strong>共有PC・共有ブラウザでのご利用はお控えください</strong>。
+        </div>
+      </div>
+      <div class="field">
+        <input type="password" id="geminiApiKey" placeholder="APIキーを入力（このデバイスにのみ保存されます）" style="max-width:400px;">
+        <div class="hint">
+          Gemini APIキーをお持ちでない場合は
+          <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" style="color:var(--ink); font-weight:700; text-decoration:underline;">こちらから取得できます</a>
+        </div>
+      </div>
+      <div class="error-msg" id="coachErrorMsg"></div>
+    </section>
+
+    <!-- チャット画面 -->
+    <section class="card no-print" id="coachChatSection">
+      <h2>💬 AIコーチとの作戦会議（ヒアリング）</h2>
+      <div class="hint" style="margin-bottom:12px;">AIが質問をするので、生徒の状況を答えてあげてください。情報が集まったら下のボタンで計画を生成します。</div>
+      
+      <div id="chatBox" class="chat-box-container">
+        <div class="chat-msg model-msg">こんにちは！専属のAI学習コーチです。まずは、今回の「達成したい目標（例：〇〇試験合格）」を教えてください！</div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div class="chat-input-row">
+          <button type="button" class="btn-ghost" onclick="document.getElementById('chatFileInput').click()" style="padding: 10px 14px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; white-space: nowrap;">
+            📷 画像を追加
+          </button>
+          <input type="file" id="chatFileInput" accept="image/*" style="display: none;">
+    
+          <input type="text" id="chatInput" class="chat-input-text" placeholder="メッセージを入力...">
+          <button class="btn-primary" id="chatSendBtn">送信</button>
+          <button class="btn-ghost" id="chatStopBtn" style="display: none; border-color: var(--margin-red); color: var(--margin-red);">停止</button>
+        </div>
+
+        <div id="imagePreviewContainer" class="image-preview-box">
+          <img id="imagePreview" class="image-preview-img" src="" alt="プレビュー">
+          <button id="clearImageBtn" class="image-clear-btn" aria-label="画像を削除">×</button>
+        </div>
+      </div>
+
+      <div style="margin-top: 24px; text-align: center; border-top: 1px dashed var(--paper-line); padding-top: 16px;">
+        <button class="btn-primary btn-gold" id="generatePlanBtn">✨ ヒアリングを終了してロードマップを作成</button>
+      </div>
+    </section>
+
+    <!-- 解析結果表示エリア -->
+    <section class="card" id="coachResultSection" style="display:none;">
+      <h2>📊 あなた専用ロードマップ</h2>
+      <div id="coachLoading" style="display:none; text-align:center; padding:40px 0; color:var(--ink-soft);">
+        <div style="font-size:2rem; margin-bottom:10px; animation: spin 2s linear infinite;">🔄</div>
+        <div>AIが対話履歴からオリジナル計画を生成中...</div>
+      </div>
+      <div id="coachOutput" style="font-size:0.95rem;"></div>
+      <div style="text-align: center; margin-top: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+        <button class="btn-ghost" onclick="continueChat()">チャットに戻って計画を調整する</button>
+        <button class="btn-ghost" onclick="resetChat()">もう一度別の計画を立てる</button> 
+      </div>
+
+      <div id="currentPlanSection" class="card" style="display: none; margin-top: 20px;">
+        <div style="background-color: var(--paper); padding: 12px 16px; border-bottom: 1px solid var(--paper-line); border-radius: var(--radius) var(--radius) 0 0;">
+          <h3 style="margin: 0; display: flex; align-items: center; gap: 8px; font-size: 1.05rem; color: var(--ink);">
+            📅 現在の学習計画 (Current Plan)
+          </h3>
+        </div>
+        <div style="padding: 16px; background-color: var(--white); border: 1px solid var(--paper-line); border-top: none; border-radius: 0 0 var(--radius) var(--radius);">
+          <div id="currentPlanTableContainer" class="schedule-wrap">
+            <p style="color: var(--ink-soft); font-style: italic; margin: 0;">計画がここに表示されます...</p>
+          </div>
+          <div style="text-align: center; margin-top: 24px; padding-top: 16px; border-top: 1px dashed var(--paper-line);">
+            <button id="applyPlanBtn" class="btn-primary btn-success" style="display: none; font-size: 1.05rem; padding: 12px 24px;">
+              🗓️ この計画をスケジュール表に反映する
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ② AI弱点分析タブ本体 -->
+  <div id="tab-analysis" class="tab-content" style="display:none;">
+    <section class="card no-print ai-settings-card">
+      <h2 style="font-size:0.9rem; margin-bottom:8px;">⚙️ AI連携設定</h2>
+      <div class="hint">「AI学習計画」タブで入力したAPIキーがこの画面でもそのまま使われます。</div>
+    </section>
+
+    <section class="card" id="scoreInputSection">
+      <h2>📝 成績・診断データの入力</h2>
+      <div class="hint" style="margin-bottom:14px;">模試・定期テスト・診断テストの結果を登録してください。試験の種類を指定することで精度の高い弱点分析が可能です。</div>
+
+      <div class="score-form-grid" style="margin-bottom:12px;">
+        <div class="field full">
+          <label for="scoreExamType">試験の種類</label>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <select id="scoreExamType" class="score-select" style="flex:1; min-width:180px;" onchange="handleExamTypeChange(this)">
+              <option value="">--- 選択してください ---</option>
+              <optgroup label="河合塾">
+                <option value="河合塾記述模試">河合塾記述模試</option>
+                <option value="河合塾マーク模試">河合塾マーク模試（センタープレ等）</option>
+                <option value="河合塾共通テスト模試">河合塾共通テスト模試</option>
+              </optgroup>
+              <optgroup label="東進">
+                <option value="全国統一高校生テスト">全国統一高校生テスト（東進）</option>
+                <option value="東進センター試験本番レベル模試">センター本番レベル模試（東進）</option>
+              </optgroup>
+              <optgroup label="駿台">
+                <option value="駿台全国模試">駿台全国模試</option>
+                <option value="駿台共通テスト模試">駿台共通テスト模試</option>
+              </optgroup>
+              <optgroup label="進研">
+                <option value="進研模試">進研模試</option>
+                <option value="進研記述模試">進研記述模試</option>
+              </optgroup>
+              <optgroup label="その他">
+                <option value="共通テスト本番">共通テスト本番</option>
+                <option value="定期テスト">定期テスト</option>
+                <option value="校内模試">校内模試</option>
+                <option value="custom">その他（直接入力）</option>
+              </optgroup>
+            </select>
+            <input type="text" id="scoreExamTypeCustom" class="score-text" placeholder="試験名を入力" style="display:none; flex:1; min-width:160px;">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="scoreSubject">教科</label>
+          <input type="text" id="scoreSubject" class="score-text" placeholder="例: 英語">
+        </div>
+        <div class="field">
+          <label for="scoreCategory">分野（任意）</label>
+          <input type="text" id="scoreCategory" class="score-text" placeholder="例: 文法・語法">
+        </div>
+        <div class="field" style="max-width:100px;">
+          <label for="scoreValue">得点</label>
+          <input type="number" id="scoreValue" min="0" placeholder="例: 62">
+        </div>
+        <div class="field" style="max-width:100px;">
+          <label for="scoreTotal">満点</label>
+          <input type="number" id="scoreTotal" min="1" value="100">
+        </div>
+        <div class="field" style="max-width:100px;">
+          <label for="scoreDeviation">偏差値（任意）</label>
+          <input type="number" id="scoreDeviation" min="0" max="100" step="0.1" placeholder="例: 58.5" style="font-family:'IBM Plex Mono',monospace;">
+        </div>
+        <div class="field" style="max-width:160px;">
+          <label for="scoreDate">実施日</label>
+          <input type="date" id="scoreDate">
+        </div>
+        <div class="field full">
+          <label for="scoreNote">メモ（任意）</label>
+          <input type="text" id="scoreNote" placeholder="例: 時間切れで最後の大問が白紙だった" class="score-text">
+        </div>
+      </div>
+
+      <div class="error-msg" id="scoreErrorMsg"></div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:8px;">
+        <button class="btn-primary" id="scoreAddBtn">この結果を登録</button>
+        <button type="button" class="btn-ghost" onclick="document.getElementById('scoreFileInput').click()">📷 画像から自動入力</button>
+        <input type="file" id="scoreFileInput" accept="image/*" style="display:none;">
+      </div>
+      <div id="scoreExtractStatus" class="hint" style="display:none; margin-top:6px;">🔄 画像を解析しています…</div>
+
+      <div class="entry-list" id="scoreEntryList" style="margin-top:16px;"></div>
+
+      <div id="scoreChartWrap" style="display:none; margin-top:20px;">
+        <div class="score-chart-grid">
+          <div class="score-chart-box">
+            <div class="score-chart-label">教科別 平均正答率（%）</div>
+            <canvas id="scoreChart"></canvas>
+          </div>
+          <div class="score-chart-box" id="deviationChartBox" style="display:none;">
+            <div class="score-chart-label">偏差値の推移（直近10件）</div>
+            <canvas id="deviationChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="analysisResultSection">
+      <h2>🔍 弱点・原因分析</h2>
+      <div class="hint" style="margin-bottom:12px;">登録した成績データに加えて、単語学習の履歴も合わせてAIが分析します。</div>
+      <div class="error-msg" id="analysisErrorMsg"></div>
+      <button class="btn-primary btn-gold" id="runAnalysisBtn">✨ AIで弱点・原因を分析する</button>
+
+      <div id="analysisLoading" style="display:none; text-align:center; padding:40px 0; color:var(--ink-soft);">
+        <div style="font-size:2rem; margin-bottom:10px; animation: spin 2s linear infinite;">🔄</div>
+        <div>AIが成績データと学習履歴を分析中...</div>
+      </div>
+
+      <div id="analysisOutput" style="margin-top:20px;"></div>
+    </section>
+  </div>
 
   <!-- ★③ ここに追記：JavaScriptの読み込み（</body>直前） -->
   <script src="js-ai-features.js" defer></script>
