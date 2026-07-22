@@ -6,26 +6,6 @@ const API_KEY_STORAGE_KEY = 'vocab-gemini-api-key';
 let chatHistory = []; 
 let abortController = null; 
 
-// 1. ページロード時に HTML コンポーネントを自動読み込み
-document.addEventListener('DOMContentLoaded', async () => {
-  const container = document.getElementById('ai-features-container');
-  if (!container) return;
-
-  try {
-    const response = await fetch('./components/ai-features.html');
-    if (!response.ok) throw new Error('AIコンポーネントの読み込みに失敗しました');
-    const html = await response.text();
-    container.innerHTML = html;
-
-    // ナビゲーションボタンの自動移植
-    injectAiNavButtons();
-
-    // AI初期化処理
-    initAiFeatures();
-  } catch (err) {
-    console.error('AI Features Load Error:', err);
-  }
-});
 
 // デスクトップ・モバイルナビゲーションバーへAIタブボタンを追加挿入
 function injectAiNavButtons() {
