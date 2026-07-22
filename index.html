@@ -11,8 +11,11 @@
 <link rel="stylesheet" href="css-style.css">
 <link rel="stylesheet" href="css-ai-features.css">
 <script>
-  // js-app.js が動く前にグローバル関数を強制的に作っておく（未定義エラー回避）
-  window.handleScoreImageFile = window.handleScoreImageFile || function(e) { console.log('Score image:', e); };
+  // AI機能の関数が未定義でも js-app.js の初期化を止めないための安全ガード
+  window.handleScoreImageFile = window.handleScoreImageFile || function(e){ console.log('Score image:', e); };
+  window.runWeaknessAnalysis = window.runWeaknessAnalysis || function(){ console.log('Weakness analysis'); };
+  window.generateStudyPlan = window.generateStudyPlan || function(){ console.log('Study plan'); };
+  window.setupApiKeyPersistence = window.setupApiKeyPersistence || function(){};
 </script>
 </head>
 <body>
