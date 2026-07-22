@@ -34,8 +34,8 @@
     <button id="tabSchedule" class="btn-primary" onclick="showTab('schedule')">スケジュール</button>
     <button id="tab-btn-study" class="btn-ghost" onclick="showTab('study')">単語スケジュール設定</button>
     <button id="tab-btn-reference" class="btn-ghost" onclick="showTab('reference')">参考書スケジュール設定</button>
-    <button class="btn-ghost" onclick="showTab('coach')">AI学習計画</button>
-    <button class="btn-ghost" onclick="showTab('analysis')">AI弱点分析</button>
+    <button id="tab-btn-coach" class="btn-ghost" onclick="showTab('coach')">AI学習計画</button>
+    <button id="tab-btn-analysis" class="btn-ghost" onclick="showTab('analysis')">AI弱点分析</button>
   </div>
 
   <!-- モバイル用ボトムナビゲーション -->
@@ -386,25 +386,6 @@
     <!-- ============================================================
    AI機能画面パーツ (components-ai-features.html)
 ============================================================ -->
-
-  <!-- タブボタンテンプレート（JSがナビゲーションバーに自動挿入します） -->
-  <template id="ai-nav-desktop-template">
-    <button id="tab-btn-coach" class="btn-ghost" onclick="showTab('coach')">AI学習計画</button>
-    <button id="tab-btn-analysis" class="btn-ghost" onclick="showTab('analysis')">AI弱点分析</button>
-  </template>
-
-  <template id="ai-nav-mobile-template">
-    <button class="bottom-nav-item" id="bnav-coach" onclick="showTab('coach')" aria-label="AI学習計画">
-      <span class="nav-dot"></span>
-      <span class="nav-icon">🤖</span>
-      <span>AI計画</span>
-    </button>
-    <button class="bottom-nav-item" id="bnav-analysis" onclick="showTab('analysis')" aria-label="AI弱点分析">
-      <span class="nav-dot"></span>
-      <span class="nav-icon">📊</span>
-      <span>分析</span>
-    </button>
-  </template>
 
   <!-- ① AI学習計画タブ本体 -->
   <div id="tab-coach" class="tab-content" style="display:none;">
