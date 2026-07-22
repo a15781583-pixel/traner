@@ -3,7 +3,7 @@
 ============================================================ */
 
 // ★バージョン名を v2 に変更（これでブラウザが古いキャッシュを全消去します）
-const CACHE_NAME = 'vocab-trainer-v2';
+const CACHE_NAME = 'vocab-trainer-v3';
 
 // ★キャッシュするファイルのリストに新しいファイル群を追加
 const STATIC_ASSETS = [
