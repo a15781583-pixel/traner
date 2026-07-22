@@ -389,15 +389,9 @@
 
   <!-- ① AI学習計画タブ本体 -->
   <div id="tab-coach" class="tab-content" style="display:none;">
-
-    <!-- ── セクションラベル：設定エリア ── -->
-    <div class="ai-section-label ai-section-label--setup">
-      <span class="ai-section-icon">⚙️</span>AI連携設定
-    </div>
-
     <!-- APIキー設定 -->
     <section class="card no-print ai-settings-card">
-      <h2 style="font-size:0.9rem; margin-bottom:8px;">⚙️ AI連携設定</h2>
+      <h2>⚙️ AI連携設定</h2>
       <div class="security-banner">
         <span class="sb-icon">⚠️</span>
         <div>
@@ -415,11 +409,6 @@
       </div>
       <div class="error-msg" id="coachErrorMsg"></div>
     </section>
-
-    <!-- ── セクションラベル：入力エリア ── -->
-    <div class="ai-section-label ai-section-label--input">
-      <span class="ai-section-icon">💬</span>コーチとの会話
-    </div>
 
     <!-- チャット画面 -->
     <section class="card no-print" id="coachChatSection">
@@ -452,11 +441,6 @@
         <button class="btn-primary btn-gold" id="generatePlanBtn">✨ ヒアリングを終了してロードマップを作成</button>
       </div>
     </section>
-
-    <!-- ── セクションラベル：出力エリア ── -->
-    <div class="ai-section-label ai-section-label--output">
-      <span class="ai-section-icon">📊</span>学習ロードマップ
-    </div>
 
     <!-- 解析結果表示エリア -->
     <section class="card" id="coachResultSection" style="display:none;">
@@ -493,21 +477,10 @@
 
   <!-- ② AI弱点分析タブ本体 -->
   <div id="tab-analysis" class="tab-content" style="display:none;">
-
-    <!-- ── セクションラベル：設定エリア ── -->
-    <div class="ai-section-label ai-section-label--setup">
-      <span class="ai-section-icon">⚙️</span>AI連携設定
-    </div>
-
     <section class="card no-print ai-settings-card">
-      <h2 style="font-size:0.9rem; margin-bottom:8px;">⚙️ AI連携設定</h2>
+      <h2>⚙️ AI連携設定</h2>
       <div class="hint">「AI学習計画」タブで入力したAPIキーがこの画面でもそのまま使われます。</div>
     </section>
-
-    <!-- ── セクションラベル：入力エリア ── -->
-    <div class="ai-section-label ai-section-label--input">
-      <span class="ai-section-icon">📝</span>成績データ入力
-    </div>
 
     <section class="card" id="scoreInputSection">
       <h2>📝 成績・診断データの入力</h2>
@@ -555,19 +528,19 @@
           <label for="scoreCategory">分野（任意）</label>
           <input type="text" id="scoreCategory" class="score-text" placeholder="例: 文法・語法">
         </div>
-        <div class="field field-xs">
+        <div class="field" style="max-width:100px;">
           <label for="scoreValue">得点</label>
           <input type="number" id="scoreValue" min="0" placeholder="例: 62">
         </div>
-        <div class="field field-xs">
+        <div class="field" style="max-width:100px;">
           <label for="scoreTotal">満点</label>
           <input type="number" id="scoreTotal" min="1" value="100">
         </div>
-        <div class="field field-xs">
+        <div class="field" style="max-width:100px;">
           <label for="scoreDeviation">偏差値（任意）</label>
           <input type="number" id="scoreDeviation" min="0" max="100" step="0.1" placeholder="例: 58.5" style="font-family:'IBM Plex Mono',monospace;">
         </div>
-        <div class="field field-sm">
+        <div class="field" style="max-width:160px;">
           <label for="scoreDate">実施日</label>
           <input type="date" id="scoreDate">
         </div>
@@ -578,7 +551,7 @@
       </div>
 
       <div class="error-msg" id="scoreErrorMsg"></div>
-      <div class="score-btn-row" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:8px;">
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:8px;">
         <button class="btn-primary" id="scoreAddBtn">この結果を登録</button>
         <button type="button" class="btn-ghost" onclick="document.getElementById('scoreFileInput').click()">📷 画像から自動入力</button>
         <input type="file" id="scoreFileInput" accept="image/*" style="display:none;">
@@ -600,11 +573,6 @@
         </div>
       </div>
     </section>
-
-    <!-- ── セクションラベル：出力エリア ── -->
-    <div class="ai-section-label ai-section-label--output">
-      <span class="ai-section-icon">🔍</span>弱点・原因分析
-    </div>
 
     <section class="card" id="analysisResultSection">
       <h2>🔍 弱点・原因分析</h2>
