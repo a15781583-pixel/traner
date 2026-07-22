@@ -4,6 +4,44 @@
 ============================================================ */
 
 /* ────────────────────────────────────────────────
+   0. AIタブ セクション構造
+   ─ 参考書タブの section.card と縦方向を揃える
+   ─
+   使い方：AI学習計画・AI弱点分析タブ内の
+   セクション最外殻要素に .ai-section を付与する。
+   （HTML 側で <section class="card"> の代わりに使用）
+──────────────────────────────────────────────── */
+
+/*  css-style.css の section.card と完全同仕様
+    ─ background: var(--white) で白カードを可視化し
+      左端を視覚的アンカーとして機能させる          */
+.ai-section {
+  background: var(--white);           /* ← section.card と同値 */
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  margin-bottom: 18px;               /* ← section.card と同値 */
+}
+
+/* h2 タイトル行：section.card 内の h2 と同仕様 */
+.ai-section > h2:first-child {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 1.05rem;
+  margin: 0 0 14px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* タグライン（サブ説明文）：参考書タブの .tagline と統一 */
+.ai-section-desc {
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+  margin: 0 0 16px 0;
+  line-height: 1.6;
+}
+
+/* ────────────────────────────────────────────────
    1. 成績入力フォーム
 ──────────────────────────────────────────────── */
 
@@ -222,12 +260,17 @@ input[type="password"]:focus {
    6. AI設定カード
 ──────────────────────────────────────────────── */
 
-/* css-style.css の section.card と同構造 */
+/*  css-style.css の section.card と完全同仕様。
+    ─ background を var(--white) にすることで
+      ページ背景（var(--paper)）と区別し、
+      左端の白カード縁が視覚的アンカーになる。
+    ─ margin-bottom で参考書タブとの縦間隔を揃える。 */
 .ai-settings-card {
-  background: var(--paper);
+  background: var(--white);           /* 修正：paper → white で可視化 */
   border: 1px solid var(--paper-line);
   border-radius: var(--radius);
   padding: 18px 20px;
+  margin-bottom: 18px;               /* 追加：section.card と同値 */
 }
 
 /* ────────────────────────────────────────────────
@@ -471,8 +514,10 @@ input[type="password"]:focus {
     margin-top: 0;
   }
 
-  /* ── AI設定カード ── */
-  .ai-settings-card {
+  /* ── AI設定・セクションカード ── */
+  .ai-settings-card,
+  .ai-section {
     padding: 14px 14px;
+    margin-bottom: 14px;
   }
 }
