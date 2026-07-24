@@ -1048,6 +1048,9 @@ function buildProgControlHtml(rangeStart, rangeEnd, recordedVal, type, statusHtm
   const displayVal = rv !== null ? rv : rangeEnd;
 
   const step1LabelClass = isDone ? ' step-done' : (isPartial ? ' step-partial' : '');
+  const isReviewType = (type === 'word-review' || type === 'book-review');
+  const extraPages   = rv !== null && rv > rangeEnd ? rv - rangeEnd : 0;
+  const extraUnit    = isWordType ? '個追加' : 'ページ追加';
 
   return `
     <div class="prog-control-ui"
@@ -1093,6 +1096,21 @@ function buildProgControlHtml(rangeStart, rangeEnd, recordedVal, type, statusHtm
           <button type="button" class="prog-quick-btn" data-pct="75">¾</button>
         </div>
       </div>
+      ${!isReviewType ? `
+      <div class="prog-extra-panel"${isDone && extraPages > 0 ? '' : ' style="display:none"'}>
+        <div class="prog-extra-heading">さらに余剰${isWordType ? '個数' : 'ページ'}はありましたか？</div>
+        <div class="prog-extra-options">
+          <button type="button" class="prog-extra-no-btn">追加なし</button>
+          <div class="prog-extra-input-row">
+            <button type="button" class="prog-extra-step" data-delta="-1">−1</button>
+            <input type="number" class="prog-extra-input"
+                   value="${extraPages}" min="0" max="999" inputmode="numeric">
+            <button type="button" class="prog-extra-step" data-delta="+1">+1</button>
+            <span class="prog-extra-unit">${extraUnit}</span>
+            <button type="button" class="prog-extra-confirm-btn">✅ 記録</button>
+          </div>
+        </div>
+      </div>` : ''}
     </div>`;
 }
 
@@ -1274,6 +1292,7 @@ function initProgressControls(container, dateStr, baseId) {
     const barFill        = ui.querySelector('.prog-bar-fill');
     const countValEl     = ui.querySelector('.prog-count-val');
     const step1Label     = ui.querySelector('.prog-step1-label');
+    const extraPanel     = ui.querySelector('.prog-extra-panel');
 
     const rangeStart   = parseInt(hiddenInput.dataset.plannedStart, 10);
     const rangeEnd     = parseInt(hiddenInput.dataset.plannedEnd,   10);
@@ -1306,6 +1325,8 @@ function initProgressControls(container, dateStr, baseId) {
       if (btnDone)      btnDone.classList.toggle('prog-btn-active',    mode === 'done');
       if (btnPartial)   btnPartial.classList.toggle('prog-btn-active', mode === 'partial');
       if (partialPanel) partialPanel.style.display = (mode === 'partial') ? 'block' : 'none';
+      // ★ 「未完了」に切り替えたときは余剰パネルも閉じる
+      if (extraPanel && mode !== 'done') extraPanel.style.display = 'none';
       updateStep1Label(mode);
     }
 
@@ -1314,7 +1335,50 @@ function initProgressControls(container, dateStr, baseId) {
       btnDone.addEventListener('click', () => {
         updateDisplay(rangeEnd);
         setActiveState('done');
+        // ★ 余剰ページパネルを表示し、入力値を 0 にリセット
+        if (extraPanel) {
+          const extraInput = extraPanel.querySelector('.prog-extra-input');
+          if (extraInput) extraInput.value = '0';
+          extraPanel.style.display = 'block';
+        }
       });
+    }
+
+    /* ── 余剰ページパネル ── */
+    if (extraPanel) {
+      // 「追加なし」→ パネルを閉じ、rangeEnd のまま確定
+      const extraNoBtn = extraPanel.querySelector('.prog-extra-no-btn');
+      if (extraNoBtn) {
+        extraNoBtn.addEventListener('click', () => {
+          extraPanel.style.display = 'none';
+          // hiddenInput は既に rangeEnd なのでそのまま、プレビューだけ更新
+          hiddenInput.dispatchEvent(new Event('input'));
+        });
+      }
+
+      // ±ステッパー（余剰パネル専用。既存の .prog-step とクラス名が異なるため競合なし）
+      extraPanel.querySelectorAll('.prog-extra-step').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const extraInput = extraPanel.querySelector('.prog-extra-input');
+          if (!extraInput) return;
+          const delta   = parseInt(btn.dataset.delta, 10);
+          const current = parseInt(extraInput.value, 10) || 0;
+          extraInput.value = Math.max(0, current + delta);
+        });
+      });
+
+      // 「✅ 記録」→ rangeEnd + 余剰ページ を hiddenInput に直接セット
+      // ※ updateDisplay() のクランプ（+50上限）を迂回するため直接代入する
+      const extraConfirmBtn = extraPanel.querySelector('.prog-extra-confirm-btn');
+      if (extraConfirmBtn) {
+        extraConfirmBtn.addEventListener('click', () => {
+          const extraInput = extraPanel.querySelector('.prog-extra-input');
+          const extraPages = Math.max(0, parseInt(extraInput?.value, 10) || 0);
+          hiddenInput.value = rangeEnd + extraPages;
+          hiddenInput.dispatchEvent(new Event('input')); // previewProgressAdjustment を起動
+          extraPanel.style.display = 'none';
+        });
+      }
     }
 
     /* ── 「⚠️ 未完了」 ── */
