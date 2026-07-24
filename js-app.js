@@ -1,6 +1,5 @@
 const STORAGE_KEY = 'vocab-plan-entries';
 const LEECH_KEY = 'vocab-leech-words';
-const HISTORY_KEY = 'vocab-review-history';
 const SCORE_KEY = 'vocab-score-records';
 const ANALYSIS_KEY = 'vocab-weakness-analysis';
 const DAILY_PROGRESS_KEY = 'vocab-daily-progress'; // 日別進捗記録
@@ -20,10 +19,7 @@ const REVIEW_DONE_KEY = 'vocab-review-done';
 
 let entries = [];
 let leechWords = [];
-let history = [];
 let scoreRecords = [];
-let rateChartInstance = null;
-let statusChartInstance = null;
 let scoreChartInstance = null;
 let deviationChartInstance = null;
 let refEntries = []; // 参考書の予定を保存する配列
@@ -1078,22 +1074,12 @@ function buildProgControlHtml(rangeStart, rangeEnd, recordedVal, type, statusHtm
           <div class="prog-bar-wrap"><div class="prog-bar-fill" style="width:${pct}%"></div></div>
         </div>
         <div class="prog-stepper">
-          <button type="button" class="prog-step" data-delta="-10">−10</button>
-          <button type="button" class="prog-step" data-delta="-1">−1</button>
           <input type="number" class="prog-display-input"
                  value="${displayVal}"
                  min="${rangeStart - 1}" max="${rangeEnd + 50}"
                  inputmode="numeric" pattern="[0-9]*"
                  aria-label="${unitLabel}入力">
           <span class="prog-unit">${unitLabel}</span>
-          <button type="button" class="prog-step" data-delta="+1">+1</button>
-          <button type="button" class="prog-step" data-delta="+10">+10</button>
-        </div>
-        <div class="prog-quick-row">
-          <span class="prog-quick-label">クイック：</span>
-          <button type="button" class="prog-quick-btn" data-pct="25">¼</button>
-          <button type="button" class="prog-quick-btn" data-pct="50">½</button>
-          <button type="button" class="prog-quick-btn" data-pct="75">¾</button>
         </div>
       </div>
       ${!isReviewType ? `
@@ -1428,27 +1414,6 @@ function initProgressControls(container, dateStr, baseId) {
       });
     }
 
-    /* ── ±ステッパーボタン ── */
-    ui.querySelectorAll('.prog-step').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const delta = parseInt(btn.dataset.delta, 10);
-        let val = parseInt(hiddenInput.value, 10);
-        if (isNaN(val)) val = rangeStart - 1;
-        updateDisplay(val + delta);
-        const newVal = parseInt(hiddenInput.value, 10);
-        setActiveState(newVal >= rangeEnd ? 'done' : 'partial');
-      });
-    });
-
-    /* ── クイック割合ボタン（¼ ½ ¾） ── */
-    ui.querySelectorAll('.prog-quick-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const pct = parseInt(btn.dataset.pct, 10);
-        const val = rangeStart - 1 + Math.max(1, Math.round(plannedCount * pct / 100));
-        updateDisplay(Math.min(rangeEnd, val));
-        setActiveState('partial');
-      });
-    });
   });
 }
 
@@ -1605,15 +1570,6 @@ function handleProgressSave(dateStr, baseId) {
   refreshAllSchedules();
   renderRefTodayCard();
 
-  // 保存完了後：バッジを表示してアコーディオンを閉じる（結果表示に集中させる）
-  const progressBadge = document.getElementById('refProgressBadge');
-  const progressDetails = document.getElementById('refProgressDetails');
-  if (progressBadge) progressBadge.style.display = 'inline-block';
-  if (progressDetails) progressDetails.open = false;
-
-  // 進んだ分の復習スケジュールを表示（参考書タブの今日やることカード）
-  renderProgressedReviewSection(dateStr, savedRecords);
-
   // スケジュールタブ内の進捗セクションに単語復習プレビューを注入
   const wordRecordsForPreview = savedRecords.filter(r => r.type === 'word');
   if (wordRecordsForPreview.length > 0) {
@@ -1637,7 +1593,7 @@ function handleProgressSave(dateStr, baseId) {
 
 /**
  * 単語の進捗記録から「復習スケジュールプレビュー」HTMLを生成するヘルパー。
- * renderProgressedReviewSection と スケジュールタブ内インジェクションの両方から呼ばれる。
+ * スケジュールタブ内インジェクションから呼ばれる。
  * @param {string} dateStr     - 進捗を記録した日付 (YYYY-MM-DD)
  * @param {Array}  wordRecords - type === 'word' の savedRecords 配列
  * @returns {string} HTML文字列（対象なしの場合は空文字）
@@ -1692,119 +1648,6 @@ function buildWordReviewPreviewHtml(dateStr, wordRecords) {
 }
 
 /**
- * 進捗を保存した後、「進んだ範囲の復習スケジュール」を今日やることカードに表示する。
- * - 実際に進んだ範囲(actualStart〜actualEnd)の復習予定日を一覧で表示
- * - 過剰進行（overshot）・不足（undershot）の差分を明示
- * - 以降のスケジュール再計算結果の概要も表示
- */
-function renderProgressedReviewSection(dateStr, savedRecords) {
-  const el = document.getElementById('refProgressedReviewSection');
-  if (!el) return;
-
-  const bookRecords = savedRecords.filter(r => r.type === 'book');
-  const wordRecords  = savedRecords.filter(r => r.type === 'word');
-  if (bookRecords.length === 0 && wordRecords.length === 0) {
-    el.innerHTML = '';
-    return;
-  }
-
-  // 更新後のスケジュールデータを取得（保存後のため再計算済み）
-  const { refChunks, refReviews } = buildScheduleData();
-
-  // ── 単語の復習プレビュー ──────────────────────────────────
-  let wordsHtml = buildWordReviewPreviewHtml(dateStr, wordRecords);
-
-  let booksHtml = '';
-
-  bookRecords.forEach(rec => {
-    // planId があればそれを使い、なければ後方互換として entryId をそのまま試みる
-    const resolvedPlanId = rec.planId || rec.entryId;
-    const plan = refEntries.find(p => p.id === resolvedPlanId);
-    if (!plan) return;
-
-    const actualStart = rec.plannedStart; // 実際の開始は計画開始と同じ
-    const actualEnd = rec.actualEnd;
-    const plannedEnd = rec.plannedEnd;
-    const diff = actualEnd - plannedEnd;
-
-    // 過剰・不足バッジ
-    let diffHtml = '';
-    if (diff > 0) {
-      diffHtml = `<div class="progressed-overshot">🎉 予定より ${diff}ページ多く進みました！ 余分に進んだ分も復習対象に追加されました。</div>`;
-    } else if (diff < 0) {
-      diffHtml = `<div class="progressed-undershot">⚠️ ${Math.abs(diff)}ページ残りました。残りは以降のスケジュールに自動分散されました。</div>`;
-    }
-
-    // 進捗記録した日を起点に DEFAULT_INTERVALS で復習予定を生成して表示
-    const reviewSlots = DEFAULT_INTERVALS.map(n => {
-      const reviewDate = formatISO(addDays(parseISO(dateStr), n));
-      const tier = getIntervalTier(n);
-      const tierLabel = ['', 'Lv.1 初期', 'Lv.2 定着', 'Lv.3 強化', 'Lv.4 仕上げ'][tier];
-      // 日付を「M/D（曜日）」形式で表示
-      const d = parseISO(reviewDate);
-      const wdLabel = ['日','月','火','水','木','金','土'][d.getDay()];
-      const dispDate = `${d.getMonth()+1}/${d.getDate()}（${wdLabel}）`;
-      return { n, reviewDate, dispDate, tier, tierLabel };
-    });
-
-    const slotsHtml = reviewSlots.map(s =>
-      `<span class="progressed-review-slot slot-t${s.tier}">
-        <span class="slot-date">${s.dispDate}</span>
-        <span class="slot-lv">${s.n}日後 ${s.tierLabel}</span>
-      </span>`
-    ).join('');
-
-    // 調整後のスケジュール概要（未来のチャンクを数件表示）
-    const futureChunks = refChunks
-      .filter(c => c.planId === plan.id && c.date > dateStr && !c.carriedForward)
-      .slice(0, 4);
-    let schedNoteHtml = '';
-    if (futureChunks.length > 0) {
-      const schedItems = futureChunks.map(c => {
-        const d = parseISO(c.date);
-        const wdLabel = ['日','月','火','水','木','金','土'][d.getDay()];
-        const count = c.rangeEnd - c.rangeStart + 1;
-        const adjMark = c.isAdjusted ? '🔄 ' : '';
-        return `<span style="white-space:nowrap;">${adjMark}${d.getMonth()+1}/${d.getDate()}（${wdLabel}）: p.${c.rangeStart}〜${c.rangeEnd}（${count}ページ）</span>`;
-      }).join('<br>');
-      schedNoteHtml = `<div class="progressed-adj-note">
-        📅 <strong>更新後の以降スケジュール（先頭${futureChunks.length}件）：</strong><br>${schedItems}
-        ${refChunks.filter(c => c.planId === plan.id && c.date > dateStr && !c.carriedForward).length > 4
-          ? `<span style="color:var(--ink-soft);font-size:.78rem;">… 他 ${refChunks.filter(c => c.planId === plan.id && c.date > dateStr && !c.carriedForward).length - 4} 日分</span>` : ''}
-        <br><span style="font-size:.75rem;color:var(--ink-soft);">🔄 マークはスケジュールが再調整された日です</span>
-      </div>`;
-    }
-
-    const adjBadge = diff !== 0 ? `<span class="adj-badge">スケジュール再調整済み</span>` : '';
-    booksHtml += `
-      <div class="progressed-review-book">
-        <div class="progressed-review-book-name">
-          ${escapeHtml(plan.bookName)}
-          <span class="range-badge">p.${actualStart}〜${actualEnd}</span>
-          ${adjBadge}
-        </div>
-        ${diffHtml}
-        <div style="font-size:.8rem; color:var(--ink-soft); margin-bottom:6px; font-weight:600;">📅 この範囲の復習予定日：</div>
-        <div class="progressed-review-slots">${slotsHtml}</div>
-        ${schedNoteHtml}
-      </div>`;
-  });
-
-  if (!booksHtml && !wordsHtml) {
-    el.innerHTML = '';
-    return;
-  }
-
-  el.innerHTML = `
-    <div class="progressed-review-section">
-      <div class="progressed-review-title">
-        ✅ 進捗を記録しました — 復習スケジュールが更新されました
-      </div>
-      ${wordsHtml}${booksHtml}
-    </div>`;
-}
-
-/**
  * 今日の進捗記録をクリアしてスケジュールを元に戻す
  */
 function handleProgressClear(dateStr) {
@@ -1814,9 +1657,6 @@ function handleProgressClear(dateStr) {
   renderIntegratedSchedule();
   refreshAllSchedules();
   renderRefTodayCard();
-  // 復習スケジュールセクションも消去
-  const reviewEl = document.getElementById('refProgressedReviewSection');
-  if (reviewEl) reviewEl.innerHTML = '';
 }
 
 function renderTodayNew(){
@@ -1859,7 +1699,7 @@ function renderRefTodayCard() {
   // ── 今日の復習 ──────────────────────────────────────────────
   const todayReviews = refReviews.filter(r => r.date === todayStr);
   if (todayReviews.length === 0) {
-    reviewList.innerHTML = '<div class="empty-mini">今日の参考書復習はありません。<br><span style="font-size:.78rem;color:var(--ink-soft);">📝 進捗を入力すると、翌日以降に復習予定が自動で追加されます。</span></div>';
+    reviewList.innerHTML = '<div class="empty-mini">今日の参考書復習はありません。</div>';
   } else {
     // 未完了を先頭、完了済みを後ろに並べる
     const sorted = [...todayReviews].sort((a, b) => (a.done ? 1 : 0) - (b.done ? 1 : 0));
@@ -1884,53 +1724,6 @@ function renderRefTodayCard() {
     attachReviewCheckHandlers(reviewList);
   }
 
-  // ── 今日の進捗入力（繰り越し分を含む全チャンクが対象）────────────────
-  const progressEl = document.getElementById('refTodayProgressSection');
-  const progressDetails = document.getElementById('refProgressDetails');
-  const progressBadge = document.getElementById('refProgressBadge');
-
-  if (progressEl) {
-    // 復習タスク（未完了のみ）も進捗入力対象に含める
-    const pendingReviews = todayReviews.filter(r => !r.done);
-    const hasAnyProgressTarget = todayChunks.length > 0 || pendingReviews.length > 0;
-
-    if (hasAnyProgressTarget) {
-      // スケジュールタブと ID が衝突しないよう 'ref-' プレフィックスを付ける
-      const refBaseId = 'ref-' + todayStr;
-      const html = buildProgressInputSection(
-        todayStr,
-        [],            // 単語チャンクは参考書タブでは不要
-        todayChunks,   // 参考書新規チャンク
-        refBaseId,
-        [],            // 単語復習は参考書タブでは扱わない
-        pendingReviews // 参考書復習タスク（未完了）
-      );
-      progressEl.innerHTML = html || '';
-      if (html) attachProgressInputHandlers(progressEl, todayStr, refBaseId);
-
-      // 既に記録がある場合：バッジを表示してアコーディオンを開く
-      const hasRecord = dailyProgress.some(p => p.date === todayStr);
-      if (progressBadge) progressBadge.style.display = hasRecord ? 'inline-block' : 'none';
-      if (progressDetails) progressDetails.open = hasRecord;
-
-      // 進捗アコーディオンを表示
-      if (progressDetails) progressDetails.style.display = '';
-    } else {
-      progressEl.innerHTML = '';
-      // 今日のチャンクも復習もない場合はアコーディオンごと非表示
-      if (progressDetails) progressDetails.style.display = 'none';
-      if (progressBadge) progressBadge.style.display = 'none';
-    }
-  }
-
-  // ── 既に今日の進捗記録があれば「復習スケジュール」セクションを復元表示 ──
-  const todayBookRecords = dailyProgress.filter(p => p.date === todayStr && p.type === 'book');
-  if (todayBookRecords.length > 0) {
-    renderProgressedReviewSection(todayStr, todayBookRecords);
-  } else {
-    const reviewEl = document.getElementById('refProgressedReviewSection');
-    if (reviewEl) reviewEl.innerHTML = '';
-  }
 }
 
 function renderAll(){
@@ -2018,14 +1811,6 @@ async function handleLeechAdd(){
   wordEl.value = ''; meaningEl.value = ''; wordEl.focus();
 }
 
-async function logHistory(result){
-  history.push({ date: todayISO(), result });
-  try{
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-  }catch(e){ console.error('Storage error:', e); }
-  renderCharts();
-}
-
 async function handleLeechCorrect(id){
   const entry = leechWords.find(w => w.id === id);
   if(!entry) return;
@@ -2039,7 +1824,6 @@ async function handleLeechCorrect(id){
   }
   await saveLeech();
   renderLeech();
-  await logHistory('correct');
 }
 
 async function handleLeechWrong(id){
@@ -2050,7 +1834,6 @@ async function handleLeechWrong(id){
   entry.nextReviewDate = nextDateForStep(0);
   await saveLeech();
   renderLeech();
-  await logHistory('wrong');
 }
 
 async function handleLeechDelete(id){
@@ -2147,85 +1930,6 @@ function renderLeech(){
     });
   }
 
-  renderCharts();
-}
-
-/* ---------- history & charts (per-device) ---------- */
-
-async function loadHistory(){
-  try{
-    const raw = localStorage.getItem(HISTORY_KEY);
-    history = raw ? JSON.parse(raw) : [];
-  }catch(e){ history = []; }
-}
-
-function buildRateSeries(days){
-  const labels = [];
-  const data = [];
-  const today = new Date(); today.setHours(0,0,0,0);
-  for(let i = days-1; i >= 0; i--){
-    const d = addDays(today, -i);
-    const iso = formatISO(d);
-    labels.push(`${d.getMonth()+1}/${d.getDate()}`);
-    const dayEntries = history.filter(h => h.date === iso);
-    if(dayEntries.length === 0){ data.push(null); continue; }
-    const correct = dayEntries.filter(h => h.result === 'correct').length;
-    data.push(Math.round((correct / dayEntries.length) * 100));
-  }
-  return { labels, data };
-}
-
-function renderCharts(){
-  if(typeof Chart === 'undefined') return;
-
-  const { labels, data } = buildRateSeries(14);
-  const rateCtx = document.getElementById('rateChart');
-  if(rateChartInstance) rateChartInstance.destroy();
-  rateChartInstance = new Chart(rateCtx, {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [{
-        label: '正答率(%)',
-        data,
-        borderColor: COLORS.ink,
-        backgroundColor: COLORS.ink,
-        spanGaps: false,
-        tension: 0.25,
-        pointRadius: 3
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      scales: {
-        y: { min:0, max:100, grid:{ color: COLORS.grid } },
-        x: { grid:{ display:false } }
-      },
-      plugins: { legend:{ display:false } }
-    }
-  });
-
-  const active = leechWords.filter(w => w.status === 'active');
-  const graduated = leechWords.filter(w => w.status === 'graduated');
-  const warnCount = active.filter(w => w.missCount >= LEECH_WARN_THRESHOLD).length;
-  const okCount = active.length - warnCount;
-
-  const statusCtx = document.getElementById('statusChart');
-  if(statusChartInstance) statusChartInstance.destroy();
-  statusChartInstance = new Chart(statusCtx, {
-    type: 'doughnut',
-    data: {
-      labels: ['順調', '要注意', '卒業済み'],
-      datasets: [{
-        data: [okCount, warnCount, graduated.length],
-        backgroundColor: [COLORS.gold, COLORS.red, COLORS.success]
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend:{ position:'bottom', labels:{ boxWidth:12, font:{ size:11 } } } }
-    }
-  });
 }
 
 /* ---------- 成績・弱点分析 ---------- */
@@ -2652,7 +2356,6 @@ function showTab(tabName) {
   renderIntegratedSchedule(); // 「スケジュール」タブは初期表示タブなので、読み込み直後に描画する
   updateTodaySummaryCard();   // 今日のサマリーカードを初期表示
   await loadLeech();
-  await loadHistory();
   renderLeech();
 
   // ---- 成績・弱点分析タブの初期化 ----
