@@ -27,8 +27,8 @@
     <button id="tabSchedule" class="btn-primary" onclick="showTab('schedule')">スケジュール</button>
     <button id="tab-btn-study" class="btn-ghost" onclick="showTab('study')">単語スケジュール設定</button>
     <button id="tab-btn-reference" class="btn-ghost" onclick="showTab('reference')">参考書スケジュール設定</button>
-    <button class="btn-ghost" onclick="showTab('coach')">AI学習計画</button>
-    <button class="btn-ghost" onclick="showTab('analysis')">AI弱点分析</button>
+    <button id="tab-btn-coach" class="btn-ghost" onclick="showTab('coach')">AI学習計画</button>
+    <button id="tab-btn-analysis" class="btn-ghost" onclick="showTab('analysis')">AI弱点分析</button>
   </div>
 
   <!-- モバイル用ボトムナビゲーション -->
@@ -316,9 +316,185 @@
 
   </div>
 
-  <!-- [ai-features.html] AI学習計画タブ (#tab-coach) → ai-features.html に移動 -->
+  <!-- AI学習計画タブ -->
+  <div id="tab-coach" class="tab-content" style="display:none;">
+    <section class="card">
+      <h2>🤖 AI学習プランナー</h2>
 
-  <!-- [ai-features.html] AI弱点分析タブ (#tab-analysis) → ai-features.html に移動 -->
+      <!-- APIキー入力（両AIタブで共通使用） -->
+      <div class="field" style="margin-bottom:16px;">
+        <label for="geminiApiKey">Gemini APIキー</label>
+        <input type="password" id="geminiApiKey" placeholder="AIzaSy..."
+               style="width:100%; font-family:monospace; box-sizing:border-box;">
+        <div class="hint" style="margin-top:4px;">入力後、自動的に保存されます。Google AI Studioで取得できます。</div>
+      </div>
+
+      <div class="error-msg" id="coachErrorMsg"></div>
+
+      <!-- チャットセクション -->
+      <div id="coachChatSection">
+        <div id="chatBox" class="chat-box" style="
+          border:1px solid var(--paper-line);
+          border-radius:8px;
+          min-height:200px;
+          max-height:400px;
+          overflow-y:auto;
+          padding:12px;
+          margin-bottom:10px;
+          background:var(--paper);
+          display:flex;
+          flex-direction:column;
+          gap:8px;">
+          <div class="chat-msg model-msg">こんにちは！目標と現在の状況を教えてください！</div>
+        </div>
+
+        <!-- 画像プレビュー -->
+        <div id="imagePreviewContainer" style="display:none; margin:6px 0; display:none;">
+          <img id="imagePreview" src="" alt="添付画像プレビュー"
+               style="max-height:120px; border-radius:8px; display:block;">
+          <button id="clearImageBtn" class="btn-ghost"
+                  style="margin-top:4px; font-size:.8rem; padding:4px 10px;">✕ 画像を削除</button>
+        </div>
+
+        <div style="display:flex; gap:8px; align-items:flex-end; flex-wrap:wrap;">
+          <input type="text" id="chatInput" placeholder="メッセージを入力…" style="flex:1; min-width:0;">
+          <label for="chatFileInput" class="btn-ghost"
+                 style="cursor:pointer; white-space:nowrap; padding:8px 10px; margin:0;">📎</label>
+          <input type="file" id="chatFileInput" accept="image/*" style="display:none;">
+          <button id="chatSendBtn" class="btn-primary">送信</button>
+          <button id="chatStopBtn" class="btn-ghost" style="display:none;">⏹ 停止</button>
+        </div>
+
+        <button id="generatePlanBtn" class="btn-primary"
+                style="width:100%; margin-top:14px;">
+          📋 ここまでの会話をもとに学習ロードマップを作成する
+        </button>
+      </div>
+
+      <!-- 生成結果セクション -->
+      <div id="coachResultSection" style="display:none;">
+        <div id="coachLoading"
+             style="display:none; text-align:center; padding:20px; color:var(--ink-soft);">
+          ⏳ ロードマップを作成中…
+        </div>
+        <div id="coachOutput"
+             style="white-space:pre-wrap; line-height:1.75; padding:4px 0;"></div>
+        <div style="display:flex; gap:8px; margin-top:16px; flex-wrap:wrap;">
+          <button class="btn-ghost" onclick="continueChat()">↩ チャットに戻る</button>
+          <button class="btn-ghost" onclick="resetChat()">🔄 最初からやり直す</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- AI弱点分析タブ -->
+  <div id="tab-analysis" class="tab-content" style="display:none;">
+    <section class="card">
+      <h2>📊 成績記録・AI弱点分析</h2>
+
+      <!-- 成績入力フォーム -->
+      <details class="setup-details" open>
+        <summary>✏️ 成績を記録する</summary>
+        <div class="form-grid" style="margin-top:12px;">
+          <div class="field">
+            <label>試験種別（省略可）</label>
+            <select id="scoreExamType" onchange="handleExamTypeChange(this)"
+                    style="width:100%; padding:8px; border:1px solid var(--paper-line); border-radius:6px; font-family:inherit;">
+              <option value="">選択してください</option>
+              <option value="定期テスト">定期テスト</option>
+              <option value="模試">模試</option>
+              <option value="共通テスト">共通テスト</option>
+              <option value="本番">本番（入試）</option>
+              <option value="custom">その他（直接入力）</option>
+            </select>
+            <input type="text" id="scoreExamTypeCustom" placeholder="試験種別を入力"
+                   style="display:none; margin-top:6px; width:100%; box-sizing:border-box;">
+          </div>
+          <div class="field">
+            <label for="scoreSubject">教科 <span style="color:var(--margin-red)">*</span></label>
+            <input type="text" id="scoreSubject" placeholder="例: 英語、数学">
+          </div>
+          <div class="field">
+            <label for="scoreCategory">分野・カテゴリ（省略可）</label>
+            <input type="text" id="scoreCategory" placeholder="例: リスニング、数列">
+          </div>
+          <div class="field">
+            <label for="scoreValue">得点 <span style="color:var(--margin-red)">*</span></label>
+            <input type="number" id="scoreValue" min="0" placeholder="例: 75">
+          </div>
+          <div class="field">
+            <label for="scoreTotal">満点</label>
+            <input type="number" id="scoreTotal" min="1" value="100">
+          </div>
+          <div class="field">
+            <label for="scoreDeviation">偏差値（省略可）</label>
+            <input type="number" id="scoreDeviation" min="0" max="100" step="0.1" placeholder="例: 58.5">
+          </div>
+          <div class="field">
+            <label for="scoreDate">日付</label>
+            <input type="date" id="scoreDate">
+          </div>
+          <div class="field full">
+            <label for="scoreNote">メモ（省略可）</label>
+            <input type="text" id="scoreNote" placeholder="例: 大問2が壊滅的、時間が足りなかった">
+          </div>
+        </div>
+        <div class="error-msg" id="scoreErrorMsg"></div>
+        <button class="btn-primary" id="scoreAddBtn" style="margin-top:10px;">成績を記録</button>
+      </details>
+
+      <!-- グラフエリア -->
+      <div id="scoreChartWrap" style="display:none; margin:20px 0;">
+        <h3 class="sub-head">教科別 平均正答率</h3>
+        <div style="height:200px; position:relative;">
+          <canvas id="scoreChart"></canvas>
+        </div>
+        <div id="deviationChartBox" style="display:none; margin-top:16px;">
+          <h3 class="sub-head">偏差値の推移（直近10件）</h3>
+          <div style="height:200px; position:relative;">
+            <canvas id="deviationChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- 記録一覧 -->
+      <h3 class="sub-head" style="margin-top:16px;">記録一覧</h3>
+      <div id="scoreEntryList">
+        <div class="empty-mini">まだ成績データが登録されていません。</div>
+      </div>
+
+      <!-- AI分析セクション -->
+      <details class="setup-details" style="margin-top:20px;">
+        <summary>🤖 AIによる弱点分析</summary>
+        <div style="margin-top:12px;">
+          <p style="font-size:.85rem; color:var(--ink-soft); margin-bottom:10px;">
+            ※ APIキーは「AI学習計画」タブで設定してください。記録した成績データをもとにAIが弱点と優先学習アドバイスを提示します。
+          </p>
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:10px;">
+            <label class="btn-ghost" for="scoreFileInput"
+                   style="cursor:pointer; padding:8px 14px; margin:0;">📷 成績画像を添付（省略可）</label>
+            <input type="file" id="scoreFileInput" accept="image/*" style="display:none;">
+            <button id="runAnalysisBtn" class="btn-primary">AIで弱点を分析する</button>
+          </div>
+          <!-- 成績画像プレビュー -->
+          <div id="scoreImagePreviewContainer" style="display:none; margin-bottom:10px;">
+            <img id="scoreImagePreview" src="" alt="成績画像プレビュー"
+                 style="max-height:140px; border-radius:8px; display:block;">
+          </div>
+          <div class="error-msg" id="analysisErrorMsg"></div>
+          <div id="analysisLoading"
+               style="display:none; padding:16px; text-align:center; color:var(--ink-soft);">
+            ⏳ AIが分析中…
+          </div>
+          <div id="analysisOutput"
+               style="display:none; white-space:pre-wrap; line-height:1.75;
+                      padding:16px; background:var(--paper);
+                      border-radius:8px; border:1px solid var(--paper-line); margin-top:12px;">
+          </div>
+        </div>
+      </details>
+    </section>
+  </div>
 
 </div>
 
