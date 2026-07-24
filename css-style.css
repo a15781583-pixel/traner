@@ -1,5 +1,4 @@
-
-  :root{
+:root{
     --paper:#F4F6FB;
     --paper-line:#CBD5E3;
     --margin-red:#B23A2E;
@@ -1176,6 +1175,73 @@
     font-family: 'IBM Plex Mono', monospace; transition: all .15s; box-shadow: none;
   }
   .prog-quick-btn:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-bg); }
+
+  /* ── 余剰ページ入力パネル ── */
+  .prog-extra-panel {
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: #eaf6ee;
+    border: 1px solid #a8dab5;
+    border-radius: 8px;
+  }
+  .prog-extra-heading {
+    font-size: .8rem;
+    font-weight: 700;
+    color: #1b5e20;
+    margin-bottom: 8px;
+  }
+  .prog-extra-options {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+  .prog-extra-no-btn {
+    padding: 5px 12px;
+    border: 1px solid #9e9e9e;
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+    font-size: .8rem;
+    color: #555;
+  }
+  .prog-extra-no-btn:hover { background: #f5f5f5; }
+  .prog-extra-input-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .prog-extra-input {
+    width: 54px;
+    text-align: center;
+    border: 1px solid #9e9e9e;
+    border-radius: 6px;
+    padding: 4px 6px;
+    font-size: .85rem;
+  }
+  .prog-extra-step {
+    width: 28px; height: 28px;
+    border: 1px solid #9e9e9e;
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+    font-size: .85rem;
+  }
+  .prog-extra-unit {
+    font-size: .78rem;
+    color: #555;
+  }
+  .prog-extra-confirm-btn {
+    padding: 5px 12px;
+    border: none;
+    border-radius: 6px;
+    background: #2e7d32;
+    color: #fff;
+    cursor: pointer;
+    font-size: .8rem;
+    font-weight: 700;
+  }
+  .prog-extra-confirm-btn:hover { background: #1b5e20; }
 
   /* ─ モバイル最適化 ─ */
   @media (max-width: 640px) {
