@@ -2286,7 +2286,8 @@ document.getElementById('closeTestBtn').addEventListener('click', () => {
 function showTab(tabName) {
   // タブコンテンツの表示・非表示を切り替え
   document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
-  document.getElementById('tab-' + tabName).style.display = 'block';
+  const tabEl = document.getElementById('tab-' + tabName);
+  if (tabEl) tabEl.style.display = 'block';
 
   // 「スケジュール」タブを開いたときは、最新の統合スケジュールを再描画する
   if (tabName === 'schedule') {
@@ -2348,10 +2349,10 @@ function showTab(tabName) {
   document.getElementById('leechAddBtn').addEventListener('click', handleLeechAdd);
   document.getElementById('printBtn').addEventListener('click', () => window.print());
 
-  setupApiKeyPersistence();
+  // setupApiKeyPersistence / loadSavedApiKey はjs-ai-features.jsのinitAiFeatures()が担当
   loadReviewDone();
   loadDailyProgress(); // 日別進捗データを読み込む
-  await loadSavedApiKey();await loadEntries();
+  await loadEntries();
   renderAll();
   renderIntegratedSchedule(); // 「スケジュール」タブは初期表示タブなので、読み込み直後に描画する
   updateTodaySummaryCard();   // 今日のサマリーカードを初期表示
@@ -2361,14 +2362,15 @@ function showTab(tabName) {
   // ---- 成績・弱点分析タブの初期化 ----
   const scoreDateEl = document.getElementById('scoreDate');
   if(scoreDateEl) scoreDateEl.value = todayISO();
+  // scoreAddBtn はjs-app.js定義のhandleScoreAddを使うためここで登録
   if(document.getElementById('scoreAddBtn')) document.getElementById('scoreAddBtn').addEventListener('click', handleScoreAdd);
-  if(document.getElementById('scoreFileInput')) document.getElementById('scoreFileInput').addEventListener('change', handleScoreImageFile);
-  if(document.getElementById('runAnalysisBtn')) document.getElementById('runAnalysisBtn').addEventListener('click', runWeaknessAnalysis);
+  // handleScoreImageFile / runWeaknessAnalysis はjs-ai-features.jsのinitAiFeatures()が担当
   await loadScores();
   renderScoreList();
   try {
     const savedAnalysis = localStorage.getItem(ANALYSIS_KEY);
-    if(savedAnalysis) renderAnalysisResult(JSON.parse(savedAnalysis).result);
+    // renderAnalysisResultはjs-ai-features.jsで定義されるためtypeof守衛
+    if(savedAnalysis && typeof renderAnalysisResult === 'function') renderAnalysisResult(JSON.parse(savedAnalysis).result);
   } catch(e) {}
 })();
 
