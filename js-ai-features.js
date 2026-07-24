@@ -199,16 +199,7 @@ async function handleChatSend() {
     });
 
     loadingIndicator.remove();
-    if (!response.ok) {
-      const msgs = {
-        400: 'リクエストが不正です。APIキーまたは入力内容を確認してください（400）。',
-        401: 'APIキーが無効です。キーを確認してください（401）。',
-        403: 'このAPIキーには権限がありません（403）。',
-        429: 'リクエスト数の上限に達しました。1分ほど待ってから再送信してください（429）。',
-        500: 'Gemini サーバーでエラーが発生しました。しばらく後にお試しください（500）。',
-      };
-      throw new Error(msgs[response.status] || `APIエラー (Status: ${response.status})`);
-    }
+    if (!response.ok) throw new Error(`APIエラー (Status: ${response.status})`);
 
     const data = await response.json();
     const aiResponseText = data.candidates[0].content.parts[0].text;
@@ -266,10 +257,101 @@ function resetChat() {
   }
 }
 
-// スコア画像処理用の関数（未定義エラーを防ぐための記述）
-if (typeof handleScoreImageFile === 'undefined') {
-  window.handleScoreImageFile = function(event) {
-    console.log('Score image selected:', event.target.files[0]);
-    // 画像読み込みや解析の処理が必要な場合はここに記述
+/* --- 成績画像プレビュー --- */
+function handleScoreImageFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const preview = document.getElementById('scoreImagePreview');
+  const container = document.getElementById('scoreImagePreviewContainer');
+  if (!preview || !container) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    preview.src = e.target.result;
+    container.style.display = 'block';
   };
+  reader.readAsDataURL(file);
 }
+
+/* --- AI弱点分析 --- */
+async function runWeaknessAnalysis() {
+  const apiKeyEl = document.getElementById('geminiApiKey');
+  const apiKey = apiKeyEl ? apiKeyEl.value.trim() : '';
+  const errorEl = document.getElementById('analysisErrorMsg');
+  const loadingEl = document.getElementById('analysisLoading');
+  const runBtn = document.getElementById('runAnalysisBtn');
+
+  if (!apiKey) {
+    if (errorEl) errorEl.textContent = 'APIキーを入力してください（AI学習計画タブで設定）。';
+    return;
+  }
+  // scoreRecords はjs-app.jsのグローバル変数
+  if (typeof scoreRecords === 'undefined' || scoreRecords.length === 0) {
+    if (errorEl) errorEl.textContent = '成績データがありません。先に成績を登録してください。';
+    return;
+  }
+
+  if (errorEl) errorEl.textContent = '';
+  if (loadingEl) loadingEl.style.display = 'block';
+  if (runBtn) runBtn.disabled = true;
+
+  const scoreSummary = scoreRecords.map(r => {
+    const pct = r.total ? Math.round((r.score / r.total) * 100) : '?';
+    return `${r.date} - ${r.subject}${r.category ? '/' + r.category : ''}${r.examType ? ' (' + r.examType + ')' : ''}: ${r.score}/${r.total}点（${pct}%）${r.deviation != null ? ' 偏差値' + r.deviation : ''}${r.note ? ' メモ: ' + r.note : ''}`;
+  }).join('\n');
+
+  const prompt = `以下は生徒の成績データです。各教科・分野の得点率や偏差値を分析し、弱点と今後の優先的な学習アドバイスを具体的にまとめてください。\n\n【成績データ】\n${scoreSummary}`;
+
+  const parts = [{ text: prompt }];
+  const fileInput = document.getElementById('scoreFileInput');
+  if (fileInput && fileInput.files[0]) {
+    try { parts.push(await fileToGenerativePart(fileInput.files[0])); } catch(e) {}
+  }
+
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ role: 'user', parts }] })
+    });
+    if (!response.ok) throw new Error(`APIエラー (Status: ${response.status})`);
+    const data = await response.json();
+    const result = data.candidates[0].content.parts[0].text;
+    try {
+      // ANALYSIS_KEY はjs-app.jsのグローバル定数 'vocab-weakness-analysis'
+      localStorage.setItem(typeof ANALYSIS_KEY !== 'undefined' ? ANALYSIS_KEY : 'vocab-weakness-analysis',
+        JSON.stringify({ result, date: typeof todayISO === 'function' ? todayISO() : new Date().toISOString().slice(0,10) }));
+    } catch(e) {}
+    renderAnalysisResult(result);
+    if (fileInput) fileInput.value = '';
+    const container = document.getElementById('scoreImagePreviewContainer');
+    if (container) container.style.display = 'none';
+  } catch(e) {
+    if (errorEl) errorEl.textContent = 'エラー: ' + e.message;
+  } finally {
+    if (loadingEl) loadingEl.style.display = 'none';
+    if (runBtn) runBtn.disabled = false;
+  }
+}
+
+function renderAnalysisResult(result) {
+  const output = document.getElementById('analysisOutput');
+  if (!output) return;
+  const sanitized = typeof DOMPurify !== 'undefined'
+    ? DOMPurify.sanitize(result.replace(/\n/g, '<br>'))
+    : result.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+  output.innerHTML = sanitized;
+  output.style.display = 'block';
+  // 分析結果エリアへスクロール
+  output.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+/* --- js-ai-features.js が defer で読み込まれる際、DOMContentLoadedは既に発火済みのため直接初期化 --- */
+// (両スクリプトともdeferのため js-app.js → js-ai-features.js の順で実行される)
+initAiFeatures();
+
+// js-app.jsのinit()が先に実行されrenderAnalysisResultが未定義だった場合のリカバリ
+try {
+  const savedKey = typeof ANALYSIS_KEY !== 'undefined' ? ANALYSIS_KEY : 'vocab-weakness-analysis';
+  const savedAnalysis = localStorage.getItem(savedKey);
+  if (savedAnalysis) renderAnalysisResult(JSON.parse(savedAnalysis).result);
+} catch(e) {}
