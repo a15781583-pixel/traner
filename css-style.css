@@ -350,12 +350,6 @@
   .leech-mini-table td{ padding:5px 6px; border-bottom:1px solid var(--paper-line); font-family:'IBM Plex Mono', monospace; }
   .mini-del{ background:none; border:none; color:var(--margin-red); font-size:.75rem; cursor:pointer; text-decoration:underline; font-family:'Noto Sans JP', sans-serif; }
 
-  /* ---------- progress charts ---------- */
-  .chart-grid{ display:grid; grid-template-columns:1.4fr 1fr; gap:20px; }
-  .chart-box{ position:relative; height:220px; }
-  .chart-label{ font-size:.8rem; color:var(--ink-soft); font-weight:600; margin-bottom:8px; }
-  .streak-note{ font-size:.78rem; color:var(--ink-soft); margin-top:10px; }
-
   /* [ai-features.html] 成績データ・弱点分析スタイル → ai-features.html に移動 */
 
   /* ---------- 今日のサマリーカード ---------- */
@@ -528,7 +522,6 @@
     /* --- フォーム・グリッド --- */
     .form-grid { grid-template-columns: 1fr; }
     .feature-grid { grid-template-columns: 1fr; }
-    .chart-grid { grid-template-columns: 1fr; }
     .app { padding-left: 26px; }
     h1 { font-size: 1.3rem; }
 
@@ -964,58 +957,6 @@
   .ref-section-icon { font-size: .95rem; }
 
   /* ────────────────────────────────────────────────
-     参考書タブ：進捗入力アコーディオン
-  ──────────────────────────────────────────────── */
-  details.ref-progress-details {
-    margin-top: 18px;
-    border: 1.5px dashed var(--paper-line);
-    border-radius: 8px;
-    background: #f8fafc;
-    overflow: hidden;
-  }
-  .ref-progress-summary {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    list-style: none;
-    padding: 12px 16px;
-    font-size: .88rem;
-    font-weight: 700;
-    color: var(--ink);
-    user-select: none;
-  }
-  .ref-progress-summary::-webkit-details-marker { display: none; }
-  .ref-progress-summary::before {
-    content: "▸";
-    font-size: .75rem;
-    color: var(--ink-soft);
-    transition: transform .2s;
-  }
-  details.ref-progress-details[open] .ref-progress-summary::before {
-    content: "▾";
-  }
-  .ref-progress-summary-icon { font-size: 1rem; }
-  .ref-progress-summary-badge {
-    margin-left: auto;
-    font-size: .72rem;
-    font-weight: 700;
-    background: var(--success-bg);
-    color: var(--success);
-    border: 1px solid #bcd6c4;
-    border-radius: 4px;
-    padding: 2px 8px;
-    white-space: nowrap;
-  }
-  details.ref-progress-details[open] {
-    border-color: var(--ink);
-    background: var(--white);
-  }
-  details.ref-progress-details > .ref-progress-summary + div {
-    padding: 0 16px 16px;
-  }
-
-  /* ────────────────────────────────────────────────
      参考書タブ：スケジュール設定アコーディオン
   ──────────────────────────────────────────────── */
   details.ref-setting-details {
@@ -1129,13 +1070,6 @@
     display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
     margin-bottom: 8px;
   }
-  .prog-step {
-    background: var(--paper); border: 1px solid var(--paper-line); color: var(--ink);
-    border-radius: 6px; padding: 6px 12px; font-size: .9rem; font-weight: 700;
-    cursor: pointer; font-family: 'IBM Plex Mono', monospace; transition: background .15s;
-    box-shadow: none;
-  }
-  .prog-step:hover { background: var(--white); border-color: var(--ink-soft); }
   .prog-display {
     font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: 1.05rem;
     min-width: 64px; text-align: center;
@@ -1164,17 +1098,6 @@
     display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
   .prog-unit { font-size: .82rem; color: var(--ink-soft); white-space: nowrap; }
-
-  /* ─ クイック割合ボタン ─ */
-  .prog-quick-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .prog-quick-label { font-size: .78rem; color: var(--ink-soft); white-space: nowrap; }
-  .prog-quick-btn {
-    background: var(--paper); color: var(--ink-soft);
-    border: 1px solid var(--paper-line); border-radius: 6px;
-    padding: 4px 14px; font-size: .82rem; font-weight: 700; cursor: pointer;
-    font-family: 'IBM Plex Mono', monospace; transition: all .15s; box-shadow: none;
-  }
-  .prog-quick-btn:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-bg); }
 
   /* ── 余剰ページ入力パネル ── */
   .prog-extra-panel {
@@ -1246,7 +1169,6 @@
   /* ─ モバイル最適化 ─ */
   @media (max-width: 640px) {
     .prog-btn { padding: 12px 14px; font-size: .92rem; min-height: 44px; }
-    .prog-step { padding: 9px 14px; min-height: 40px; }
     .prog-toggle { gap: 6px; }
     .prog-partial-panel { padding: 10px 10px; }
     .prog-display-input { width: 64px; font-size: .98rem; }
